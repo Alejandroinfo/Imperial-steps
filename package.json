@@ -1,0 +1,9 @@
+{
+  "name": "los-pasos-del-imperio",
+  "version": "0.3.0",
+  "description": "Juego de estrategia por turnos simultáneos para jugar en línea con la familia.",
+  "private": true,
+  "scripts": {
+    "test": "node pruebas/simular_partidas.js"
+  }
+}

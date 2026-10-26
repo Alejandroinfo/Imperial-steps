@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Los Pasos del Imperio — prototipo v0.3</title>
+<link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <h1>Los Pasos del Imperio</h1>
+    <div class="turnbar" aria-label="Turno">
+      <span class="tstep" title="Paso actual y tu tiempo de decisión">Paso <b id="stepNo">1</b> <span class="hint" id="clock">0 s</span></span>
+      <span class="chips" id="chips"></span>
+      <span class="resline" id="resLine"><span title="Oro">🪙 <b id="rGold">0</b></span><span title="Ciencia">🔬 <b id="rTech">0</b></span><span title="Zonas">🏞 <b id="rZones">0</b></span><span title="Población">👥 <b id="rPop">0</b></span></span>
+      <button class="btn primary" id="readyBtn" title="El paso avanza cuando todos están listos (Enter)">¡Listo!</button>
+    </div>
+    <div class="hbar">
+      <button class="btn" id="btnHelp">📖 Guía</button>
+      <button class="btn" id="btnMenu" aria-haspopup="dialog">☰ Menú</button>
+    </div>
+  </header>
+  <main>
+    <section class="stage">
+      <div class="toolbar">
+        <span class="seg"><button id="vTerr" aria-pressed="true">Territorio</button><button id="vPlan" aria-pressed="false">Plan de red</button></span>
+        <button class="btn" id="bCap" title="Ir a tu capital">Mi capital</button>
+        <button class="btn" id="bSel" title="Ir a la zona seleccionada">Zona elegida</button>
+        <button class="btn" id="bAll" title="Ver todo el mapa">Todo el mapa</button>
+        <span class="hint tip">Arrastra para recorrer · rueda para acercar · doble clic para centrar</span>
+      </div>
+      <div class="viewport frame" id="vp">
+        <div id="cam" class="cam"><svg id="terr" role="group" aria-label="Mapa de territorio"><g id="worldT"></g><g id="ordT"></g><g id="fxT"></g></svg></div>
+        <svg id="plan" class="hide" viewBox="0 0 1100 1060" role="group" aria-label="Plan de red"><g id="worldP"></g><g id="fxP"></g></svg>
+        <svg id="mini" class="mini" aria-label="Minimapa"></svg>
+        <div id="banner" class="banner"></div>
+        <div id="toasts" aria-live="polite"></div>
+        <div id="startMsg" class="startmsg"></div>
+        <div class="dpad" aria-label="Mover el mapa">
+          <span></span><button data-dir="0,-1" aria-label="Arriba">▲</button><button id="zIn" aria-label="Acercar">＋</button>
+          <button data-dir="-1,0" aria-label="Izquierda">◀</button><span></span><button data-dir="1,0" aria-label="Derecha">▶</button>
+          <span></span><button data-dir="0,1" aria-label="Abajo">▼</button><button id="zOut" aria-label="Alejar">－</button>
+        </div>
+      </div>
+    </section>
+    <aside class="panel" aria-label="Panel de control">
+      <div class="tabs" role="tablist">
+        <button data-tab="zona" role="tab">Zona</button>
+        <button data-tab="imperio" role="tab">Imperio</button>
+        <button data-tab="tec" role="tab">Tecnologías</button>
+        <button data-tab="vic" role="tab">Victoria<span class="cnt vic"><b id="vicCnt">0</b></span></button>
+        <button data-tab="hist" role="tab">Historial</button>
+        <button data-tab="ord" role="tab">Órdenes<span class="cnt" id="ordCount"></span></button>
+      </div>
+      <div id="tabBody"></div>
+    </aside>
+  </main>
+</div>
+
+<dialog id="dlgSetup" class="setup" aria-labelledby="setupTitle">
+  <h2 id="setupTitle">Partida nueva</h2>
+  <div class="sform">
+    <label>Mapa<select id="selMap"></select></label>
+    <label>Jugadores<select id="selN"><option>2</option><option>3</option><option>4</option></select></label>
+    <label>Victoria<select id="selThr"><option value="prueba">Prueba (umbrales bajos, para ver el final)</option><option value="normal">Normal (1000 oro, 75 población…)</option></select></label>
+  </div>
+  <p class="hint" id="mapShort"></p>
+  <p class="warn" id="setupWarn" hidden>Se termina la partida actual.</p>
+  <div class="dactions"><button class="btn" id="setupCancel">Volver a la partida</button><button class="btn primary" id="btnStart">Empezar</button></div>
+</dialog>
+<dialog id="dlgMenu" class="menu" aria-labelledby="menuTitle">
+  <h2 id="menuTitle">Menú</h2>
+  <div class="mgrid">
+    <button class="btn" id="btnNew">Partida nueva…</button>
+    <button class="btn" id="btnAuto" title="El bot toma tus decisiones durante 5 pasos">Bot por mí (5 pasos)</button>
+    <button class="btn" id="btnGallery">Galería de estilo</button>
+  </div>
+  <h4>Ajustes</h4>
+  <label class="mopt"><input type="checkbox" id="chkAnim" checked> Animaciones</label>
+  <label class="mopt"><input type="checkbox" id="chkEdge"> Mover el mapa al acercar el mouse a los bordes</label>
+  <p class="hint" id="menuInfo"></p>
+  <form method="dialog" class="dclose"><button class="btn primary">Cerrar</button></form>
+</dialog>
+<dialog id="dlgWiki" class="big">
+  <div class="wikiwrap">
+    <aside class="wikinav"><input id="wikiQ" type="search" placeholder="Buscar en la guía…" aria-label="Buscar en la guía"><div id="wikiNav"></div></aside>
+    <article id="wikiBody" class="wikibody"></article>
+  </div>
+  <form method="dialog" class="dclose"><button class="btn primary">Cerrar</button></form>
+</dialog>
+<dialog id="dlgTech" class="big">
+  <div class="tmwrap">
+    <div class="tmmain"><h2>Mapa de tecnologías</h2>
+      <div class="legend"><i class="tchip own">tuya</i> <i class="tchip doing">investigando</i> <i class="tchip queued">en cola</i> <i class="tchip avail">disponible</i> <i class="tchip lock">bloqueada</i> · <b>★</b> = columna vertebral (hay que acabarla para llegar al nivel 5)</div>
+      <div id="techMap" class="techmap"></div></div>
+    <aside id="techDetail" class="techdetail"></aside>
+  </div>
+  <form method="dialog" class="dclose"><button class="btn primary">Cerrar</button></form>
+</dialog>
+<dialog id="dlgGallery"><h2>Galería de estilo</h2><p class="hint">Cada zona es una maqueta de pueblo vista desde arriba. Los techos toman el color del jugador.</p><div class="gal" id="galGrid"></div><form method="dialog" style="margin-top:10px"><button class="btn primary">Cerrar</button></form></dialog>
+<dialog id="dlgEnd"><h2 id="endTitle"></h2><div id="endBody"></div><form method="dialog" style="margin-top:10px"><button class="btn primary" id="endNew">Partida nueva…</button></form></dialog>
+
+<script src="js/datos/mapas.js"></script>
+<script src="js/datos/tecnologias.js"></script>
+<script src="js/config/reglas.js"></script>
+<script src="js/config/efectos_tecnologias.js"></script>
+<script src="js/motor/estado.js"></script>
+<script src="js/motor/partida.js"></script>
+<script src="js/motor/eventos.js"></script>
+<script src="js/motor/resolver_paso.js"></script>
+<script src="js/motor/economia.js"></script>
+<script src="js/motor/combate.js"></script>
+<script src="js/motor/victoria.js"></script>
+<script src="js/motor/bots.js"></script>
+<script src="js/interfaz/dibujo/terreno.js"></script>
+<script src="js/interfaz/estado_interfaz.js"></script>
+<script src="js/interfaz/dibujo/figuras.js"></script>
+<script src="js/interfaz/animaciones.js"></script>
+<script src="js/interfaz/mapa/territorio.js"></script>
+<script src="js/interfaz/paneles/especializar.js"></script>
+<script src="js/interfaz/paneles/mapa_tecnologias.js"></script>
+<script src="js/interfaz/paneles/mis_zonas.js"></script>
+<script src="js/interfaz/guia.js"></script>
+<script src="js/interfaz/formularios.js"></script>
+<script src="js/interfaz/paneles/zona.js"></script>
+<script src="js/interfaz/paneles/imperio.js"></script>
+<script src="js/interfaz/paneles/tecnologias.js"></script>
+<script src="js/interfaz/paneles/ordenes.js"></script>
+<script src="js/interfaz/render.js"></script>
+<script src="js/interfaz/acciones.js"></script>
+<script src="js/interfaz/flujo.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

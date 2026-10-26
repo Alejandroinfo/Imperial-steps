@@ -2,22 +2,22 @@
 
 Juego de estrategia por turnos simultáneos para jugar en línea con la familia. Todos planean **a la vez**; cuando todos presionan **¡Listo!**, el paso se resuelve y se ve qué pasó. La idea es recuperar la diversión de planificar en grupo con presión de tiempo, sin el micromanagement de un juego de estrategia en tiempo real.
 
-> **Estado:** prototipo jugable v0.3 en el navegador (una persona contra 1 a 3 bots). El diseño de reglas está bastante cerrado; el motor definitivo se pasará a Python.
+> **Estado:** prototipo jugable v0.4 en el navegador (una persona contra 1 a 3 bots). El diseño de reglas está bastante cerrado; el motor definitivo se pasará a Python.
 
 ## Cómo jugarlo
 
-No hace falta instalar nada. Descarga el repositorio y abre `index.html` en el navegador (Chrome, Firefox o Edge). Elige mapa, número de jugadores y modo de victoria, y presiona **Empezar**. La **📖 Guía** dentro del juego explica cada sistema.
+No hace falta instalar nada. Descarga el repositorio y abre `index.html` en el navegador (Chrome, Firefox o Edge). Para mandarlo en un solo archivo, corre `python herramientas/empaquetar.py` y comparte `dist/Los_Pasos_del_Imperio.html`. Elige mapa, número de jugadores y modo de victoria, y presiona **Empezar**. La **📖 Guía** dentro del juego explica cada sistema.
 
 ## Cómo probar el motor
 
 El motor no depende del navegador, así que se puede probar solo con [Node.js](https://nodejs.org) (versión 18 o más nueva):
 
 ```bash
-npm test                                   # 12 mapas × 2, 3 y 4 jugadores
+npm test                                   # regla de capas + 12 mapas × 2, 3 y 4 jugadores
 node pruebas/simular_partidas.js 10 80     # 10 semillas por combinación, hasta 80 pasos
 ```
 
-La prueba hace jugar a los bots entre sí en todos los mapas, revisa después de cada paso que no aparezcan cantidades imposibles (negativas o no numéricas) y resume con qué condiciones se ganó. La misma prueba corre en GitHub Actions con cada cambio.
+`pruebas/revisar_capas.js` comprueba que el motor no use nada de la pantalla. `pruebas/simular_partidas.js` hace jugar a los bots entre sí en todos los mapas, revisa después de cada paso que no aparezcan cantidades imposibles (negativas o no numéricas) y resume con qué condiciones se ganó. Las dos pruebas corren en GitHub Actions con cada cambio.
 
 ## Cómo está organizado
 
@@ -46,13 +46,16 @@ js/
     paneles/                Panel lateral: zona, imperio, tecnologías, victoria, órdenes
     animaciones.js          Lo que se anima al resolver un paso
     guia.js                 Guía tipo wiki
+    sugerencias.js          Avisos y consejos del paso (hambre, tributos, eventos, qué hacer ahora)
     acciones.js             Convierte los botones en órdenes
     flujo.js                Empezar, ¡Listo!, resolver y fin de partida
     render.js               Redibuja el estado actual
   main.js                   Punto de entrada
 pruebas/
+  revisar_capas.js          Comprueba que datos, config y motor no dependan de la interfaz
   simular_partidas.js       Partidas entre bots sin navegador
 herramientas/
+  empaquetar.py             Junta todo en un solo HTML para mandarlo a la familia
   atlas_mapas.html          Atlas visual de los 12 mapas (selector de 2, 3 o 4 jugadores)
 docs/
   Reglas_v0.1.md            Fuente de verdad de las reglas (✅ decidido, 💡 propuesta, ❓ por definir)

@@ -1,8 +1,8 @@
 'use strict';
 // Especializar arrastrando personas de un oficio a otro.
 
-const STATIONS=[['pob','Casas','sin oficio'],['agr','Granja','comida'],['ing','Taller','producción'],['con','Obras','construcción'],['cie','Laboratorio','ciencia'],['com','Mercado','oro']];
-function stationRate(t){ return ({pob:'+1 comida y +1 prod.',agr:'+2 comida',ing:'+2 producción',con:'obra: 2 por paso',cie:'+2 ciencia (o investiga)',com:'+2 oro'})[t]; }
+const STATIONS=[['pob','Casas','sin oficio'],['agr','Granja','comida'],['ing','Taller','producción'],['cie','Laboratorio','ciencia'],['com','Mercado','oro']];
+function stationRate(t){ return ({pob:'+1 comida y +1 prod.',agr:'+2 comida',ing:'+2 producción (o construye: 2 por paso)',cie:'+2 ciencia (o investiga)',com:'+2 oro'})[t]; }
 function emblemSVG(sp,r,sz){ sz=sz||(r*2+6); return `<svg class="emb" width="${sz}" height="${sz}" viewBox="-${r+3} -${r+3} ${2*r+6} ${2*r+6}" aria-hidden="true">${emblem(sp,r)}</svg>`; }
 function dndHTML(z){
   const mineU=z.units[ME]||[]; const delta={};

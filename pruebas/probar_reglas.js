@@ -66,7 +66,7 @@ prueba('Con Alerta hacia otro jugador, sus tropas pelean donde coinciden', base 
   paso([{t:'stance',target:1,stance:'alerta'}]); return stanceOf(G,0,1)==='alerta'&&G.hist.some(h=>h.lines.some(l=>l.includes('Combate')));`);
 
 prueba('Un edificio se construye en el nivel más alto desbloqueado y con su especialización', base + `
-  cap.units[0]=[civ('con'),civ('con'),civ('con'),civ('con'),civ('con'),civ('con')]; cap.prod=40;
+  cap.units[0]=[civ('ing'),civ('ing'),civ('ing'),civ('ing'),civ('ing'),civ('ing')]; cap.prod=40;
   G.F[0].techs['Molino de piedra']=1; G.F[0].techs['Molino-granero']=1; recomputeMods(G);
   paso([{t:'build',zone:cap.id,bt:'molino',spec:'granero'}]); const p=cap.proj.find(p=>p.bt==='molino');
   return !!p&&p.lvl===3&&p.tot===60&&p.spec==='granero';`);
@@ -162,6 +162,53 @@ prueba('Entrenar ya no necesita Cuartel', base + `
 
 prueba('Etapa de fundación: crecer cuesta la mitad hasta el paso 12', base + `
   const antes=growCost(G,0,cap); G.step=20; const despues=growCost(G,0,cap); return antes<despues;`);
+
+// ---- Ingenieros automáticos (15.2) ----
+prueba('Con 4 de producción guardada y 3 ingenieros, 2 construyen y 1 produce', base + `
+  cap.units[0]=[civ('ing'),civ('ing'),civ('ing')]; cap.prod=4; cap.proj=[{k:'b',bt:'molino',left:40,tot:40,dup:0,lvl:2,spec:null}];
+  const pl=buildPlan(G,cap,0,false); paso(); const gastado=40-cap.proj[0].left;
+  const con=cap.last.prod; return pl.ing===2&&pl.cap===4&&gastado===4&&con<9;`);
+
+prueba('Sin obra en cola, todos los ingenieros producen', base + `
+  cap.units[0]=[civ('ing'),civ('ing'),civ('ing')]; cap.prod=4; cap.proj=[];
+  const pl=buildPlan(G,cap,0,false); paso(); return pl.ing===0&&cap.last.prod>=8;`);
+
+prueba('Los pobladores también construyen solos si hay obra (1 cada uno) y, si no, producen', base + `
+  cap.units[0]=[civ('pob'),civ('pob'),civ('pob')]; cap.prod=10; cap.proj=[{k:'b',bt:'molino',left:40,tot:40,dup:0,lvl:2,spec:null}];
+  const pl=buildPlan(G,cap,0,false); const con=pl.pob===3&&pl.cap===3;
+  cap.proj=[]; const pl2=buildPlan(G,cap,0,false); return con&&pl2.pob===0&&pl2.cap===0;`);
+
+prueba('Una obra sin producción guardada no avanza y nadie deja de producir', base + `
+  cap.units[0]=[civ('ing'),civ('ing')]; cap.prod=0; cap.proj=[{k:'b',bt:'molino',left:40,tot:40,dup:0,lvl:2,spec:null}];
+  const pl=buildPlan(G,cap,0,false); return pl.ing===0&&pl.cap===0;`);
+
+prueba('Solo construyen los ingenieros que hacen falta para terminar la obra', base + `
+  cap.units[0]=[civ('ing'),civ('ing'),civ('ing')]; cap.prod=30; cap.proj=[{k:'b',bt:'molino',left:3,tot:20,dup:0,lvl:1,spec:null}];
+  const pl=buildPlan(G,cap,0,false); return pl.ing===2&&pl.cap===3;`);
+
+prueba('Zona de Producción: su bono cuenta como capacidad de obra mientras se construye', base + `
+  cap.units[0]=[civ('ing'),civ('ing'),civ('ing'),civ('ing')]; cap.prod=40; cap.proj=[{k:'b',bt:'molino',left:60,tot:60,dup:0,lvl:3,spec:null}];
+  const pl=buildPlan(G,cap,0,false); return pl.ing===4&&pl.bonus===4&&pl.cap===12;`);
+
+prueba('Gremios de ingenieros: las obras cuestan un 10 % menos', base + `
+  G.F[0].techs['Gremios de ingenieros']=1; recomputeMods(G); cap.units[0]=[civ('ing')]; cap.prod=40; G.F[0].techs['Molino de piedra']=1; recomputeMods(G);
+  paso([{t:'build',zone:cap.id,bt:'molino'}]); const p=cap.proj.find(p=>p.bt==='molino'); return !!p&&p.tot===Math.max(10,Math.round(20*p.lvl*0.9));`);
+
+prueba('Grandes obras: mejorar a nivel 3 o más cuesta 10 menos', base + `
+  const sin=stepCost(G,0,cap,'molino',0); G.F[0].techs['Grandes obras']=1; recomputeMods(G); return G.M[0].upgRebate===10&&sin-G.M[0].upgRebate>=10;`);
+
+prueba('El oficio de constructor ya no existe (5 oficios civiles)', `return CIV.length===5&&!CIV.includes('con')&&!UT.con;`);
+
+prueba('Dos anexiones en el mismo paso no pueden gastar más ciencia de la que hay', base + `
+  const ts=G.zones.filter(z=>z.owner===TRIBE).slice(0,2); if(ts.length<2) return false;
+  ts.forEach(t=>{ t.tspec='cie'; });
+  const orden=ts.map(t=>({t:'annex',zone:t.id})); G.F[0].tech=annexPrice(G,0,ts[0])+1;
+  const antes=G.F[0].tech; try{ paso(orden); }catch(e){ return 'error '+e.message; } return G.F[0].tech>=0&&ts.filter(t=>t.owner===0).length<=1;`);
+
+prueba('Un poblador que construye no produce su 1 de producción, pero sigue dando su comida', base + `
+  cap.units[0]=[civ('pob'),civ('pob'),civ('pob')]; cap.prod=10; cap.proj=[{k:'b',bt:'molino',left:40,tot:40,dup:0,lvl:2,spec:null}];
+  paso(); const con=cap.lastBy.jobs.pob; const a=con.prod===0&&con.food===3;
+  cap.proj=[]; cap.prod=10; paso(); const sin=cap.lastBy.jobs.pob; return a&&sin.prod>=3&&sin.food===3;`);
 
 console.log(fallos ? `\n${fallos} reglas fallan.` : '\nTodas las reglas probadas se cumplen.');
 process.exit(fallos ? 1 : 0);

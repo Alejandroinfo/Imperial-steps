@@ -23,7 +23,7 @@ const ENCOUNTERS = [
   {id:'arqueros', k:'oferta', who:['Unos cazadores del bosque','Arqueros sin patria'], txt:'se unirían a tu ejército', cost:{res:'gold',n:7}, gain:{units:{arq:2}}, terr:['bos','rio','lla']},
   {id:'jinetes', k:'oferta', who:['Unos jinetes nómadas','Una partida de domadores'], txt:'ofrecen sus caballos y su lanza', cost:{res:'gold',n:10}, gain:{units:{cab:1}}, terr:['pra','lla']},
   {id:'refugiados', k:'oferta', who:['Unos refugiados','Una familia que huye de la guerra','Campesinos sin tierra'], txt:'piden comida para quedarse', cost:{res:'food',n:5}, gain:{units:{pob:2}}},
-  {id:'artesanos', k:'oferta', who:['Unos artesanos errantes','Un gremio de canteros'], txt:'trabajarían para ti a cambio de comida', cost:{res:'food',n:5}, gain:{units:{ing:1,con:1}}},
+  {id:'artesanos', k:'oferta', who:['Unos artesanos errantes','Un gremio de canteros'], txt:'trabajarían para ti a cambio de comida', cost:{res:'food',n:5}, gain:{units:{ing:2}}},
   {id:'mercaderes', k:'oferta', who:['Unos mercaderes extranjeros','Una familia de comerciantes'], txt:'quieren abrir negocio en tu zona', cost:{res:'gold',n:6}, gain:{units:{com:2}}},
   {id:'sabio', k:'oferta', who:['Un sabio viajero','Una astrónoma de otras tierras','Monjes copistas'], txt:'compartirían su saber', cost:{res:'gold',n:5}, gain:{res:'tech',n:10}},
   {id:'escuela', k:'oferta', who:['Un maestro de oficios','Una escuela itinerante'], txt:'formarían a un científico', cost:{res:'food',n:4}, gain:{units:{cie:1}}},

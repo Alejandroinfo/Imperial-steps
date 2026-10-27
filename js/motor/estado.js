@@ -84,7 +84,7 @@ function zoneSpec(g,z,f){
   if(best&&bn*2>civ.length&&bn>=4){ const M=g.M[f]||newMods(); let lvl=1; if(bn>=8&&M.zl[best]>=2) lvl=2; if(bn>=12&&M.zl[best]>=3) lvl=3; return {spec:best,lvl,n:bn}; }
   return {spec:'bas',lvl:1,n:bn};
 }
-const SPECN = {bas:'Básica',agr:'Agrícola',ing:'de Producción',con:'Industrial',cie:'de Tecnología',com:'Comercial'};
+const SPECN = {bas:'Básica',agr:'Agrícola',ing:'de Producción',cie:'de Tecnología',com:'Comercial'};
 /** @param {Partida} g */
 function ownPath(g,f,from,to,maxLen){
   const prev={}; prev[from]=null; const q=[from];

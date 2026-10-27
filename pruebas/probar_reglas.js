@@ -19,7 +19,7 @@ function prueba(nombre, codigo) {
   catch (e) { fallos++; console.log('✗ ' + nombre + ' → ' + e.message); }
 }
 // Partida base: mapa 1, 2 jugadores; la capital del jugador 0 sin eventos.
-const base = `const G=newGame(0,2,1,'normal'); G.evq=[]; const cap=G.zones.find(z=>z.capital&&z.owner===0);
+const base = `const G=newGame(0,2,1,'normal'); G.evq=[]; G.zones.forEach(z=>{ z.res=null; z.resO=null; }); const cap=G.zones.find(z=>z.capital&&z.owner===0);
   const civ=t=>{ const u=mkUnit(G,0,t); u.tr=[]; return u; }; const conRasgo=(t,k,l)=>{ const u=mkUnit(G,0,t); u.tr=[{k,l}]; return u; }; const paso=(o)=>resolveStep(G,(o||[]).map(x=>Object.assign({f:0},x)));`;
 
 prueba('El almacén base es 10 por tamaño', base + `return capStore(G,cap,'food')===10*cap.size;`);
@@ -85,7 +85,16 @@ prueba('Proyección: no cambia la partida real', base + `
 
 prueba('Proyección: Molino de piedra se nota al mejorar el molino que ya tienes', base + `
   cap.units[0]=[civ('pob'),civ('pob'),civ('pob'),civ('pob')]; cap.b.push({t:'molino',l:1,s:null,wk:0,cost:20});
-  const r=techImpact(G,0,'Molino de piedra'); return r.ups.length===1&&r.ups[0].to===2&&r.out.food===2;`);
+  const r=techImpact(G,0,'Molino de piedra'); return r.ups.length===1&&r.ups[0].to===2&&r.out.food===6;`);   // nivel 1: 2 trabajadores × 1; nivel 2: 4 × 2
+
+prueba('Trabajadores por nivel: nivel 1 = 2 puestos, nivel 2 = 4, nivel 3 = 6', base + `
+  const b1={t:'molino',l:1}, b2={t:'molino',l:2}, b3={t:'molino',l:3}; return bldSlots(G,0,b1)===2&&bldSlots(G,0,b2)===4&&bldSlots(G,0,b3)===6;`);
+
+prueba('Un molino de nivel 3 con 6 agricultores usa los 6 puestos', base + `
+  cap.units[0]=[1,2,3,4,5,6].map(()=>civ('agr')); cap.b.push({t:'molino',l:3,s:null,wk:0,cost:60}); paso(); return cap.b[0].wk===6;`);
+
+prueba('Costo de crecer: llegar al tamaño n cuesta n² (3.º = 9, 4.º = 16, 10.º = 100)', base + `
+  G.step=99; const c=n=>{ cap.size=n-1; return growCost(G,0,cap); }; return c(3)===9&&c(4)===16&&c(10)===100;`);
 
 prueba('Prioridad «crecer»: todo el sobrante va al crecimiento', base + `
   cap.units[0]=[civ('agr'),civ('agr'),civ('pob')]; cap.food=10; const p0=cap.prog; paso(); return cap.food===10&&cap.prog>p0;`);
@@ -115,8 +124,36 @@ prueba('No hay encuentros de amenaza: todos son ofertas o apuestas', base + `ret
 prueba('Los encuentros llegan solos cada pocos pasos', base + `
   for(let s=0;s<12;s++) paso(); return G.hist.some(h=>h.lines.some(l=>l.includes('trato con')||l.includes('se rechaza')||l.includes('se pierden')||l.includes('ataque de')||l.includes('evita')||l.includes('muere una')||l.includes('el encuentro con')||l.includes('salió')));`);
 
-prueba('Un recurso estratégico rinde más mientras más tiempo se controla', base + `
-  const z=G.zones.find(z=>z.res&&z.owner===null); z.owner=0; z.units[0]=[civ('pob')]; z.resHeld=0; const r=[]; for(let s=0;s<12;s++){ paso(); r.push(z.resGain.n); } return r[0]===1&&r[11]>r[0];`);
+prueba('Un depósito de plata rinde 1 y sube a 2 con el tiempo; uno de oro rinde 2 y sube hasta 5', base + `
+  const z=G.zones.find(z=>z.role==='vacia'&&z.owner===null); z.owner=0; z.units[0]=[civ('pob')]; z.res='piedra'; z.resO='gemas'; z.resHeld=0; const r=[]; for(let s=0;s<22;s++){ paso(); r.push(z.resGains.map(x=>x.n)); }
+  return r[0][0]===1&&r[0][1]===2&&r[21][0]===2&&r[21][1]===5;`);
+
+prueba('Reparto de depósitos: casi todas las zonas tienen plata, 1 de cada 3 oro, las capitales solo plata y las fronteras nada', `
+  let zs=0,pl=0,or=0,capOr=0,capNo=0,frRes=0; for(let sd=1;sd<=30;sd++){ const H=newGame(sd%12,sd%3+2,sd,'normal'); H.zones.forEach(z=>{ if(z.role==='frontera'){ if(z.res||z.resO) frRes++; return; } zs++; if(z.res) pl++; if(z.resO) or++; if(z.capital){ if(z.resO) capOr++; if(!z.res) capNo++; } }); }
+  return frRes===0&&capOr===0&&capNo===0&&pl/zs>0.85&&pl/zs<0.99&&or/zs>0.25&&or/zs<0.42;`);
+
+prueba('Un recurso en oro vale el doble que en plata (piedra: -25 % o -50 % al construir una fortificación)', base + `
+  const z=cap; const c0=stepCost(G,0,z,'fort',false); z.res='piedra'; const c1=stepCost(G,0,z,'fort',false); z.res=null; z.resO='piedra'; const c2=stepCost(G,0,z,'fort',false);
+  return c1<c0&&c2<c1&&c2===Math.ceil(c0*0.5)&&hasRes(G,0,'piedra')===2;`);
+
+prueba('Oferta entre jugadores: lo ofrecido queda en reserva y al otro le llega como encuentro', base + `
+  G.F[0].gold=30; G.F[1].gold=0; const c1=G.zones.find(z=>z.capital&&z.owner===1); c1.prod=10; G.F[1].encNext=999; G.F[0].encNext=999;
+  paso([{t:'offer',to:1,give:{res:'gold',n:10},ask:{res:'prod',n:6}}]);
+  const e=G.F[1].enc; return G.F[0].gold>=20&&G.F[0].gold<=26&&!!e&&e.k==='trato'&&e.cost.res==='prod'&&e.cost.n===6&&e.gain.res==='gold'&&e.gain.n===10;`);
+
+prueba('Oferta aceptada: se hace el intercambio entre los dos', base + `
+  G.F[0].gold=30; const c1=G.zones.find(z=>z.capital&&z.owner===1); c1.prod=10; G.F[1].gold=0; G.F[1].encNext=999; G.F[0].encNext=999;
+  paso([{t:'offer',to:1,give:{res:'gold',n:10},ask:{res:'prod',n:6}}]); const cp=cap.prod, p1=c1.prod; paso([{t:'encounter',f:1,choice:'si'}]);
+  return G.F[1].gold>=10&&cap.prod>=cp+6&&c1.prod<p1+8&&!G.F[1].enc&&G.F[1].gold<22;`);
+
+prueba('Oferta rechazada o ignorada: se devuelve lo reservado, sin consecuencias', base + `
+  G.F[0].gold=30; G.F[0].encNext=999; G.F[1].encNext=999; paso([{t:'offer',to:1,give:{res:'gold',n:10},ask:{res:'tech',n:5}}]); const reservado=G.F[0].gold<=26;
+  paso([{t:'encounter',f:1,choice:'no'}]); return reservado&&G.F[0].gold>=30&&!G.F[1].enc&&G.offers.length===0;`);
+
+prueba('Oferta que caduca: se devuelve; y no se puede ofrecer lo que no se tiene', base + `
+  G.F[0].gold=5; G.F[0].encNext=999; G.F[1].encNext=999; paso([{t:'offer',to:1,give:{res:'gold',n:50},ask:{res:'tech',n:5}}]); const sin=G.offers.length===0&&!G.F[1].enc;
+  G.F[0].gold=0; G.offers.push({id:99,from:0,to:1,give:{res:'gold',n:10},ask:{res:'tech',n:5},step:G.step-OFFER_TTL-2}); paso();
+  return sin&&G.offers.length===0&&!G.F[1].enc&&G.F[0].gold>=10;`);
 
 prueba('Cada mapa tiene zonas de frontera entre imperios vecinos', base + `
   const fr=G.zones.filter(z=>z.role==='frontera'); return fr.length>=1&&fr.every(z=>z.adj.length>=2&&z.owner===null);`);
@@ -485,7 +522,7 @@ prueba('Historia: ganancias nuevas (relación, poblador extraordinario, saber, e
   cap.size=9; const t0=Object.keys(G.F[0].techs).length; F.story={id:'caravana',ch:1,next:99,tags:[]};
   const gana=g=>{ F.enc={id:'x',k:'historia',who:'t',txt:'t',zone:cap.id,cost:null,gain:null,refuse:null,step:G.step,str:0,story:{id:'caravana',ch:1},opts:[{lbl:'a',t:'C',cost:null,gain:g}]}; F.story.ch=1; paso([{t:'encounter',choice:'a'}]); };
   gana({rel:1}); const r=(tz.rel||{})[0]===1; const n0=cap.units[0].length; gana({tpob:[{k:'com',l:2},{k:'agr',l:1}]}); const pob=cap.units[0].length===n0+1&&cap.units[0][cap.units[0].length-1].tr[0].k==='com';
-  gana({saber:3}); const sab=Object.keys(G.F[0].techs).length===t0+1; gana({bld:'taller'}); const bld=cap.b.some(b=>b.t==='taller'); gana({tres:{key:'sal'}}); return r&&pob&&sab&&bld&&hasRes(G,0,'sal');`);
+  gana({saber:3}); const sab=Object.keys(G.F[0].techs).length===t0+1; gana({bld:'taller'}); const bld=cap.b.some(b=>b.t==='taller'); gana({tres:{key:'sal'}}); return r&&pob&&sab&&bld&&hasRes(G,0,'sal')>0;`);
 
 prueba('Durante el comienzo guiado no llegan historias', base + `
   G.F[0].encNext=999; let hay=false; for(let i=0;i<20;i++){ paso(); if(G.F[0].enc) hay=true; } return !hay&&!G.F[0].story;`);

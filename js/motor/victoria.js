@@ -7,6 +7,7 @@ function checkOut(g,L){
   for(let f=0;f<g.N;f++){
     const F=g.F[f]; if(F.out) continue;
     if(totalPop(g,f)===0){
+      if(F.enc&&F.enc.offer) giveOwned(g,F.enc.offer.from,F.enc.offer.give.res,F.enc.offer.give.n);
       F.out=true; F.enc=null; L(PLN[f].name+' queda eliminado y pasa a ser fantasma.'); g.fx.push({k:'out',f});
       g.zones.forEach(z=>{ if(z.owner===f){ z.owner=null; z.proj=[]; } });
       const tz=g.zones.filter(z=>z.owner===TRIBE&&(z.units[TRIBE]||[]).length);

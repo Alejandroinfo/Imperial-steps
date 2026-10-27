@@ -49,6 +49,13 @@ function act(a,d){
     case 'research': addOrder({t:'research',name:d.name}); break;
     case 'cancelres': addOrder({t:'cancelres',name:d.name}); break;
     case 'del': ui.orders.splice(Number(d.i),1); break;
+    case 'ofopen': ui.offerTo=(ui.offerTo===Number(d.t))?null:Number(d.t); break;
+    case 'ofset': ui.form[d.k]=d.v; break;
+    case 'ofstep': { const cur=Number(fv(d.k,5))||0; const mx=d.k==='of_gn'?Math.floor(ownedTotal(G,ME,fv('of_give','gold'))):999; ui.form[d.k]=Math.max(0,Math.min(mx,cur+Number(d.d))); break; }
+    case 'ofgo': { const to=Number(d.t); const give=fv('of_give','gold'); let ask=fv('of_ask','food'); if(ask===give) ask=['gold','food','prod','tech'].find(r=>r!==give);
+      const gn=Math.min(Math.floor(ownedTotal(G,ME,give)),Number(fv('of_gn',5))||0), an=Number(fv('of_an',5))||0; if(gn>0&&an>0){ addOrder({t:'offer',to,give:{res:give,n:gn},ask:{res:ask,n:an}}); ui.offerTo=null; toast('Oferta lista','Se envía a '+PLN[to].name+' al presionar ¡Listo!','pos','🤝'); } break; }
+    case 'enclater': { const e=G.F[ME].enc; if(e) ui.encHide=e.step; break; }
+    case 'encopen': ui.encHide=null; break;
     case 'mvst': ui.mv.st=d.v; break;
     case 'mvstep': { const t=d.k.slice(3); const mx=availQ(ui.mv.from,t); ui.form[d.k]=Math.max(0,Math.min(mx,(Number(fv(d.k,0))||0)+Number(d.d))); break; }
     case 'mvquick': { CIV.concat(MIL).forEach(t=>{ const mx=availQ(ui.mv.from,t); const hostile=G.zones[ui.mv.to].owner!==null&&G.zones[ui.mv.to].owner!==ME&&!allied(G,ME,G.zones[ui.mv.to].owner);

@@ -4,7 +4,8 @@
 
 /** @param {Partida} g */
 function growCost(g,f,z){
-  const M=g.M[f]; let c=(z.size+1)*(z.size+2)/2-M.growSub; if(M.growHalf) c=Math.ceil(c/2); if(g.growHalfEv) c=Math.ceil(c/2);
+  const M=g.M[f]; let c=(z.size+1)*(z.size+1)-M.growSub;   // crecer a tamaño n cuesta n² (3.º = 9, 4.º = 16, 10.º = 100)
+  if(M.growHalf) c=Math.ceil(c/2); if(g.growHalfEv) c=Math.ceil(c/2);
   if(g.step<=FOUNDING_STEPS) c=Math.ceil(c/2);   // etapa de fundación: los primeros pasos son más rápidos
   return Math.max(1,c);
 }
@@ -89,20 +90,20 @@ function produceZone(g,z){
   let pool=act.slice();
   z.b.forEach(b=>{
     b.wk=0; if(b.t==='mar') return; const def=BT[b.t];
-    if(def.mil){ const mil=us.filter(u=>!UT[u.t].civ&&!UT[u.t].siege&&u.w===0); b.wk=Math.min(M.wk,mil.length); return; }
-    const elig=b.t==='biblio'?pool.filter(u=>u.t==='cie'):pool.slice(); const w=Math.min(M.wk,elig.length); b.wk=w;   // copia: pool se achica al asignar
+    if(def.mil){ const mil=us.filter(u=>!UT[u.t].civ&&!UT[u.t].siege&&u.w===0); b.wk=Math.min(bldSlots(g,f,b),mil.length); return; }
+    const elig=b.t==='biblio'?pool.filter(u=>u.t==='cie'):pool.slice(); const w=Math.min(bldSlots(g,f,b),elig.length); b.wk=w;   // copia: pool se achica al asignar
     const wtypes={}; for(let i=0;i<w;i++){ const u=elig[i]; pool.splice(pool.indexOf(u),1); wtypes[u.t]=(wtypes[u.t]||0)+1; }
     const pw=PERW[Math.min(5,b.l)]; const B0=[food,prod,gold,tech];
     if(b.t==='molino') food+=w*pw+(b.s==='granero'?Math.min(3,Math.floor(z.food/10)):0);
     else if(b.t==='taller') prod+=w*pw;
-    else if(b.t==='mercado') gold+=w*(pw+(z.res==='gemas'?1:0));
+    else if(b.t==='mercado') gold+=w*(pw+resMul(z,'gemas'));
     else if(b.t==='biblio') tech+=w*pw;
     else if(b.t==='almacen'&&b.s==='intereses'){ const per=specVal(g,f,'almacen','intereses')||10; gold+=Math.floor((z.food+z.prod)/per); }
     else if(b.t==='hospital'&&b.s==='civil'&&specVal(g,f,'hospital','civil')>=3){ act.forEach(u=>{ if(u.t==='pob'||u.t==='agr') food+=1; else if(u.t==='ing') prod+=1; else if(u.t==='cie') tech+=1; else if(u.t==='com') gold+=1; }); }
-    by.blds.push({t:b.t,l:b.l,s:b.s,dup:b.dup,wk:w,max:M.wk,who:wtypes,food:food-B0[0],prod:prod-B0[1],gold:gold-B0[2],tech:tech-B0[3]});
+    by.blds.push({t:b.t,l:b.l,s:b.s,dup:b.dup,wk:w,max:bldSlots(g,f,b),who:wtypes,food:food-B0[0],prod:prod-B0[1],gold:gold-B0[2],tech:tech-B0[3]});
   });
   // edificios militares: quiénes trabajan en ellos
-  z.b.forEach(b=>{ if(BT[b.t].mil) by.blds.push({t:b.t,l:b.l,s:b.s,dup:b.dup,wk:b.wk,max:M.wk,mil:1}); });
+  z.b.forEach(b=>{ if(BT[b.t].mil) by.blds.push({t:b.t,l:b.l,s:b.s,dup:b.dup,wk:b.wk,max:bldSlots(g,f,b),mil:1}); });
   z.lastBy=by;
   z.food+=Math.round(food); z.prod+=Math.round(prod); F.gold+=Math.round(gold); F.tech+=Math.round(tech);
   z.last={food:Math.round(food),prod:Math.round(prod),gold:Math.round(gold),tech:Math.round(tech)};
@@ -110,10 +111,10 @@ function produceZone(g,z){
 /** @param {Partida} g */
 function globalProduce(g,f){
   const M=g.M[f], F=g.F[f]; const zs=zonesOf(g,f); let gold=0,tech=0;
-  if(hasRes(g,f,'ruinas')) tech+=3;
-  if(hasRes(g,f,'sal')){ zs.forEach(z=>{ if(z.sp&&z.sp.spec==='com') gold+=2; }); }
+  tech+=3*hasRes(g,f,'ruinas');
+  if(hasRes(g,f,'sal')){ const sm=hasRes(g,f,'sal'); zs.forEach(z=>{ if(z.sp&&z.sp.spec==='com') gold+=2*sm; }); }
   if(M.imp) gold+=Math.floor(zs.length/2);
-  if(M.monop) gold+=M.monop*zs.filter(z=>z.res).length;
+  if(M.monop) gold+=M.monop*zs.reduce((a,z)=>a+zoneDeps(z).length,0);
   if(M.corte){ const k=Math.floor(zs.length/5); if(k>0){ const cap=zs.find(z=>z.capital)||zs[0]; if(cap){ cap.food+=k; cap.prod+=k; gold+=k; tech+=k; } } }
   F.gold+=gold; F.tech+=tech;
 }
@@ -121,7 +122,7 @@ function globalProduce(g,f){
 function healUnits(g,z){
   for(const fs in z.units){ const f=Number(fs); const M=g.M[f]||newMods(); const hosps=z.b.filter(b=>b.t==='hospital');
     z.units[f].forEach(u=>{
-      if(u.w<=0) return; const civ=UT[u.t].civ; const key=civ?'civil':'militar'; let rate=1+(civ?M.civHeal:M.milHeal)+(hosps.length?1:0)+(isPl(f)&&hasRes(g,f,'hierbas')?1:0);
+      if(u.w<=0) return; const civ=UT[u.t].civ; const key=civ?'civil':'militar'; let rate=1+(civ?M.civHeal:M.milHeal)+(hosps.length?1:0)+(isPl(f)?hasRes(g,f,'hierbas'):0);
       if(hosps.some(h=>h.s===key)&&specVal(g,f,'hospital',key)>=2) rate=99;
       if(g.fever) rate=Math.max(1,rate-1);
       u.w=Math.max(0,u.w-rate);

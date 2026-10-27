@@ -30,7 +30,7 @@ function pullRes(g,f,z,res,need,maxDist){
 // y nadie la atiende, `npm run check` falla. Así se encontró que la Maravilla no se podía construir.
 /** @type {Record<TipoOrden, number>} */
 const ORDER_PHASE = {research:1,cancelres:1,stance:2,encounter:2,spec:3,demob:3,train:3,build:4,wonder:4,upgrade:4,bspec:4,demolish:4,
-  send:5,route:5,bid:5,growmode:5,pausebuild:5,autospec:5,tribute:6,ally:6,annex:7,move:8};
+  send:5,route:5,bid:5,growmode:5,pausebuild:5,autospec:5,tribute:6,ally:6,offer:6,annex:7,move:8};
 /**
  * Aplica un paso completo: nacimientos, evento, órdenes, movimientos, combates, control y economía.
  * @param {Partida} g estado de la partida (se modifica)
@@ -77,6 +77,7 @@ function resolveStep(g,orders){
   by('autospec').forEach(o=>{ const z=Z[o.zone]; if(z&&z.owner===o.f) z.autoSpec=CIV.includes(o.to)&&o.to!=='pob'?o.to:null; });
   by('tribute').forEach(o=>{ doTribute(g,o,L); });
   by('ally').forEach(o=>{ doAlly(g,o,L); });
+  by('offer').forEach(o=>{ doOffer(g,o,L); });
   // encuentros: lo que no se responde cuenta como rechazo
   for(let f=0;f<g.N;f++){ if(!g.F[f].enc) continue; const o=by('encounter').filter(x=>x.f===f).pop(); resolveEncounter(g,f,o?o.choice:'no',L); }
   by('annex').forEach(o=>{ /* se resuelven juntas más abajo */ });
@@ -136,7 +137,7 @@ function soldierCost(g,f,z){ let c=SOLDIER_COST; if(z.b.some(b=>b.t==='cuartel'&
 /** @param {Partida} g */
 function equipCost(g,f,z,u){
   const M=g.M[f]; let c=EQUIP_COST[u]||0; if(!c) return 0;
-  if(M.weaponHalf) c=Math.ceil(c/2); if(hasRes(g,f,'hierro')) c-=1; if(z.b.some(b=>b.t==='taller'&&b.s==='armeria')) c-=1;
+  if(M.weaponHalf) c=Math.ceil(c/2); c-=hasRes(g,f,'hierro'); if(z.b.some(b=>b.t==='taller'&&b.s==='armeria')) c-=1;
   return Math.max(1,c);
 }
 // Costo de entrenar una unidad. from='sol' equipa a un soldado existente; useStock usa un arma guardada en la zona.
@@ -188,7 +189,7 @@ function doTrain(g,o,L){
     if(!u) break;
     z.prod-=cost; if(stock){ z.eq[o.u]--; reused++; }
     u.t=o.u; u.hp=mhp(g,f,o.u,z); u.str=(isWeapon&&from)?u.str:2; u.busy=1; u.hg=0;
-    u.mit=(o.u==='esc'&&z.res==='mitril')?1:0; u.cabhp=(o.u==='cab'&&z.res==='caballos')?1:0; u.brea=(UT[o.u].siege&&z.res==='brea')?1:0; made++;
+    u.mit=(o.u==='esc')?resMul(z,'mitril'):0; u.cabhp=(o.u==='cab')?resMul(z,'caballos'):0; u.brea=(UT[o.u].siege)?resMul(z,'brea'):0; made++;
   }
   if(made) g.fx.push({k:'train',zone:z.id,f,u:o.u,n:made});
   if(made) L(zname(z)+': '+PLN[f].name+' entrena '+made+' '+(made>1?UNP[o.u].toLowerCase():UN[o.u].toLowerCase())+(reused?' ('+reused+' con equipo recuperado)':'')+'.');

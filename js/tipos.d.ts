@@ -54,12 +54,13 @@ interface Zona {
   lastBy?: any; sp?: { spec: string; lvl: number; n: number };
   // equipo militar guardado y recursos estratégicos
   eq?: { [t: string]: number }; eqPend?: { [t: string]: number };
-  resHeld?: number; resOwner?: Jugador | null; resGain?: { res: Recurso; n: number };
+  resHeld?: number; resOwner?: Jugador | null; resGain?: { res: Recurso; n: number }; resO?: string | null; resGains?: { key: string; tier: string; res: Recurso; n: number }[];
   frontGain?: { [f: number]: number };
 }
 
+interface Oferta { id: number; from: Jugador; to: Jugador; give: { res: Recurso; n: number }; ask: { res: Recurso; n: number }; step: number }
 interface Encuentro {
-  id: string; k: 'oferta' | 'apuesta' | 'eleccion' | 'historia'; story?: { id: string; ch: number }; opts?: { lbl: string; t?: string; cost: { res: Recurso; n: number } | null; gain: any }[]; who: string; txt: string; zone: ZonaId; step: number; str: number;
+  id: string; k: 'oferta' | 'apuesta' | 'eleccion' | 'historia' | 'trato'; offer?: Oferta; offerOk?: number; story?: { id: string; ch: number }; opts?: { lbl: string; t?: string; cost: { res: Recurso; n: number } | null; gain: any }[]; who: string; txt: string; zone: ZonaId; step: number; str: number;
   cost: { res: Recurso; n: number } | null;
   gain: { units?: { [t: string]: number }; res?: Recurso; n?: number; eq?: { [t: string]: number }; prog?: number; gamble?: { p: number; res: Recurso; n: number }; rel?: number; tpob?: { k: string; l: number }[]; saber?: number; bld?: TipoEdificio; tres?: { key: string } } | null;
   refuse: any;
@@ -83,6 +84,7 @@ interface Partida {
   hist: { step: number; ev: string | null; lines: string[] }[];
   log: string[]; logNow?: string[]; fx?: any[];
   evq: { step: number; id: string }[]; evNow?: { step: number; id: string } | null;
+  offers: Oferta[]; offerSeq?: number;
   tributes: { zone: ZonaId; amount: number; due: number; paid: { [f: number]: number }; targets: Jugador[]; res: Recurso }[];
   battles?: any[]; logiMult: number; fever?: number; growHalfEv?: number;
   wars: { tribe: ZonaId; f: Jugador; left: number }[];
@@ -110,6 +112,7 @@ type Orden = { f?: Jugador } & (
   | { t: 'autospec'; zone: ZonaId; to: Civil | null }
   | { t: 'tribute'; tribe: ZonaId; from: ZonaId }
   | { t: 'ally'; target?: Jugador; off?: number }
+  | { t: 'offer'; to: Jugador; give: { res: Recurso; n: number }; ask: { res: Recurso; n: number } }
   | { t: 'annex'; zone: ZonaId; from: ZonaId }
   | { t: 'move'; from: ZonaId; to: ZonaId; u: { [t: string]: number }; stance: 'paz' | 'ataque'; via?: ZonaId[] }
   | { t: 'encounter'; choice: 'si' | 'no' | 'a' | 'b' | 'c' }

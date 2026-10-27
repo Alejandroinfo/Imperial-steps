@@ -107,7 +107,7 @@ function buildCardsHTML(z){
 function stepperHTML(act,key,t,n,mx,dis){
   return `<div class="stp ${n>0?'on':''} ${dis?'dis':''}">${uIcon(t,34)}<span class="sn"><b>${n}</b><small>de ${mx}</small></span><span class="sb"><button data-act="${act}" data-k="${key}" data-d="1" ${dis||n>=mx?'disabled':''} aria-label="Uno más">＋</button><button data-act="${act}" data-k="${key}" data-d="-1" ${n<=0?'disabled':''} aria-label="Uno menos">－</button></span></div>`;
 }
-function zoneMini(a){ const col=a.owner===null?'#B8A58C':PLN[a.owner].col; return `<div class="zmini"><span class="nband" style="background:${TCOL[a.terrain]}"><span class="nown" style="background:${col}"></span></span><b>${esc(zname(a))}</b><small>${TERRN[a.terrain]}</small></div>`; }
+function zoneMini(a){ const col=a.owner===null?'#B8A58C':PLN[a.owner].col; return `<div class="zmini"><span class="nband" style="background:${TCOL[a.terrain]}"><span class="nown" style="background:${col}"></span></span><b>${esc(zname(a))}</b><small>${TERRN[a.terrain]}</small>${zoneDeps(a).length?`<span class="nrow" style="padding:0 8px 4px">${depBadges(a)}</span>`:''}</div>`; }
 function moveFormHTML(){
   const mv=ui.mv; const from=G.zones[mv.from], to=G.zones[mv.to]; const M=G.M[ME];
   const hostile=(to.owner!==null&&to.owner!==ME&&!allied(G,ME,to.owner));
@@ -164,7 +164,7 @@ function neighborsHTML(z){
   z.adj.forEach(id=>{ const a=G.zones[id]; const pres=presentF(a).filter(f=>f!==TRIBE||tribeVisibleFor(a));
     const col=a.owner===null?'#B8A58C':PLN[a.owner].col;
     const chips=pres.map(f=>`<span class="npr" style="--c:${PLN[f].col}" title="${esc(PLN[f].name)}"><i></i>${a.units[f].length}</span>`).join('');
-    const inner=`<span class="nband" style="background:${TCOL[a.terrain]}"><span class="nown" style="background:${col}"></span></span><b>${esc(zname(a))}</b><small>${TERRN[a.terrain]} · ${zoneStatus(a)}</small><span class="nrow">${chips||'<em>vacía</em>'}</span>${can?'<span class="ngo">➜</span>':''}`;
+    const inner=`<span class="nband" style="background:${TCOL[a.terrain]}"><span class="nown" style="background:${col}"></span></span><b>${esc(zname(a))}</b><small>${TERRN[a.terrain]} · ${zoneStatus(a)}</small><span class="nrow">${depBadges(a)}${chips||(zoneDeps(a).length?'':'<em>vacía</em>')}</span>${can?'<span class="ngo">➜</span>':''}`;
     h+=can?`<button class="ntile" data-act="openmv" data-from="${z.id}" data-to="${a.id}" aria-label="Ir a ${esc(zname(a))}">${inner}</button>`:`<div class="ntile off">${inner}</div>`; });
   return h+'</div>';
 }
@@ -202,7 +202,7 @@ function zoneOverview(z){
   });
   if(L&&L.idle&&(L.idle.busy||L.idle.moving)) rows+=`<div class="hint">${L.idle.busy?L.idle.busy+' cambiando de oficio (no producen este paso)':''}${L.idle.busy&&L.idle.moving?' · ':''}${L.idle.moving?L.idle.moving+' recién llegados':''}</div>`;
   const extra=[]; if(L&&L.cap) extra.push(`<div class="wrow"><span class="wico">★</span><div class="wtx"><b>Capital</b><small>bono fijo de la capital</small></div><div class="wout">${outChips({food:L.cap,prod:L.cap,gold:L.cap,tech:L.cap})}</div></div>`);
-  if(z.res&&z.resGain) extra.push(`<div class="wrow"><span class="wico"><span class="dot" style="background:${RES[z.res].col};width:18px;height:18px"></span></span><div class="wtx"><b>${esc(RES[z.res].n)}</b><small>recurso estratégico · ${z.resHeld||0} pasos en tu poder (rinde más con el tiempo)</small></div><div class="wout">${outChips({[z.resGain.res]:z.resGain.n})}</div></div>`);
+  (z.resGains||[]).forEach(g2=>{ const R=RES[g2.key]; extra.push(`<div class="wrow"><span class="wico">${depBadge({k:g2.key,tier:g2.tier})}</span><div class="wtx"><b>${esc(R.n)} · ${RES_TIER[g2.tier].n.toLowerCase()}</b><small>${z.resHeld||0} pasos en tu poder: rinde más con el tiempo</small></div><div class="wout">${outChips({[g2.res]:g2.n})}</div></div>`); });
   if(L&&L.zone) extra.push(`<div class="wrow"><span class="wico">${emblemSVG(L.zone.spec,12,26)}</span><div class="wtx"><b>Zona ${SPECN[L.zone.spec].toLowerCase()} nivel ${L.zone.lvl}</b><small>bono por tener mayoría de un oficio</small></div><div class="wout">${outChips(L.zone)}</div></div>`);
   h+=`<h4>Quién trabaja y dónde</h4>${rows||'<div class="hint">No hay civiles en esta zona.</div>'}${extra.join('')}`;
   const idleB=blds.filter(b=>!b.mil&&b.wk<b.max); if(idleB.length) h+=`<div class="warn">Faltan trabajadores en: ${idleB.map(b=>`${BT[b.t].n} (${b.wk}/${b.max})`).join(', ')}.</div>`;
@@ -223,6 +223,7 @@ function subResumen(z){
   const bt=battlesAt(z.id,G.step-1); if(bt.length) h+=`<div class="tribute">⚔ <b>Hubo combate aquí en el paso anterior.</b><div class="row">${battleButtons(bt)}</div></div>`;
   if(mine(z)) h+=zoneOverview(z);
   else h+=`<div class="kv"><span>Tamaño</span><span>${z.size}</span><span>Control</span><span>${z.owner===null?'sin dueño':z.owner===TRIBE?'tribu':esc(PLN[z.owner].name)}</span></div>`;
+  h+=depCardsHTML(z);
   if(z.role==='frontera') h+=frontierHTML(z);
   if(z.owner===TRIBE) h+=tributeHTML(z)+annexHTML(z);
   if(hasUnitsHere(z)){ h+='<h4>Ir a una zona vecina</h4>'+neighborsHTML(z); }
@@ -289,10 +290,22 @@ function relationsHTML(compact){
   const others=[...Array(G.N).keys()].filter(f=>f!==ME&&!G.F[f].out);
   if(!others.length) return '';
   const PT='En <b>Alerta</b>, tus tropas atacan a las de ese jugador en cualquier zona donde coincidan, y tienes sorpresa si él está en Paz. En <b>Paz</b> conviven, salvo que alguien entre atacando.';
-  let h=`<h4>Postura con cada jugador${infoBtn('postura',PT)}</h4>`+infoBody('postura',PT);
+  let h=`<h4>${compact?'Postura con cada jugador':'Rivales'}${infoBtn('postura',PT)}</h4>`+infoBody('postura',PT);
   h+=others.map(f=>{ const pend=ui.orders.filter(o=>o.t==='stance'&&o.target===f).pop(); const cur=pend?pend.stance:stanceOf(G,ME,f); const al=allied(G,ME,f);
-    return `<div class="rel"><span class="dot" style="background:${PLN[f].col}"></span><b>${esc(PLN[f].name)}</b>${al?'<span class="hint">aliado</span>':`<span class="seg"><button data-act="stance" data-t="${f}" data-v="paz" aria-pressed="${cur==='paz'}">Paz</button><button data-act="stance" data-t="${f}" data-v="alerta" aria-pressed="${cur==='alerta'}">Alerta</button></span>`}</div>`; }).join('');
+    const open=!compact&&ui.offerTo===f;
+    return `<div class="rel"><span class="dot" style="background:${PLN[f].col}"></span><b>${esc(PLN[f].name)}</b>${al?'<span class="hint">aliado</span>':`<span class="seg"><button data-act="stance" data-t="${f}" data-v="paz" aria-pressed="${cur==='paz'}">Paz</button><button data-act="stance" data-t="${f}" data-v="alerta" aria-pressed="${cur==='alerta'}">Alerta</button></span>`}${compact?'':`<button class="btn ${open?'primary':''}" data-act="ofopen" data-t="${f}" aria-expanded="${open}">🤝 Ofrecer</button>`}</div>${open?offerBuilderHTML(f):''}`; }).join('');
   return h;
+}
+// Constructor visual de una oferta: lo que das, lo que pides y un solo botón. Al otro le llega como un encuentro.
+function offerBuilderHTML(f){
+  const give=fv('of_give','gold'), ask=fv('of_ask','food')===give?['gold','food','prod','tech'].find(r=>r!==give):fv('of_ask','food');
+  const have=ownedTotal(G,ME,give); const gn=Math.max(0,Math.min(Number(fv('of_gn',5))||0,have)); const an=Math.max(0,Number(fv('of_an',5))||0);
+  const pick=(key,cur,skip)=>`<div class="ofres">${OFFER_RES.map(r=>`<button data-act="ofset" data-k="${key}" data-v="${r}" aria-pressed="${cur===r}" ${r===skip?'disabled':''}><span>${RI[r]}</span><small>${key==='of_give'?Math.floor(ownedTotal(G,ME,r)):RN[r]}</small></button>`).join('')}</div>`;
+  const q=(key,n,max)=>`<div class="sdq"><button class="qs" data-act="ofstep" data-k="${key}" data-d="-5" aria-label="Menos">－</button><span class="qn"><b>${n}</b></span><button class="qs" data-act="ofstep" data-k="${key}" data-d="5" aria-label="Más" ${max!==undefined&&n>=max?'disabled':''}>＋</button></div>`;
+  const pending=ui.orders.filter(o=>o.t==='offer'&&o.to===f).length;
+  return `<div class="offer"><div class="ofcol"><b>Das</b>${pick('of_give',give,ask)}${q('of_gn',gn,have)}</div><div class="ofarr">⇄</div><div class="ofcol"><b>Pides</b>${pick('of_ask',ask,give)}${q('of_an',an)}</div></div>
+    <div class="cost ${gn<=0||an<=0?'bad':''}"><b>${rq(give,gn)} ⇄ ${rq(ask,an)}</b><small>Lo que das queda en reserva hasta que ${esc(PLN[f].name)} responda; si no acepta, lo recuperas.${pending?` · ya tienes ${pending} oferta${pending>1?'s':''} para él en cola`:''}</small></div>
+    <div class="row">${btnHTML('ofgo','Enviar oferta',gn>0&&an>0?`data-t="${f}"`:'disabled','primary')}${btnHTML('ofopen','Cerrar',`data-t="${f}"`)}</div>`;
 }
 function demobHTML(z){
   const can=DEMOB_FROM.filter(t=>availQ(z.id,t)>0);
@@ -373,7 +386,7 @@ function zoneHead(z){
   const mineHere=(z.units[ME]||[]).length?`<span class="zpres">${presenceChips(z,ME)}</span>`:'';
   let h=`<div class="zhead"><div class="ztitle"><h3><span class="dot" style="background:${z.owner===null?'#B8A58C':PLN[z.owner].col}"></span>${esc(zname(z))}</h3>${mineHere}</div><span class="zbtns">${G.zones.filter(a=>a.owner===ME).length>1?'<button class="xbtn" data-act="zprev" title="Zona tuya anterior" aria-label="Zona tuya anterior">◀</button><button class="xbtn" data-act="znext" title="Zona tuya siguiente" aria-label="Zona tuya siguiente">▶</button>':''}<button class="xbtn" data-act="desel" title="Cerrar la zona (Esc)" aria-label="Cerrar la zona">✕</button></span></div>`;
   h+=`<div class="zsub2"><span title="${esc(TERRFX[z.terrain])}">${rn} · ${TERRN[z.terrain]}</span> ${own}`;
-  if(z.res){ const r=RES[z.res]; h+=` <span class="zres" title="${esc(r.d)}"><span class="dot" style="background:${r.col}"></span>${r.n}</span>`; }
+  if(zoneDeps(z).length) h+=` <span class="zres">${depBadges(z)}</span>`;
   h+='</div>';
   // los demás presentes (rivales, tribu) en una línea aparte
   Object.keys(z.units).map(Number).filter(f=>f!==ME&&z.units[f].length>0).forEach(f=>{

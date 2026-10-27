@@ -79,13 +79,25 @@ function encRefuseText(r){
 function encBarHTML(){
   if(!G||G.over) return ''; const enc=G.F[ME].enc; if(!enc) return '';
   const z=G.zones[enc.zone]; const can=encHave(G,ME,enc); const ch=(ui.orders.find(o=>o.t==='encounter')||{}).choice;
-  const icon=enc.k==='amenaza'?'⚠':enc.k==='apuesta'?'🎲':enc.k==='eleccion'?'⚖':enc.k==='historia'?'📖':'📜';
+  const icon=enc.k==='trato'?'🤝':enc.k==='amenaza'?'⚠':enc.k==='apuesta'?'🎲':enc.k==='eleccion'?'⚖':enc.k==='historia'?'📖':'📜';
   if(enc.opts){ const btns=enc.opts.map((o,i)=>{ const v=['a','b','c'][i], can=encHave(G,ME,{cost:o.cost,zone:enc.zone}); return `<button class="btn ${ch===v?'primary':''}" data-act="encounter" data-v="${v}" ${can?'':'disabled'}>${esc(o.lbl)} · ${o.cost?rq(o.cost.res,o.cost.n):'sin costo'} → ${encGainIcons(o.gain)}${can?'':' (no te alcanza)'}</button>`; }).join('');
     const hist=enc.k==='historia'; return `<div class="enc ${enc.k}"><div class="ench">${icon} <b>${hist?'Historia':'Encuentro'} en ${esc(zname(z))}</b> <a href="#" data-act="gozone" data-id="${z.id}" class="wlink">ver</a></div><div class="enct">${hist?`<b>${esc(enc.who)}</b><br>${esc(enc.txt)}.`:`${esc(enc.who)} ${esc(enc.txt)}.`}</div><div class="row">${btns}<button class="btn ${ch==='no'?'primary':''}" data-act="encounter" data-v="no">${hist?'Dejarlo pasar':'Ninguno'}</button></div><div class="hint">${ch?'Se resuelve al presionar ¡Listo!':(hist?'La historia sigue aunque la dejes pasar; sin consecuencias.':'Eliges uno o ninguno; sin consecuencias.')}</div></div>`; }
-  return `<div class="enc ${enc.k}"><div class="ench">${icon} <b>Encuentro en ${esc(zname(z))}</b> <a href="#" data-act="gozone" data-id="${z.id}" class="wlink">ver</a></div>
-    <div class="enct">${esc(enc.who)} ${esc(enc.txt)}.</div>
-    <div class="encd">${enc.cost?`<span>Piden ${rq(enc.cost.res,enc.cost.n)}</span>`:''}${enc.gain?`<span>→ Dan ${encGainIcons(enc.gain)}</span>`:''}${enc.refuse?`<span class="neg">Si no: <b>${esc(encRefuseText(enc.refuse))}</b></span>`:''}</div>
-    <div class="row"><button class="btn ${ch==='si'?'primary':''}" data-act="encounter" data-v="si" ${can?'':'disabled'}>${enc.k==='amenaza'?'Pagar':'Aceptar'}${can?'':' (no te alcanza)'}</button><button class="btn ${ch==='no'?'primary':''}" data-act="encounter" data-v="no">Rechazar</button><span class="hint">${ch?'Se resuelve al presionar ¡Listo!':'Si no te conviene, no pasa nada.'}</span></div></div>`;
+  return `<div class="enc ${enc.k}"><div class="ench">${icon} <b>${enc.k==='trato'?'Oferta de '+esc(enc.who):'Encuentro en '+esc(zname(z))}</b> <a href="#" data-act="gozone" data-id="${z.id}" class="wlink">ver</a></div>
+    <div class="enct">${enc.k==='trato'?'Te ofrece '+rq(enc.gain.res,enc.gain.n)+' a cambio de '+rq(enc.cost.res,enc.cost.n)+'. Si no te conviene, no pasa nada.':esc(enc.who)+' '+esc(enc.txt)+'.'}</div>
+    <div class="encd">${enc.cost?`${enc.k==='trato'?'':`<span>Piden ${rq(enc.cost.res,enc.cost.n)}</span>`}`:''}${enc.gain&&enc.k!=='trato'?`<span>→ Dan ${encGainIcons(enc.gain)}</span>`:''}${enc.refuse?`<span class="neg">Si no: <b>${esc(encRefuseText(enc.refuse))}</b></span>`:''}</div>
+    <div class="row"><button class="btn ${ch==='si'?'primary':''}" data-act="encounter" data-v="si" ${can?'':'disabled'}>${enc.k==='amenaza'?'Pagar':enc.k==='trato'?'Aceptar el trato':'Aceptar'}${can?'':' (no te alcanza)'}</button><button class="btn ${ch==='no'?'primary':''}" data-act="encounter" data-v="no">Rechazar</button><span class="hint">${ch?'Se resuelve al presionar ¡Listo!':'Si no te conviene, no pasa nada.'}</span></div></div>`;
+}
+// Un encuentro por decidir sale en una ventana emergente (no ocupa el panel). Al decidir, la ventana se cierra y la decisión
+// queda en la pestaña Órdenes. «Decidir después» la esconde y deja una pastilla en el panel para volver a abrirla.
+function encPending(){ if(!G||G.over) return null; const e=G.F[ME].enc; return (e&&!ui.orders.some(o=>o.t==='encounter'))?e:null; }
+function encPillHTML(){ const e=encPending(); if(!e||ui.encHide!==e.step) return ''; const z=G.zones[e.zone];
+  return `<button class="encpill ${e.k}" data-act="encopen">${e.k==='trato'?'🤝 Oferta de '+esc(e.who):(e.k==='amenaza'?'⚠':e.k==='historia'?'📖':'📜')+' Encuentro en '+esc(zname(z))} · decidir</button>`; }
+function encPopup(){
+  const d=$('dlgEnc'); if(!d) return; const e=encPending();
+  if(!e||ui.encHide===e.step){ if(d.open) d.close(); return; }
+  if(document.querySelector('dialog[open]:not(#dlgEnc)')) return;   // otra ventana abierta: esperar
+  $('encBody').innerHTML=encBarHTML()+`<div class="row encx"><button class="btn" data-act="enclater">Decidir después</button></div>`;
+  if(!d.open) d.show();
 }
 function sugBarHTML(){
   const s=suggestions(); if(!s.length) return '';

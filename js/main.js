@@ -37,6 +37,10 @@ document.addEventListener('keydown',e=>{
 document.addEventListener('toggle',e=>{ const d=e.target&&e.target.dataset&&e.target.dataset.d; if(d&&ui){ ui.det=ui.det||{}; ui.det[d.startsWith('op_')?d:d]=e.target.open; } },true);
 document.addEventListener('keyup',e=>keyUp(e.key));
 window.addEventListener('blur',()=>{ KEYS.clear(); });
+$('dlgEnc').addEventListener('close',()=>{ const e=G&&G.F[ME].enc; if(e&&!ui.orders.some(o=>o.t==='encounter')&&ui.encHide!==e.step){ ui.encHide=e.step; renderPanel(); } });
+['startMsg','banner'].forEach(id=>$(id).addEventListener('click',e=>{ e.currentTarget.className=id; }));
+$('vp').addEventListener('pointerdown',()=>{ if(typeof SCENE!=='undefined'&&SCENE.busy) sceneCancel(); });
+$('vp').addEventListener('wheel',()=>{ if(typeof SCENE!=='undefined'&&SCENE.busy) sceneCancel(); },{passive:true});
 $('readyBtn').addEventListener('click',toggleReady);
 document.querySelectorAll('.dpad button[data-dir]').forEach(b=>{ const dir=b.dataset.dir.split(',').map(Number); b.addEventListener('pointerdown',e=>{ e.preventDefault(); e.stopPropagation(); DPAD=dir; startPan(); }); b.addEventListener('pointerup',()=>{ DPAD=[0,0]; }); b.addEventListener('pointerleave',()=>{ DPAD=[0,0]; }); });
 $('zIn').addEventListener('click',()=>{ setView(VIEW.x+VIEW.w/2,VIEW.y+VIEW.h/2,VIEW.w/1.3); });

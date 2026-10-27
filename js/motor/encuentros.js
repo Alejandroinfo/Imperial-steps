@@ -89,11 +89,41 @@ function makeEncounter(g,f,z){
   return /** @type {Encuentro} */({id:e.id,k:e.k,who,txt:encConj(who,e.txt),zone:z.id,cost:c,gain,refuse,step:g.step,str:e.str||0});
 }
 /** @param {Partida} g */
-function encHave(g,f,enc){ const c=enc.cost; if(!c) return true; const z=g.zones[enc.zone]; if(c.res==='gold') return g.F[f].gold>=c.n; if(c.res==='tech') return g.F[f].tech>=c.n; return z[c.res]>=c.n; }
+function encHave(g,f,enc){ const c=enc.cost; if(!c) return true; if(enc.offer) return ownedTotal(g,f,c.res)>=c.n; const z=g.zones[enc.zone]; if(c.res==='gold') return g.F[f].gold>=c.n; if(c.res==='tech') return g.F[f].tech>=c.n; return z[c.res]>=c.n; }
 /** @param {Partida} g */
-function encPay(g,f,enc){ const c=enc.cost; if(!c) return; const z=g.zones[enc.zone]; if(c.res==='gold') g.F[f].gold-=c.n; else if(c.res==='tech') g.F[f].tech-=c.n; else z[c.res]-=c.n; }
+function encPay(g,f,enc){ const c=enc.cost; if(!c) return; if(enc.offer){ takeOwned(g,f,c.res,c.n); return; } const z=g.zones[enc.zone]; if(c.res==='gold') g.F[f].gold-=c.n; else if(c.res==='tech') g.F[f].tech-=c.n; else z[c.res]-=c.n; }
 /** @param {Partida} g */
 function encGive(g,f,z,res,n){ if(res==='gold') g.F[f].gold+=n; else if(res==='tech') g.F[f].tech+=n; else z[res]=Math.min(capStore(g,z,res),z[res]+n); }
+
+
+/* ---------- ofertas entre jugadores (tratos) ---------- */
+/** @param {Partida} g */
+function ownedTotal(g,f,res){ if(res==='gold') return g.F[f].gold; if(res==='tech') return g.F[f].tech; return zonesOf(g,f).reduce((a,z)=>a+z[res],0); }
+/** @param {Partida} g */
+function takeOwned(g,f,res,n){ if(res==='gold'){ g.F[f].gold-=n; return; } if(res==='tech'){ g.F[f].tech-=n; return; } let need=n; zonesOf(g,f).sort((a,b)=>b[res]-a[res]).forEach(z=>{ const t=Math.min(z[res],need); z[res]-=t; need-=t; }); }
+/** @param {Partida} g */
+function giveOwned(g,f,res,n){ if(res==='gold'){ g.F[f].gold+=n; return; } if(res==='tech'){ g.F[f].tech+=n; return; } const zs=zonesOf(g,f); if(!zs.length) return; const z=zs.find(a=>a.capital)||zs[0]; z[res]=Math.min(capStore(g,z,res),z[res]+n); }
+// Lo que ofreces queda en reserva hasta que el otro responda (o caduque). Orden: {t:'offer', to, give:{res,n}, ask:{res,n}}.
+/** @param {Partida} g */
+function doOffer(g,o,L){
+  const f=o.f, to=o.to; if(!isPl(to)||to===f||g.F[to].out||g.F[f].out||!o.give||!o.ask) return;
+  const gv=o.give, ak=o.ask; if(!OFFER_RES.includes(gv.res)||!OFFER_RES.includes(ak.res)||gv.res===ak.res) return;
+  const gn=Math.floor(gv.n), an=Math.floor(ak.n); if(!(gn>0&&an>0)||gn>999||an>999) return;
+  g.offers=g.offers||[]; if(g.offers.filter(x=>x.from===f).length>=OFFER_MAX_OUT){ L(PLN[f].name+': ya tiene '+OFFER_MAX_OUT+' ofertas esperando respuesta.'); return; }
+  if(ownedTotal(g,f,gv.res)<gn){ L(PLN[f].name+': no le alcanza para lo que ofrecía.'); return; }
+  takeOwned(g,f,gv.res,gn); g.offerSeq=(g.offerSeq||0)+1;
+  g.offers.push({id:g.offerSeq,from:f,to,give:{res:gv.res,n:gn},ask:{res:ak.res,n:an},step:g.step});
+  L(PLN[f].name+' envía una oferta a '+PLN[to].name+'.');
+}
+// El trato que le llega al otro jugador, como un encuentro (se puede aceptar, rechazar o ignorar sin consecuencias).
+/** @param {Partida} g */
+function makeTradeEnc(g,f,of){
+  const zs=zonesOf(g,f); if(!zs.length) return null; let z=zs.find(a=>a.capital)||zs[0];
+  if(of.ask.res==='food'||of.ask.res==='prod') z=zs.slice().sort((a,b)=>b[of.ask.res]-a[of.ask.res])[0];
+  return /** @type {Encuentro} */({id:'trato',k:'trato',who:PLN[of.from].name,txt:'te propone un trato',zone:z.id,cost:{res:of.ask.res,n:of.ask.n},gain:{res:of.give.res,n:of.give.n},refuse:null,step:g.step,str:0,offer:of});
+}
+/** @param {Partida} g */
+function refundOffer(g,of,L,why){ giveOwned(g,of.from,of.give.res,of.give.n); L(PLN[of.from].name+': se le devuelve su oferta a '+PLN[of.to].name+' ('+why+').'); }
 
 // Resuelve la decisión del jugador (o la falta de decisión: cuenta como rechazo).
 /** @param {Partida} g */
@@ -101,6 +131,7 @@ function resolveEncounter(g,f,choice,L){
   const enc=g.F[f].enc; let tag=null;
   if(enc&&enc.story&&enc.opts){ const i=['a','b','c'].indexOf(choice), z=g.zones[enc.zone]; if(i>=0&&enc.opts[i]&&z&&z.owner===f&&encHave(g,f,{cost:enc.opts[i].cost,zone:enc.zone})) tag=enc.opts[i].t; }
   resolveEncounterBody(g,f,choice,L);
+  if(enc&&enc.offer&&!enc.offerOk) refundOffer(g,enc.offer,L,'no la aceptó');
   if(enc&&enc.story) storyAdvance(g,f,tag,L);   // aceptes o no, la historia sigue
 }
 /** @param {Partida} g */
@@ -127,6 +158,7 @@ function resolveEncounterBody(g,f,choice,L){
     if(gn&&gn.prog){ z.prog+=gn.prog; L(tag+'trato con '+W+': +'+gn.prog+' de crecimiento.'); }
     if(gn&&gn.gamble){ if(g.rng()<gn.gamble.p){ encGive(g,f,z,gn.gamble.res,gn.gamble.n); L(tag+'¡salió bien el trato con '+W+'! +'+gn.gamble.n+' de '+TSPEC_N[gn.gamble.res]+'.'); } else L(tag+'el trato con '+W+' salió mal: se pierde lo pagado.'); }
     if(!gn) L(tag+'se paga a '+W+' y se evita el problema.');
+    if(enc.offer){ giveOwned(g,enc.offer.from,enc.offer.ask.res,enc.offer.ask.n); enc.offerOk=1; L(PLN[enc.offer.from].name+' y '+PLN[f].name+' cierran un trato.'); }
     g.fx.push({k:'enc',f,zone:z.id,ok:1,id:enc.id});
     return;
   }
@@ -156,8 +188,11 @@ function resolveEncounterBody(g,f,choice,L){
 function L2(g,m){ g.logNow.push(m); }
 /** @param {Partida} g */
 function scheduleEncounters(g){
+  g.offers=g.offers||[];
+  g.offers.slice().forEach(of=>{ if(g.F[of.to].out||g.step-of.step>OFFER_TTL){ g.offers.splice(g.offers.indexOf(of),1); refundOffer(g,of,(m)=>L2(g,m),g.F[of.to].out?'el otro quedó fuera':'caducó'); } });
   for(let f=0;f<g.N;f++){
     const F=g.F[f]; if(F.out||F.enc) continue;
+    { const of=g.offers.find(x=>x.to===f); if(of){ const e=makeTradeEnc(g,f,of); g.offers.splice(g.offers.indexOf(of),1); if(e){ F.enc=e; L2(g,PLN[f].name+' recibe una oferta de '+PLN[of.from].name+'.'); continue; } refundOffer(g,of,(m)=>L2(g,m),'sin zona para recibirla'); } }
     if(F.encNext===999) continue;   // comienzo guiado: sin encuentros ni historias
     if(!F.story) F.story={id:STORY_IDS[Math.floor(g.rng()*STORY_IDS.length)],ch:1,next:Math.max(STORY_FIRST,g.step+2)+Math.floor(g.rng()*3),tags:[]};
     if(!F.story.done&&g.step+1>=F.story.next){ const ch=makeChapter(g,f); if(ch){ F.enc=ch; L2(g,PLN[f].name+': llega un capítulo de «'+STORIES[F.story.id].n+'».'); continue; } }
@@ -177,23 +212,26 @@ function botEncounter(g,f){
   const enc=g.F[f].enc; if(!enc) return null;
   if(enc.opts){ const ok=enc.opts.map((o,i)=>i).filter(i=>encHave(g,f,{cost:enc.opts[i].cost,zone:enc.zone})); if(!ok.length) return 'no'; return g.rng()<0.8?/** @type {'a'|'b'|'c'} */(['a','b','c'][ok[Math.floor(g.rng()*ok.length)]]):'no'; }
   if(!encHave(g,f,enc)) return 'no';
+  if(enc.offer){ const V={gold:1,tech:1,food:0.6,prod:0.8}; return enc.gain.n*V[enc.gain.res]>=enc.cost.n*V[enc.cost.res]*0.9&&g.rng()<0.85?'si':'no'; }
   if(enc.k==='apuesta') return g.rng()<0.4?'si':'no';
   return g.rng()<0.75?'si':'no';
 }
 
 /* ---------- recursos estratégicos: rinden más mientras más tiempo los controlas ---------- */
 const RES_YIELD = {mitril:'prod',hierro:'prod',caballos:'food',madera:'prod',piedra:'prod',sal:'gold',ruinas:'tech',hierbas:'food',gemas:'gold',brea:'prod'};
-const RES_GROW_EVERY = 5, RES_MAX = 4;
-function resBonus(z){ return Math.min(RES_MAX,1+Math.floor((z.resHeld||1)/RES_GROW_EVERY)); }
+const RES_GROW_EVERY = 5;
+// Lo que rinde un depósito por paso: empieza en RES_TIER[tier].start y sube 1 cada RES_GROW_EVERY pasos controlándolo, hasta su máximo.
+function resBonus(z,tier){ const T=RES_TIER[tier||'plata']; return Math.min(T.max,T.start+Math.floor(Math.max(0,(z.resHeld||1)-1)/RES_GROW_EVERY)); }
 /** @param {Partida} g */
 function holdResources(g,L){
   g.zones.forEach(z=>{
-    if(!z.res) return;
+    const deps=zoneDeps(z); if(!deps.length) return;
     if(!isPl(z.owner)){ z.resHeld=0; z.resOwner=null; return; }
-    if(z.resOwner!==z.owner){ if(z.resOwner!==null&&z.resOwner!==undefined&&isPl(z.resOwner)) L(zname(z)+': '+PLN[z.owner].name+' se queda con '+RES[z.res].n+'.'); z.resOwner=z.owner; z.resHeld=0; }
-    z.resHeld=(z.resHeld||0)+1;
-    const n=resBonus(z), k=RES_YIELD[z.res];
-    if(k==='gold') g.F[z.owner].gold+=n; else if(k==='tech') g.F[z.owner].tech+=n; else z[k]+=n;
-    z.resGain={res:k,n};
+    if(z.resOwner!==z.owner){ if(z.resOwner!==null&&z.resOwner!==undefined&&isPl(z.resOwner)) L(zname(z)+': '+PLN[z.owner].name+' se queda con '+deps.map(d=>RES[d.k].n).join(' y ')+'.'); z.resOwner=z.owner; z.resHeld=0; }
+    z.resHeld=(z.resHeld||0)+1; z.resGains=[];
+    deps.forEach(d=>{ const n=resBonus(z,d.tier), k=RES_YIELD[d.k];
+      if(k==='gold') g.F[z.owner].gold+=n; else if(k==='tech') g.F[z.owner].tech+=n; else z[k]+=n;
+      z.resGains.push({key:d.k,tier:d.tier,res:k,n}); });
+    z.resGain=z.resGains[0];
   });
 }

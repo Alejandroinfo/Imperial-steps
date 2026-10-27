@@ -1014,3 +1014,17 @@ Es la misma idea que los científicos automáticos (sección 14.0), aplicada a l
 - Carrera: aviso a todos al empezar, lista de las 12 en Imperio con el avance, quien termina primero se la queda, los demás pierden la obra y recuperan la mitad de la producción, conservando la tecnología. Empate por producción destinable.
 - 14 casos de prueba nuevos (carrera, reembolsos, empate, efectos, topes de nivel 4).
 
+
+
+---
+
+## 28. 🆕 Cambios del 27 de octubre de 2026 (pedidos por Alejandro)
+
+Todos los cambios se aplicaron a pedido de Alejandro; los **valores** marcados 💡 son estimaciones mías para confirmar jugando. Los números están en `js/config/reglas.js`.
+
+- ✅ **Costo de crecer (8):** crecer hasta el tamaño *n* cuesta **n × n** (3.º = 9, 4.º = 16, 10.º = 100). Reemplaza la fórmula triangular. Sigue la mitad de costo durante la fundación (hasta el paso 12) y las tecnologías que lo reducen. *Efecto medido: la población media de los bots a los 60 pasos baja de 13,5 a 10,5.*
+- ✅ **Puestos de trabajo por edificio (15):** **2 por nivel** (nivel 1 = 2, nivel 2 = 4, nivel 3 = 6…). *Andamios* y *Grúas* suman 1 cada una. Aplica a edificios civiles y militares.
+- ✅ regla / 💡 valores **Recursos de plata y oro (6.3):** casi todas las zonas (90 %) tienen un depósito de **plata** (efecto normal; rinde +1 y sube hasta +2); 1 de cada 3 zonas tiene además uno de **oro** (efecto doble; rinde +2 y sube hasta +5; sube 1 cada 5 pasos). Las capitales solo llevan plata; las zonas peligrosas, ninguno. Reemplaza «hasta +4».
+- ✅ **Ofertas entre jugadores (11):** en la pestaña Imperio (sección Rivales) se puede ofrecer comida, producción, oro o ciencia y pedir otro recurso. Lo ofrecido queda en reserva; al otro le llega como un encuentro (aceptar / rechazar sin consecuencias). Si no se acepta o caduca (4 pasos), se devuelve. Máximo 2 ofertas esperando por jugador. 💡 Los bots aceptan si el valor es ≥ 90 % de lo que dan (oro y ciencia 1, comida 0,6, producción 0,8) con 85 % de probabilidad.
+- ✅ **Interfaz:** los encuentros salen en ventana emergente y su decisión queda en Órdenes; la pestaña Victoria muestra el avance de los vecinos; las escenas de fin de paso llevan la cámara a batallas, conquistas, obras y tecnologías.
+- ❓ Por definir: que los bots hagan ofertas; carretas animadas en los envíos; rebalancear el crecimiento si la economía queda lenta.

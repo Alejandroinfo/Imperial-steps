@@ -73,15 +73,30 @@ function fichaHTML(u){
   const rows=(u.tr||[]).map(x=>`<div class="fr ${x.l>0?'p':'n'}">${traitBadge(x,true)}<div><b>${TRAIT_EPI[x.k][x.l]}</b><small>${TRAIT_INFO[x.k].n}</small></div><span class="fe">${traitEffect(x)}</span></div>`).join('');
   return `<div class="fh">${uIcon(u.t,40)}<div><b>${personName(u)}</b><small>${UN[u.t].toLowerCase()}${best?' · «'+TRAIT_EPI[best.k][best.l].toLowerCase()+'»':''}</small></div></div>${rows}`;
 }
+// ---- Recursos: insignias (plata 🥈 / oro 🥇) y ficha con lo que hacen ----
+function depBadge(d,big){ return `<span class="db ${d.tier}${big?' big':''}" data-dep="${d.k}" data-tier="${d.tier}" tabindex="0" aria-label="${esc(RES[d.k].n+' de '+RES_TIER[d.tier].n.toLowerCase())}"><i>${RES[d.k].ic}</i><em>${RES_TIER[d.tier].ic}</em></span>`; }
+function depBadges(z){ return zoneDeps(z).map(d=>depBadge(d)).join(''); }
+function depYieldText(d){ const T=RES_TIER[d.tier]; return IMP_ICON[RES_YIELD[d.k]]+' +'+T.start+' por paso, sube hasta +'+T.max; }
+function depFichaHTML(k,tier){
+  const R=RES[k], T=RES_TIER[tier];
+  return `<div class="fh">${depBadge({k,tier},true)}<div><b>${R.n}</b><small>${T.n.toLowerCase()} · ${R.sc==='global'?'sirve a todo tu imperio':'solo en esa zona'}</small></div></div>`
+    +`<div class="fr p"><div><b>${esc(T.mul===2?R.d2:R.d)}</b></div></div>`
+    +`<div class="fr p"><div><b>Rinde ${depYieldText({k,tier})}</b><small>cada ${RES_GROW_EVERY} pasos seguidos que la controles</small></div></div>`;
+}
+// tarjetas con lo que hace cada depósito de una zona (para quien explora)
+function depCardsHTML(z){
+  const ds=zoneDeps(z); if(!ds.length) return '';
+  return '<div class="depcards">'+ds.map(d=>`<div class="depc ${d.tier}">${depBadge(d,true)}<div><b>${RES[d.k].n} <small>${RES_TIER[d.tier].ic} ${RES_TIER[d.tier].n.toLowerCase()}</small></b><span>${esc(d.mul===2?RES[d.k].d2:RES[d.k].d)}</span><small>${RES[d.k].sc==='global'?'🌍 sirve a todo tu imperio':'📍 solo en esta zona'} · rinde ${depYieldText(d)}</small></div></div>`).join('')+'</div>';
+}
 let FICHA=null;
 function fichaMove(e,el){ const r=el.getBoundingClientRect(); const w=FICHA.offsetWidth, h=FICHA.offsetHeight; let x=r.left+r.width/2-w/2, y=r.top-h-8; if(y<6) y=r.bottom+8; x=Math.max(6,Math.min(innerWidth-w-6,x)); FICHA.style.left=x+'px'; FICHA.style.top=y+'px'; }
 document.addEventListener('mouseover',e=>{
-  const t=e.target.closest&&e.target.closest('.token[data-id]'); if(!t||typeof G==='undefined'||!G) return;
-  const u=personById(Number(t.dataset.id)); if(!u||!u.tr) return;
+  const t=e.target.closest&&e.target.closest('.token[data-id],.db[data-dep]'); if(!t||typeof G==='undefined'||!G) return;
+  let html=''; if(t.dataset.dep) html=depFichaHTML(t.dataset.dep,t.dataset.tier); else { const u=personById(Number(t.dataset.id)); if(!u||!u.tr) return; html=fichaHTML(u); }
   if(!FICHA){ FICHA=document.createElement('div'); FICHA.id='ficha'; FICHA.setAttribute('role','tooltip'); document.body.appendChild(FICHA); }
-  FICHA.innerHTML=fichaHTML(u); FICHA.classList.add('on'); fichaMove(e,t);
+  FICHA.innerHTML=html; FICHA.classList.add('on'); fichaMove(e,t);
 });
-document.addEventListener('mouseout',e=>{ const t=e.target.closest&&e.target.closest('.token[data-id]'); if(t&&FICHA) FICHA.classList.remove('on'); });
+document.addEventListener('mouseout',e=>{ const t=e.target.closest&&e.target.closest('.token[data-id],.db[data-dep]'); if(t&&FICHA) FICHA.classList.remove('on'); });
 document.addEventListener('dragstart',()=>{ if(FICHA) FICHA.classList.remove('on'); });
 // Personas libres de un oficio (menos las ya elegidas para una orden), las mejores primero.
 function availListQ(zid,t){
@@ -133,6 +148,7 @@ function ordText(o){
     case 'route': return o.q?('Envío automático: '+(o.res==='food'?'comida':'producción')+' '+zname(Z[o.from])+' → '+zname(Z[o.to])+' ('+(o.q==='sobrante'?'todo el sobrante':o.q+' por paso')+')'):('Quitar el envío automático '+zname(Z[o.from])+' → '+zname(Z[o.to]));
     case 'annex': return 'Anexar la tribu de '+zname(Z[o.zone])+' (paga desde '+zname(Z[o.from])+')';
     case 'tribute': return 'Pagar el tributo a la tribu de '+zname(Z[o.tribe])+' desde '+zname(Z[o.from]);
+    case 'offer': return 'Ofrecer a '+PLN[o.to].name+': doy '+o.give.n+' de '+RN[o.give.res]+' y pido '+o.ask.n+' de '+RN[o.ask.res];
     case 'ally': return o.off?'Romper la alianza':'Proponer o aceptar alianza con '+PLN[o.target].name;
   }
   return o.t;

@@ -62,7 +62,7 @@ function newGame(mapIdx,N,seed,thrMode){
   const zones=v.n.map((n,i)=>({id:i,sector:n[0],k:n[1],role:['capital','tribu','vacia','frontera'][n[2]],terrain:n[3],x:n[4],y:n[5],adj:[],
     owner:null,size:3,food:0,prod:0,prog:0,grow:0,conflict:false,capital:false,units:{},att:{},b:[],proj:[],bplan:null,res:null,tspec:null,tmult:1,ev:{}}));
   v.e.forEach(([a,b])=>{ zones[a].adj.push(b); zones[b].adj.push(a); });
-  const g={auction:null,wars:[],nid:1,mapIdx,N,seed,rng,zones,map:v,hist:[],step:1,over:false,winner:[],thr:thrMode||'normal',F:[],M:[],log:[],evq:[],tributes:[],logiMult:1,evNow:null,tele:{ready:[],orders:[]}};
+  const g={auction:null,wars:[],nid:1,mapIdx,N,seed,rng,zones,map:v,hist:[],step:1,over:false,winner:[],thr:thrMode||'normal',F:[],M:[],log:[],evq:[],tributes:[],offers:[],logiMult:1,evNow:null,tele:{ready:[],orders:[]}};
   const START=['Almacenes','Caminos','Hospitales','Cuarteles','Fortificaciones','Bibliotecas','Molinos','Talleres','Mercados'];
   for(let f=0;f<=TRIBE;f++){ const tc={}; if(f<N) START.forEach(n=>{ tc[n]=1; }); g.F.push({gold:f<N?10:0,tech:f<N?10:0,techs:tc,out:false,ghost:false,ally:null,req:null,lastAvoid:-99,notes:[],rq:[],rcap:0,stance:{},enc:null}); }
   recomputeMods(g);
@@ -76,9 +76,15 @@ function newGame(mapIdx,N,seed,thrMode){
       z.owner=TRIBE; z.tspec=specs[Math.floor(rng()*4)];
       for(let i=0;i<3;i++) lst(z,TRIBE).push(mkUnit(g,TRIBE,z.tspec));
       lst(z,TRIBE).push(mkUnit(g,TRIBE,'sol'));
-      if(z.k===1||z.k===2) z.res=LOCAL_BY_TERR[z.terrain];
     }
-    if(z.role==='vacia'&&z.k===3) z.res=GLOBAL_BY_TERR[z.terrain];
+  });
+  // Depósitos: casi todas las zonas tienen uno de plata (de su terreno) y 1 de cada 3 uno de oro (otro recurso distinto).
+  // Las capitales solo llevan plata y las zonas peligrosas (fronteras) ninguno, para que nadie parta con ventaja.
+  const keys=Object.keys(RES), rd=mulberry32((seed*7919+13)|0);   // azar propio: repartir depósitos no cambia lo demás de la partida
+  zones.forEach(z=>{
+    if(z.role==='frontera') return;
+    if(z.role==='capital'||rd()<RES_SILVER_CHANCE){ z.res=(rd()<0.5?LOCAL_BY_TERR:GLOBAL_BY_TERR)[z.terrain]; }
+    if(z.role!=='capital'&&rd()<RES_GOLD_CHANCE){ const pool=keys.filter(k=>k!==z.res); z.resO=pool[Math.floor(rd()*pool.length)]; }
   });
   assignNames(zones,rng);
   scheduleEvents(g);

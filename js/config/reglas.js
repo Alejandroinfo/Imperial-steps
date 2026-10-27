@@ -107,6 +107,10 @@ const RESEARCH_PER_SCI = 2;
 // Edificios repetidos: con una tecnología de este nivel del edificio se puede tener un segundo en la zona.
 // El segundo cuesta más (construirlo y mejorarlo) y necesita sus propios trabajadores y espacio.
 const DUP_LEVEL = 3, MAX_SAME = 2, DUP_COST_MULT = 1.5;
+// Ofertas entre jugadores: lo que ofreces queda en reserva; al otro le llega como un encuentro. Caducan a los OFFER_TTL pasos (y se devuelve lo reservado).
+const OFFER_TTL = 4, OFFER_MAX_OUT = 2, OFFER_RES = ['food','prod','gold','tech'];
+// Puestos de trabajo de cada edificio por nivel: nivel 1 = 2, nivel 2 = 4, nivel 3 = 6, nivel 4 = 8, nivel 5 = 10 (Andamios y Grúas suman 1 cada una).
+const WORKERS_PER_LEVEL = 2;
 const DEMOB_COST = {basico:2,especializado:3};   // regla 5.2: militar → civil básico 2, → civil especializado 3 (Reservistas: 0)
 const DEMOB_FROM = ['sol','arq','cab','esc','ber']; // las máquinas de asedio no se licencian (pendiente 23)
 const TRAIN_TECH = {sol:null,arq:'Arco',esc:'Escudos',cab:'Doma de caballos',ber:'Forja de hachas',ari:'Ingeniería de asedio',lan:'Lanzapiedras'};
@@ -168,18 +172,23 @@ const TERMS = {};  // se llena con TECH
 const TECHS = DATA.techs;
 const TECH = {}; TECHS.forEach(t=>{ TECH[t.n]=t; });
 const BRANCHES = DATA.branches;
+// Recursos estratégicos. Cada zona puede tener un depósito de PLATA (casi todas: efecto normal) y, en 1 de cada 3, uno de ORO (efecto doble).
+// d = qué hace con plata; d2 = qué hace con oro. ic = ícono. sc = local (solo su zona) o global (todo el imperio que lo controla).
 const RES = {
-  mitril:{n:'Mitril',sc:'local',d:'Los escudos hechos en la zona dan +1 de defensa al escudero.',col:'#9BB5C9'},
-  hierro:{n:'Hierro',sc:'global',d:'Las armas cuestan 1 de producción menos en todo el imperio.',col:'#7A7F86'},
-  caballos:{n:'Caballos salvajes',sc:'local',d:'Los caballeros entrenados en la zona tienen +1 de vida.',col:'#B07A4A'},
-  madera:{n:'Madera noble',sc:'global',d:'Construir y mejorar edificios cuesta 5 de producción menos (mínimo 10).',col:'#6B4528'},
-  piedra:{n:'Piedra de cantera',sc:'local',d:'Fortificaciones y Maravillas de la zona cuestan un 25 % menos.',col:'#A9A59C'},
-  sal:{n:'Sal',sc:'global',d:'Cada zona comercial que controles da +2 de oro por paso.',col:'#E8E4DA'},
-  ruinas:{n:'Ruinas antiguas',sc:'global',d:'+3 de tecnología por paso.',col:'#C9A7E0'},
-  hierbas:{n:'Hierbas medicinales',sc:'global',d:'Los heridos se curan una ronda más rápido.',col:'#6FBF73'},
-  gemas:{n:'Gemas',sc:'local',d:'El Mercado de la zona da +1 de oro adicional por trabajador.',col:'#E05A8A'},
-  brea:{n:'Brea',sc:'local',d:'Las máquinas de asedio fabricadas en la zona tienen +1 de fuerza.',col:'#3A3A3A'}
+  mitril:{n:'Mitril',ic:'💠',sc:'local',d:'Los escudos hechos en la zona dan +1 de defensa al escudero.',d2:'Los escudos hechos en la zona dan +2 de defensa al escudero.',col:'#9BB5C9'},
+  hierro:{n:'Hierro',ic:'⚙',sc:'global',d:'Las armas cuestan 1 de producción menos en todo el imperio.',d2:'Las armas cuestan 2 de producción menos en todo el imperio.',col:'#7A7F86'},
+  caballos:{n:'Caballos salvajes',ic:'🐎',sc:'local',d:'Los caballeros entrenados en la zona tienen +1 de vida.',d2:'Los caballeros entrenados en la zona tienen +2 de vida.',col:'#B07A4A'},
+  madera:{n:'Madera noble',ic:'🪵',sc:'global',d:'Construir y mejorar edificios cuesta 5 de producción menos (mínimo 10).',d2:'Construir y mejorar edificios cuesta 10 de producción menos (mínimo 10).',col:'#6B4528'},
+  piedra:{n:'Piedra de cantera',ic:'🪨',sc:'local',d:'Fortificaciones y Maravillas de la zona cuestan un 25 % menos.',d2:'Fortificaciones y Maravillas de la zona cuestan un 50 % menos.',col:'#A9A59C'},
+  sal:{n:'Sal',ic:'🧂',sc:'global',d:'Cada zona comercial que controles da +2 de oro por paso.',d2:'Cada zona comercial que controles da +4 de oro por paso.',col:'#E8E4DA'},
+  ruinas:{n:'Ruinas antiguas',ic:'🏛',sc:'global',d:'+3 de tecnología por paso.',d2:'+6 de tecnología por paso.',col:'#C9A7E0'},
+  hierbas:{n:'Hierbas medicinales',ic:'🌿',sc:'global',d:'Los heridos se curan una ronda más rápido.',d2:'Los heridos se curan dos rondas más rápido.',col:'#6FBF73'},
+  gemas:{n:'Gemas',ic:'💎',sc:'local',d:'El Mercado de la zona da +1 de oro adicional por trabajador.',d2:'El Mercado de la zona da +2 de oro adicional por trabajador.',col:'#E05A8A'},
+  brea:{n:'Brea',ic:'🛢',sc:'local',d:'Las máquinas de asedio fabricadas en la zona tienen +1 de fuerza.',d2:'Las máquinas de asedio fabricadas en la zona tienen +2 de fuerza.',col:'#3A3A3A'}
 };
+// Niveles de depósito: lo que rinde cada paso (empieza en start y sube 1 cada RES_GROW_EVERY pasos hasta max) y cuánto multiplica el efecto.
+const RES_TIER = {plata:{n:'Plata',ic:'🥈',mul:1,start:1,max:2}, oro:{n:'Oro',ic:'🥇',mul:2,start:2,max:5}};
+const RES_SILVER_CHANCE = 0.9, RES_GOLD_CHANCE = 1/3;   // zonas con plata (casi una por zona) y con oro (1 de cada 3); las capitales solo llevan plata
 const LOCAL_BY_TERR = {mon:'mitril',col:'piedra',pra:'caballos',bos:'brea',rio:'gemas',lla:'gemas'};
 const GLOBAL_BY_TERR = {mon:'hierro',col:'hierro',pra:'hierbas',bos:'madera',rio:'sal',lla:'ruinas'};
 // eventos

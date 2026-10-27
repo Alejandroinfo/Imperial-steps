@@ -21,7 +21,7 @@ function fightZone(g,z,facs,att,L){
     lst(z,f).forEach(u=>{
       const b=UT[u.t], mm=M.u[u.t]||{str:0,def:0,hp:0,atk:0,init:null};
       const T=z.terrain;
-      let hpMax=Math.max(1,b.hp+mm.hp+(b.civ?M.civHp:0)+trInt(u,'sal'))+(u.cabhp?1:0)+((M.bastion&&def)?1:0);
+      let hpMax=Math.max(1,b.hp+mm.hp+(b.civ?M.civHp:0)+trInt(u,'sal'))+(u.cabhp||0)+((M.bastion&&def)?1:0);
       let str=b.civ?Math.max(0,1+trInt(u,'fue')):Math.max(1,u.str+mm.str+trInt(u,'fue')), atk=b.atk+mm.atk, d=b.def+mm.def, init=(mm.init!==null&&mm.init!==undefined)?mm.init:b.init;
       const wounded=u.w>0;
       if(wounded) str=b.civ?0:Math.floor(str*M.moral);
@@ -40,8 +40,8 @@ function fightZone(g,z,facs,att,L){
       if(M.estandarte&&z.capital&&z.owner===f&&!b.civ) str+=1;
       if(M.vetwar&&(u.cb||0)>=3&&!b.civ) d+=1;
       if(u.t==='esc'&&def&&M.escTortuga) d+=M.escTortuga;
-      if(u.t==='esc'&&u.mit) d+=1;
-      if(b.siege&&u.brea) str+=1;
+      if(u.t==='esc'&&u.mit) d+=u.mit;
+      if(b.siege&&u.brea) str+=u.brea;
       if(u.t==='lan'){ const Lv=M.siege.lan; if(Lv>=2) str+=1; if(Lv>=3) atk+=1; }
       if(def&&M.bastion) d+=4;   // El Bastión Eterno
       if(def&&isPl(z.owner)){

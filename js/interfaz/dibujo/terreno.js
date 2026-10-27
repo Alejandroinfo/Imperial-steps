@@ -85,7 +85,7 @@ function tileSVG(z,o){
   if(z.b&&z.b.some(b=>b.t==='mar')){ s+=`<g transform="translate(0,-8)"><polygon points="-10,0 0,-26 10,0" fill="#E9C46A" stroke="${INK}" stroke-width="1"/><rect x="-12" y="0" width="24" height="4" fill="#C9A24A" stroke="${INK}" stroke-width=".8"/></g>`; }
   if(isPl(owner)) s+=`<polygon points="0,${-HH} ${HW},0 0,${HH} ${-HW},0" fill="none" stroke="${PLN[owner].col}" stroke-width="3.4" stroke-linejoin="round"/>`;
   else if(owner===TRIBE) s+=`<polygon points="0,${-HH} ${HW},0 0,${HH} ${-HW},0" fill="none" stroke="#5E3B24" stroke-width="2.2" stroke-dasharray="5 4" stroke-linejoin="round"/>`;
-  if(z.res) s+=`<g transform="translate(36,-13)"><circle r="6.5" fill="${RES[z.res].col}" stroke="${INK}" stroke-width="1"/><text class="zt" text-anchor="middle" y="3" font-size="8" font-weight="700" fill="#10181B">${RES[z.res].sc==='global'?'G':'L'}</text></g>`;
+  zoneDeps(z).forEach((d,di)=>{ s+=`<g transform="translate(${36-di*15},-13)"><circle r="6.5" fill="${RES[d.k].col}" stroke="${d.tier==='oro'?'#E2B93B':INK}" stroke-width="${d.tier==='oro'?2:1}"/><text class="zt" text-anchor="middle" y="3" font-size="8" font-weight="700" fill="#10181B">${RES[d.k].sc==='global'?'G':'L'}</text></g>`; });
   if(!o.noUnits&&z.units){
     const fs=Object.keys(z.units).map(Number).filter(f=>z.units[f].length>0).sort((a,b)=>(a===owner?-1:0)-(b===owner?-1:0));
     if(fs.length){ const f=fs[0], col=PLN[f].col; const c=z.units[f].filter(u=>UT[u.t].civ).length, m=z.units[f].length-c;

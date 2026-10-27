@@ -173,7 +173,7 @@ function buildTerritoryDOM(){
   $('ordT').innerHTML=''; ui.ordSig='';
 }
 function zoneSig(z,i){
-  let s=[z.owner,z.size,z.conflict?1:0,z.res||'',Math.floor(z.prog)].join('|');
+  let s=[z.owner,z.size,z.conflict?1:0,z.res||'',Math.floor(z.prog),z.resO||''].join('|');
   for(const f in z.units){ const us=z.units[f]; const by={}; us.forEach(u=>{ by[u.t]=(by[u.t]||0)+(u.w>0?0.01:1); }); s+='|u'+f+':'+Object.keys(by).sort().map(k=>k+by[k]).join(','); }
   if(isPl(z.owner)){ const sp=zoneSpec(G,z,z.owner); s+='|sp'+sp.spec+sp.lvl; }
   z.b.forEach(b=>{ s+='|b'+b.t+b.l+(b.s||''); }); z.proj.forEach(p=>{ s+='|p'+Math.round(100*(p.tot-p.left)/p.tot); });
@@ -183,7 +183,7 @@ function zoneSig(z,i){
   if((G.tributes||[]).some(t=>t.zone===z.id&&!t.paid[ME])) s+='|tr';
   if(G.F[ME].enc&&G.F[ME].enc.zone===z.id) s+='|enc'+G.F[ME].enc.step;
   { let hg=0; for(const f in z.units) z.units[f].forEach(u=>{ if(u.hg>0) hg++; }); if(hg) s+='|hg'+hg; }
-  if(z.res) s+='|rh'+resBonus(z)+(z.owner);
+  if(z.res||z.resO) s+='|rh'+resBonus(z,'plata')+resBonus(z,'oro')+(z.owner);
   if(z.role==='frontera') s+='|fg'+JSON.stringify(z.frontGain||{});
   return s+'|'+slotsOf(G,z);
 }
@@ -256,8 +256,8 @@ function zoneContent(z,i){
     d+=`<g transform="translate(0,${y})"><rect x="-70" y="-12" width="140" height="24" rx="12" fill="#2A1B16" stroke="${col}" stroke-width="3"/><text class="zt" x="0" y="5" text-anchor="middle" font-size="13" font-weight="700" fill="#FBF8F2">${esc(PLN[f].name)}: ${k.c} civ · ${k.m} mil</text></g>`; });
   if(z.conflict) d+=`<g class="clash" transform="translate(0,-8)"><circle r="24" fill="#C8452F" stroke="${INK}" stroke-width="2"/><path d="M-12,-12 L12,12 M12,-12 L-12,12" stroke="#fff" stroke-width="5" stroke-linecap="round"/></g>`;
   let s=`<g class="detail">${d}</g>`;
-  if(z.res){ const r=RES[z.res], own=isPl(z.owner), rc=own?PLN[z.owner].col:'#fff', k=RES_YIELD[z.res];
-    s+=`<g class="lbl" style="transform:translate(118px,-96px) scale(var(--inv,1))"><circle r="22" fill="${r.col}" stroke="${rc}" stroke-width="5"/><text class="zt" text-anchor="middle" y="6" font-size="18" font-weight="800" fill="#10181B">${r.sc==='global'?'G':'L'}</text><rect x="-54" y="27" width="108" height="${own?34:20}" rx="8" fill="#2A1B16" stroke="${rc}" stroke-width="2"/><text class="zt" text-anchor="middle" y="41" font-size="12" font-weight="700" fill="#FBF8F2">${esc(r.n)}</text>${own?`<text class="zt" text-anchor="middle" y="56" font-size="11.5" font-weight="700" fill="#FFE27A">${IMP_ICON[k]} +${resBonus(z)} por paso</text>`:''}</g>`; }
+  zoneDeps(z).forEach((d,di)=>{ const r=RES[d.k], own=isPl(z.owner), rc=own?PLN[z.owner].col:'#fff', k=RES_YIELD[d.k], T=RES_TIER[d.tier], gx=di?-118:118;
+    s+=`<g class="lbl" style="transform:translate(${gx}px,-96px) scale(var(--inv,1))"><circle r="22" fill="${r.col}" stroke="${rc}" stroke-width="5"/><circle r="27" fill="none" stroke="${d.tier==='oro'?'#F2CF5B':'#C3CAD1'}" stroke-width="3" stroke-dasharray="${d.tier==='oro'?'0':'5 4'}"/><text class="zt" text-anchor="middle" y="7" font-size="21">${r.ic}</text><text class="zt" x="16" y="-14" font-size="15">${T.ic}</text><rect x="-54" y="31" width="108" height="${own?34:20}" rx="8" fill="#2A1B16" stroke="${rc}" stroke-width="2"/><text class="zt" text-anchor="middle" y="45" font-size="12" font-weight="700" fill="#FBF8F2">${esc(r.n)}</text>${own?`<text class="zt" text-anchor="middle" y="60" font-size="11.5" font-weight="700" fill="#FFE27A">${IMP_ICON[k]} +${resBonus(z,d.tier)} por paso</text>`:''}</g>`; });
   s+=nameplate(z,i);
   return s;
 }

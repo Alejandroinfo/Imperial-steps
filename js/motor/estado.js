@@ -58,9 +58,16 @@ function zonesOf(g,f){ return g.zones.filter(z=>z.owner===f); }
 /** @param {Partida} g */
 function totalPop(g,f){ let n=0; g.zones.forEach(z=>{ n+=(z.units[f]||[]).length; }); return n; }
 /** @param {Partida} g */
-function hasRes(g,f,key){ return g.zones.some(z=>z.owner===f&&z.res===key)||(isPl(f)&&((g.F[f].tres||[]).some(r=>r.key===key&&r.until>g.step))); }   // o un recurso temporal ganado en la subasta
+function hasRes(g,f,key){ let m=0; g.zones.forEach(z=>{ if(z.owner===f) m=Math.max(m,resMul(z,key)); }); if(!m&&isPl(f)&&((g.F[f].tres||[]).some(r=>r.key===key&&r.until>g.step))) m=1; return m; }   // 0 = no lo tienes; 1 = plata; 2 = oro (o un recurso temporal de la subasta, que cuenta como plata)
+// Cuánto vale el depósito de esa clase en la zona: 2 si tiene ese recurso en oro, 1 si en plata, 0 si no lo tiene.
+function resMul(z,key){ return z.resO===key?RES_TIER.oro.mul:(z.res===key?RES_TIER.plata.mul:0); }
+// Los depósitos de una zona: [{k,tier,mul}] (plata primero, luego oro).
+function zoneDeps(z){ const o=[]; if(z.res) o.push({k:z.res,tier:'plata',mul:RES_TIER.plata.mul}); if(z.resO) o.push({k:z.resO,tier:'oro',mul:RES_TIER.oro.mul}); return o; }
 /** @param {Partida} g */
 function slotsOf(g,z){ return Math.floor(z.size/3)+(isPl(z.owner)?g.M[z.owner].slotBonus:0); }
+// Puestos de trabajo de un edificio: WORKERS_PER_LEVEL por nivel (nivel 1 = 2, nivel 2 = 4, nivel 3 = 6...) más lo que sumen Andamios y Grúas.
+/** @param {Partida} g */
+function bldSlots(g,f,b){ return WORKERS_PER_LEVEL*Math.max(1,b.l||1)+(g.M[f].wk-2); }
 /** @param {Partida} g */
 function capLevel(g,f,bt){
   if(bt==='fort'){ let m=0; ['Fortificaciones','Fortificación II','Fortificación III','Torres de vigilancia'].forEach((n,i)=>{ if(techOwn(g,f,n)) m=Math.max(m,[1,2,3,4,5][i]); }); return m; }
@@ -90,13 +97,13 @@ function stepCost(g,f,z,bt,dup){
   const M=g.M[f]; let c=20;
   if(bt==='almacen'&&techOwn(g,f,'Almacenes económicos')) c=10;
   if(bt==='fort'&&M.fortHalf) c=Math.ceil(c/2);
-  if(bt==='fort'&&z.res==='piedra') c=Math.ceil(c*0.75);
-  c-=M.bSub; if(hasRes(g,f,'madera')) c-=5;
+  if(bt==='fort'&&resMul(z,'piedra')) c=Math.ceil(c*(1-0.25*resMul(z,'piedra')));
+  c-=M.bSub; c-=5*hasRes(g,f,'madera');
   c=Math.max(10,c);
   return dup?Math.ceil(c*DUP_COST_MULT):c;
 }
 /** @param {Partida} g */
-function wonderCostOf(g,f,z){ let c=g.M[f].wonderCost; if(z.res==='piedra') c=Math.ceil(c*0.75); return c; }
+function wonderCostOf(g,f,z){ let c=g.M[f].wonderCost; if(resMul(z,'piedra')) c=Math.ceil(c*(1-0.25*resMul(z,'piedra'))); return c; }
 /** @param {Partida} g */
 function capStore(g,z,res){
   const s=z.size; let c=STORE_PER_SIZE*s; if(!isPl(z.owner)) return c;

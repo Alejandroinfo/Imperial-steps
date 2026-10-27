@@ -101,9 +101,31 @@ function tween(el,to,suffix){
   el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump');
 }
 
+/* ---------- escenas: la cámara visita lo importante del paso (batallas, obras, tecnologías) ---------- */
+// Al resolverse un paso, la cámara vuela a lo más importante (hasta 3 momentos) y luego vuelve a donde estaba.
+// Cualquier clic o gesto sobre el mapa la cancela. Con los efectos apagados no hace nada.
+const SCENE = {timers:[], busy:false, back:null};
+function sceneCancel(){ SCENE.timers.forEach(clearTimeout); SCENE.timers=[]; SCENE.busy=false; }
+function sceneDirector(list){
+  sceneCancel(); if(!FXS.on||!G||!ui||ui.view!=='terr'||(typeof TUT!=='undefined'&&TUT.on)) return;
+  const pr=[]; const add=(zone,p,why)=>{ if(zone===undefined||!G.zones[zone]) return; const i=pr.findIndex(x=>x.zone===zone); if(i>=0){ if(pr[i].p<p) pr[i]={zone,p,why}; } else pr.push({zone,p,why}); };
+  list.forEach(e=>{
+    if(e.k==='fight') add(e.zone,3+(e.facs.includes(ME)?0.5:0),'⚔ Combate');
+    else if(e.k==='conq') add(e.zone,3.2,'⚑ Conquista');
+    else if(e.k==='built'&&(e.f===ME||e.bt==='mar')) add(e.zone,e.bt==='mar'?4:2+(e.f===ME?0.2:0),e.bt==='mar'?'★ Maravilla':'🏗 Obra terminada');
+    else if(e.k==='tech'&&e.f===ME){ const mc=myCapital(); add(mc,1,'🔬 Tecnología'); }
+  });
+  pr.sort((a,b)=>b.p-a.p); const show=pr.slice(0,3); if(!show.length) return;
+  const back={x:VIEW.x+VIEW.w/2,y:VIEW.y+VIEW.h/2,w:VIEW.w}; let t=350; SCENE.busy=true;
+  show.forEach(sc=>{ SCENE.timers.push(setTimeout(()=>{ flyTo(sx(sc.zone),sy(sc.zone)+20,720,750); sceneLabel(sc.why,sc.zone); },t)); t+=2300; });
+  SCENE.timers.push(setTimeout(()=>{ flyTo(back.x,back.y,back.w,900); SCENE.busy=false; },t));
+}
+function sceneLabel(text,zone){ const b=$('banner'); if(!b) return; b.className='banner show'; b.textContent=text+' · '+zname(G.zones[zone]); clearTimeout(b._t); b._t=setTimeout(()=>{ b.className='banner'; },2000); }
+
 /* ---------- reproducir los eventos de un paso ---------- */
 function playFx(list,condsBefore){
   if(!list) return;
+  sceneDirector(list);
   const mine=z=>G.zones[z].owner===ME||true;
   let tProd=0, slotUse={};
   list.forEach(e=>{

@@ -17,3 +17,17 @@ El repo ya trae cosas que el traspaso del 26/10 no menciona: **multijugador con 
 - Los caminos de las personas cruzan en línea recta: pueden pasar «por detrás» de edificios.
 - Los apodos de rasgos son 💡 propuesta mía; confirmar el tono con Pao.
 - Siguen abiertos los pendientes de alta prioridad del 26/10 (playtest, tribus como amenaza latente, ritmo y balance).
+
+
+## Segunda parte de la sesión (reglas y mejoras pedidas por Alejandro)
+Ver `Reglas_v0.1.md` sección 28 y `CHANGELOG.md`.
+1. **Reglas:** crecer cuesta n²; puestos de trabajo = 2 por nivel; recursos de **plata** (casi todas las zonas) y **oro** (1 de cada 3, efecto doble). Nuevo `zoneDeps(z)`, `resMul(z,key)`; `hasRes` ahora devuelve 0/1/2. Los depósitos usan un azar propio en `newGame` (no mueve el resto de la partida). En las pruebas, `base` borra los depósitos para aislarlas.
+2. **Ofertas entre jugadores** (`doOffer`, `makeTradeEnc`, `refundOffer` en `encuentros.js`; orden `offer`; `g.offers`). Reutiliza el mecanismo de encuentros (`k:'trato'`). Lo ofrecido queda en reserva y se devuelve si no se acepta. Interfaz: `offerBuilderHTML` en `zona.js` (sección Rivales de Imperio).
+3. **Interfaz:** encuentros en ventana (`#dlgEnc`), pestañas que no se aplastan, avance de vecinos en Victoria (`vicNeighbors`, `vicRivalHTML`), insignias y fichas de recursos (`depBadge`, `depCardsHTML`), escenas de fin de paso (`sceneDirector`).
+4. **Pruebas:** `npm test` (72 partidas, 0 errores), `npm run check`, `pruebas/probar_interfaz.py` (14 comprobaciones).
+
+### Pendiente
+- Confirmar jugando los 💡: valores de plata/oro, valor de los bots en ofertas, que el crecimiento n² no deje la economía lenta (bots −20 % de población).
+- Que los bots también ofrezcan; carretas sobre los envíos automáticos; escenas con sonido propio.
+- Borrar del repo las copias sueltas en la raíz (el juego solo usa `index.html`, `js/` y `css/`).
+- Reemplazar en el Proyecto: Reglas, traspaso general y este traspaso; ver la lista de archivos a eliminar que te di.

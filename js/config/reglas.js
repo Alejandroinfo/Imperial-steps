@@ -34,7 +34,43 @@ const UT = {
   ari:{hp:6,str:2,atk:2,def:1,init:7,siege:1},
   lan:{hp:4,str:2,atk:1,def:0,init:2,ranged:1,aoe:1,siege:1}
 };
-const TRAIN_COST = {sol:2,arq:3,esc:4,ber:4,cab:6,ari:8,lan:8};
+// Entrenar: un civil pasa a soldado (2) y, si la tropa usa equipo, se fabrica su arma.
+// El arma cuesta 2 × el nivel de la tecnología que la desbloquea (Arco 1, Escudos 2, Caballos y Hachas 3).
+// Si una tropa con equipo muere en tu territorio, el arma queda guardada en la zona y se reutiliza.
+const SOLDIER_COST = 1;
+const EQUIP_COST = {arq:2, esc:4, cab:6, ber:6};
+const EQUIP_N = {arq:['arco','arcos'], esc:['escudo','escudos'], cab:['caballo','caballos'], ber:['hacha','hachas']};
+const TRAIN_COST = {sol:SOLDIER_COST, arq:SOLDIER_COST+EQUIP_COST.arq, esc:SOLDIER_COST+EQUIP_COST.esc,
+                    cab:SOLDIER_COST+EQUIP_COST.cab, ber:SOLDIER_COST+EQUIP_COST.ber, ari:8, lan:8};
+// Almacenamiento de cada zona: 10 por tamaño (comida y producción por separado).
+// El Almacén suma 5 por tamaño por cada nivel; sus especializaciones, lo indicado en SPECS × tamaño.
+const STORE_PER_SIZE = 10;
+const ALMACEN_PER_SIZE = 5;
+// Prioridad de cada zona para su sobrante de comida (después de alimentar y de los envíos automáticos):
+//   'crecer'  → todo el sobrante del paso va al crecimiento (las reservas se mantienen)
+//   'guardar' → el sobrante va al almacén; solo lo que no cabe va al crecimiento
+const GROW_MODE_DEFAULT = 'crecer';
+// Zonas de frontera (tierra de nadie entre dos imperios vecinos): dilema del prisionero.
+// Cada jugador con gente ahí gana FRONTIER_SHARED de oro por paso mientras todos los presentes estén en paz;
+// quien está solo ahí gana FRONTIER_ALONE (pero para lograrlo suele haber que pelear).
+// La frontera nunca tiene dueño: cualquiera puede entrar con civiles; quien está ahí no produce,
+// come de su zona más cercana y gana el oro de la frontera.
+const FRONTIER_SHARED = 3, FRONTIER_ALONE = 4;
+const FRONTIER_TERRAINS = ['pra','lla','rio','col','bos','mon'];
+// Cadena de suministros: las tropas fuera de tu territorio solo comen si hay un camino seguro
+// (sin pasar por zonas de un enemigo) de como máximo SUPPLY_RANGE zonas hasta una zona tuya con comida.
+// Sin suministro pasan hambre, y con hambre pelean con la mitad de los dados.
+const SUPPLY_RANGE = 2;            // zonas de alcance (la tecnología «Suministros de campaña» suma 1)
+const HUNGRY_FIGHT = 0.5;          // multiplicador de fuerza de una tropa hambrienta
+// Etapa de fundación: hasta este paso, crecer cuesta la mitad, para que el inicio no sea tan lento.
+const FOUNDING_STEPS = 12;
+// Bono de la capital: comida, producción, oro y ciencia por paso.
+const CAPITAL_BONUS = 2;
+// Ciencia que usa cada científico al investigar.
+const RESEARCH_PER_SCI = 2;
+// Edificios repetidos: con una tecnología de este nivel del edificio se puede tener un segundo en la zona.
+// El segundo cuesta más (construirlo y mejorarlo) y necesita sus propios trabajadores y espacio.
+const DUP_LEVEL = 3, MAX_SAME = 2, DUP_COST_MULT = 1.5;
 const DEMOB_COST = {basico:2,especializado:3};   // regla 5.2: militar → civil básico 2, → civil especializado 3 (Reservistas: 0)
 const DEMOB_FROM = ['sol','arq','cab','esc','ber']; // las máquinas de asedio no se licencian (pendiente 23)
 const TRAIN_TECH = {sol:null,arq:'Arco',esc:'Escudos',cab:'Doma de caballos',ber:'Forja de hachas',ari:'Ingeniería de asedio',lan:'Lanzapiedras'};
@@ -52,11 +88,12 @@ const BT = {
 };
 // especializaciones de edificio: tecnología -> {bt,key,v}
 const SPECS = {
-  'Almacén de comida I':{bt:'almacen',key:'comida',v:10},'Almacén de comida II':{bt:'almacen',key:'comida',v:20},
-  'Almacén de comida III':{bt:'almacen',key:'comida',v:30},'Almacén de comida IV':{bt:'almacen',key:'comida',v:100},
-  'Almacén de producción I':{bt:'almacen',key:'produccion',v:10},'Almacén de producción II':{bt:'almacen',key:'produccion',v:20},
-  'Almacén de producción III':{bt:'almacen',key:'produccion',v:30},'Almacén de producción IV':{bt:'almacen',key:'produccion',v:100},
-  'Intereses del almacén I':{bt:'almacen',key:'intereses',v:10},'Intereses del almacén II':{bt:'almacen',key:'intereses',v:5},
+  // almacén: v = capacidad extra por tamaño de la zona; intereses: 1 de oro por cada v almacenadas
+  'Almacén de comida I':{bt:'almacen',key:'comida',v:5},'Almacén de comida II':{bt:'almacen',key:'comida',v:10},
+  'Almacén de comida III':{bt:'almacen',key:'comida',v:15},'Almacén de comida IV':{bt:'almacen',key:'comida',v:25},
+  'Almacén de producción I':{bt:'almacen',key:'produccion',v:5},'Almacén de producción II':{bt:'almacen',key:'produccion',v:10},
+  'Almacén de producción III':{bt:'almacen',key:'produccion',v:15},'Almacén de producción IV':{bt:'almacen',key:'produccion',v:25},
+  'Intereses del almacén I':{bt:'almacen',key:'intereses',v:20},'Intereses del almacén II':{bt:'almacen',key:'intereses',v:10},
   'Hospital civil II':{bt:'hospital',key:'civil',v:2},'Hospital civil III':{bt:'hospital',key:'civil',v:3},
   'Hospital militar II':{bt:'hospital',key:'militar',v:2},'Hospital militar III':{bt:'hospital',key:'militar',v:3},
   'Molino-granero':{bt:'molino',key:'granero',v:1},'Taller de armería':{bt:'taller',key:'armeria',v:1},

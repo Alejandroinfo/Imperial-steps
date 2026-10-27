@@ -5,6 +5,7 @@ function panelImperio(){
   const F=G.F[ME], M=G.M[ME]; const zs=zonesOf(G,ME);
   let h=`<div class="kv"><span>Oro</span><span>${Math.floor(F.gold)}</span><span>Tecnología</span><span>${Math.floor(F.tech)}</span><span>Zonas</span><span>${zs.length} de ${G.zones.length}</span><span>Población</span><span>${totalPop(G,ME)}</span><span>Tecnologías</span><span>${Object.keys(F.techs).length} de ${TECHS.length}</span><span>Investigación</span><span>${F.rcap} por paso${F.rq.length?' · '+F.rq.map(p=>esc(p.name)).join(', '):''}</span><span>Edificios</span><span>${zs.reduce((a,z)=>a+z.b.length,0)}</span></div>`;
   h+=myZonesHTML();
+  h+=relationsHTML();
   if(F.out) h+=`<div class="box warn">Quedaste eliminado${F.ghost?' y ahora controlas una tribu':''}. Ya no puedes ganar solo: puedes aliarte con un jugador vivo y ganar con él.</div>`;
   // eventos
   h+='<h4>Eventos <a href="#" data-wiki="eventos" class="wlink">ⓘ</a></h4>';
@@ -25,8 +26,12 @@ function panelImperio(){
     else if(F.out){ const alive=[...Array(G.N).keys()].filter(f=>!G.F[f].out); h+='<div class="row">'+alive.map(f=>btnHTML('ally','Proponer alianza a '+PLN[f].name,`data-t="${f}"`)).join(' ')+'</div>'; }
     ghosts.forEach(f=>{ if(G.F[f].req===ME&&F.ally===null) h+=`<div class="row">${PLN[f].name} (fantasma) propone una alianza. ${btnHTML('ally','Aceptar',`data-t="${f}"`)}</div>`; });
   }
-  // recursos estratégicos
-  const rz=zs.filter(z=>z.res);
-  h+='<h4>Recursos estratégicos que controlas</h4>'+(rz.length?rz.map(z=>`<div class="hint"><span class="dot" style="background:${RES[z.res].col}"></span> <b>${RES[z.res].n}</b> en ${zname(z)} (${RES[z.res].sc}): ${RES[z.res].d}</div>`).join(''):'<div class="hint">Ninguno todavía. Hay uno en cada zona marcada con un círculo G (global) o L (local).</div>');
+  // recursos estratégicos del mapa
+  const all=G.zones.filter(z=>z.res);
+  h+=`<h4>Recursos estratégicos del mapa <a href="#" data-wiki="estrategicos" class="wlink">ⓘ</a></h4><div class="hint">Cada uno da su efecto mientras lo controles, y además <b>rinde más mientras más tiempo lo tengas</b>: +1 por paso al empezar, +1 más cada ${RES_GROW_EVERY} pasos (hasta +${RES_MAX}). Si te lo quitan, el contador vuelve a cero.</div><div class="mz">`;
+  all.sort((a,b)=>(b.owner===ME)-(a.owner===ME)).forEach(z=>{ const r=RES[z.res], k=RES_YIELD[z.res], own=z.owner===ME;
+    const who=z.owner===null?'<span class="tag" style="background:#6B8E5A">libre</span>':z.owner===TRIBE?'<span class="tag" style="background:#8A5A3A">tribu</span>':`<span class="tag" style="background:${PLN[z.owner].col}">${esc(PLN[z.owner].name)}</span>`;
+    h+=`<div class="mzr"><span class="dot" style="background:${r.col};width:16px;height:16px"></span><div class="mzt"><span><b>${esc(r.n)}</b> ${who}</span><small>${esc(zname(z))} · ${r.sc==='global'?'global':'local'}: ${esc(r.d)}</small><small>${isPl(z.owner)?`Rinde ${IMP_ICON[k]} +${resBonus(z)} por paso · ${z.resHeld||0} pasos en manos de ${own?'ti':esc(PLN[z.owner].name)}`:`Rendiría ${IMP_ICON[k]} +1 por paso al tomarlo`}</small></div><button class="btn" data-act="gozone" data-id="${z.id}">Ver</button></div>`; });
+  h+='</div>';
   return h;
 }

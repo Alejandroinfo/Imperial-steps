@@ -9,8 +9,8 @@ function panoramaHTML(){
   let h='<div class="pano">';
   BRANCHES.forEach(b=>{
     const sp=TECHS.filter(t=>t.r===b&&t.v).sort((a,c)=>a.l-c.l||a.n.localeCompare(c.n)); const own=sp.filter(t=>G.F[ME].techs[t.n]).length;
-    const typ=sp[0].t, tc=typ==='Civil'?'#6FA83A':typ==='Construcción'?'#C97A3A':'#C8452F';
-    h+=`<button class="prow ${ui.tf.br===b?'on':''}" data-act="tfbranch" data-b="${esc(b)}"><span class="ptag" style="background:${tc}"></span><span class="pnm">${esc(b)}</span><span class="pdots">${sp.map(t=>`<i class="pd ${techStatus(t)}" title="${esc(t.n)} (N${t.l})"></i>`).join('')}</span><span class="pct">${own}/${sp.length}</span></button>`;
+    const tc=bCol(b);
+    h+=`<button class="prow ${ui.tf.br===b?'on':''}" data-act="tfbranch" data-b="${esc(b)}"><span class="ptag" style="background:${tc}"></span><span class="pnm">${bIco(b)} ${esc(b)}</span><span class="pdots">${sp.map(t=>`<i class="pd ${techStatus(t)}" title="${esc(t.n)} (N${t.l})"></i>`).join('')}</span><span class="pct">${own}/${sp.length}</span></button>`;
   });
   return h+'</div><div class="legend"><i class="pd own"></i> tuya <i class="pd doing"></i> investigando <i class="pd avail"></i> disponible <i class="pd lock"></i> bloqueada</div>';
 }

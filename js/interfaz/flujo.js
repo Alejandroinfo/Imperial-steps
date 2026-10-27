@@ -23,12 +23,14 @@ function beginStep(){
   recomputeMods(G); const now=Date.now();
   ui.ready=[]; for(let f=0;f<G.N;f++) ui.ready.push(false);
   ui.stepStart=now; ui.orders=[]; ui.mv=null; ui.sugI=0;
+  const enc=G.F[ME].enc; if(enc&&ui.encSeen!==enc.step){ ui.encSeen=enc.step; sfxLater(enc.k==='amenaza'?'warn':'encounter',2200,0); }
   for(let f=1;f<G.N;f++) ui.botAt[f]=now+700+Math.floor(Math.random()*3000);
+  if(typeof tutOnStep==='function') tutOnStep();
 }
 function toggleReady(){
   if(G.over||(G.F[ME].out&&!G.F[ME].ghost)) return;
   if(!ui.ready[ME]) tele.ready.push(Date.now()-ui.stepStart); else tele.ready.pop();
-  ui.ready[ME]=!ui.ready[ME]; render(); checkAll();
+  ui.ready[ME]=!ui.ready[ME]; sfx(ui.ready[ME]?'ready':'unready'); render(); checkAll();
 }
 function checkAll(){
   if(G.over) return;
@@ -41,7 +43,7 @@ function finishStep(){
   tele.orders.push(ui.orders.length);
   const before=[...Array(G.N).keys()].map(f=>victoryConds(G,f));
   const prev={gold:Math.floor(G.F[ME].gold),tech:Math.floor(G.F[ME].tech)};
-  resolveStep(G,orders);
+  resolveStep(G,orders); sfx('step');
   recomputeMods(G);
   if(ui.sel!==null&&!G.zones[ui.sel]) ui.sel=null;
   if(G.over){ render(); playFx(G.fx,before); showEnd(); return; }
@@ -49,6 +51,7 @@ function finishStep(){
 }
 function showEnd(){
   const w=G.winner, me=w.includes(ME);
+  sfxLater(me?'victory':'defeat',600,0); if(me) confetti();
   $('endTitle').textContent=me?'¡Ganaste!':(w.length?PLN[w[0]].name+' ganó':'Fin de la partida');
   const avg=tele.ready.length?Math.round(tele.ready.reduce((a,b)=>a+b,0)/tele.ready.length/1000):0;
   const ord=tele.orders.length?(tele.orders.reduce((a,b)=>a+b,0)/tele.orders.length).toFixed(1):'0';

@@ -66,10 +66,30 @@ function fxBuild(zid,bt,delay){
   const g=mkEl('g',{}); g.innerHTML=`<g transform="scale(${f1(3.2*s)})">${bGlyph(bt,0,false)}</g>`; g.style.opacity=0; L.appendChild(g);
   fxAnim(g,[{opacity:0,transform:`translate(${f1(p[0])}px,${f1(p[1]+10*s)}px) scale(.2)`},{opacity:1,transform:`translate(${f1(p[0])}px,${f1(p[1]-30*s)}px) scale(1.25)`,offset:.35},{opacity:1,transform:`translate(${f1(p[0])}px,${f1(p[1]-36*s)}px) scale(1)`,offset:.7},{opacity:0,transform:`translate(${f1(p[0])}px,${f1(p[1]-60*s)}px) scale(1)`}],{duration:1700,delay:delay||0});
 }
-function toast(title,body,kind,icon){
-  const box=$('toasts'); if(!box) return; const d=document.createElement('div'); d.className='toast '+(kind||''); d.innerHTML=`<span class="ti">${icon||'✦'}</span><div><b>${esc(title)}</b>${body?`<div>${esc(body)}</div>`:''}</div>`;
+// Efectos visuales nuevos: temblor de la vista, polvo de obra, destellos y confeti.
+function shakeView(){ if(!FXS.on) return; const v=$('vp'); v.classList.remove('shake'); void v.offsetWidth; v.classList.add('shake'); setTimeout(()=>v.classList.remove('shake'),600); }
+function fxDust(zid,delay){
+  if(!FXS.on) return; const L=fxLayer(); if(!L) return; const p=zp(zid), s=fxScale();
+  for(let k=0;k<9;k++){ const a=Math.PI*2*k/9+Math.random()*0.4, r0=20*s, r1=(80+Math.random()*50)*s;
+    const c=mkEl('circle',{cx:f1(p[0]+Math.cos(a)*r0),cy:f1(p[1]+30*s+Math.sin(a)*r0*0.5),r:f1((10+Math.random()*8)*s),fill:'#CDB48C',opacity:0}); L.appendChild(c);
+    const an=c.animate([{opacity:.0,transform:'translate(0,0) scale(.6)'},{opacity:.75,offset:.2},{opacity:0,transform:`translate(${f1(Math.cos(a)*r1)}px,${f1(Math.sin(a)*r1*0.5-20*s)}px) scale(1.6)`}],{duration:1100,delay:delay||0,easing:'ease-out',fill:'forwards'}); an.onfinish=()=>c.remove(); }
+}
+function fxSparkle(zid,delay,color){
+  if(!FXS.on) return; const L=fxLayer(); if(!L) return; const p=zp(zid), s=fxScale();
+  for(let k=0;k<14;k++){ const a=Math.random()*Math.PI*2, r1=(60+Math.random()*90)*s;
+    const st=mkEl('path',{d:`M0,${f1(-7*s)} L${f1(2*s)},${f1(-2*s)} L${f1(7*s)},0 L${f1(2*s)},${f1(2*s)} L0,${f1(7*s)} L${f1(-2*s)},${f1(2*s)} L${f1(-7*s)},0 L${f1(-2*s)},${f1(-2*s)} Z`,fill:color||'#FFE27A',stroke:'#fff','stroke-width':f1(0.8*s),opacity:0}); L.appendChild(st);
+    const an=st.animate([{opacity:0,transform:`translate(${f1(p[0])}px,${f1(p[1]-40*s)}px) scale(.3)`},{opacity:1,offset:.25},{opacity:0,transform:`translate(${f1(p[0]+Math.cos(a)*r1)}px,${f1(p[1]-40*s+Math.sin(a)*r1)}px) scale(1.2) rotate(90deg)`}],{duration:1300,delay:(delay||0)+k*30,easing:'ease-out',fill:'forwards'}); an.onfinish=()=>st.remove(); }
+}
+function confetti(){
+  if(!FXS.on) return; const box=document.createElement('div'); box.className='confetti'; document.body.appendChild(box);
+  const cols=['#C8452F','#2F7F8F','#D9A028','#5E8E3E','#FFE27A','#7FB2E5'];
+  for(let k=0;k<120;k++){ const d=document.createElement('i'); d.style.left=(Math.random()*100)+'%'; d.style.background=cols[k%cols.length]; d.style.animationDelay=(Math.random()*1.2)+'s'; d.style.animationDuration=(2.4+Math.random()*1.8)+'s'; d.style.transform=`rotate(${Math.random()*360}deg)`; box.appendChild(d); }
+  setTimeout(()=>box.remove(),5200);
+}
+function toast(title,body,kind,icon,action){
+  const box=$('toasts'); if(!box) return; const d=document.createElement('div'); d.className='toast '+(kind||'')+(action?' act':''); if(action){ d.dataset.act=action.act; Object.keys(action).forEach(k=>{ if(k!=='act') d.dataset[k]=action[k]; }); } d.innerHTML=`<span class="ti">${icon||'✦'}</span><div><b>${esc(title)}</b>${body?`<div>${esc(body)}</div>`:''}</div>`;
   box.appendChild(d); while(box.children.length>4) box.removeChild(box.firstChild);
-  setTimeout(()=>{ d.classList.add('out'); setTimeout(()=>d.remove(),400); },FXS.on?4200:5200);
+  setTimeout(()=>{ d.classList.add('out'); setTimeout(()=>d.remove(),400); },action?9000:(FXS.on?4200:5200));
 }
 function banner(text,kind){
   const b=$('banner'); b.className='banner show '+(kind||''); b.textContent=text; clearTimeout(b._t); b._t=setTimeout(()=>{ b.className='banner'; },3800);
@@ -87,26 +107,28 @@ function playFx(list,condsBefore){
   let tProd=0, slotUse={};
   list.forEach(e=>{
     switch(e.k){
-      case 'event': { const ev=EVT[e.id]; banner(ev.n+' — '+ev.d, ev.k==='+'?'pos':ev.k==='-'?'neg':'tri'); break; }
-      case 'move': fxMove(e.from,e.to,e.f,e.n,e.mil,0,e.st); break;
+      case 'event': { const ev=EVT[e.id]; banner(ev.n+' — '+ev.d, ev.k==='+'?'pos':ev.k==='-'?'neg':'tri'); sfxLater(ev.k==='+'?'goodEvent':ev.k==='-'?'badEvent':'horn',250,0); break; }
+      case 'move': fxMove(e.from,e.to,e.f,e.n,e.mil,0,e.st); if(e.f===ME) sfxLater('move',100,300); break;
       case 'send': fxFloat(e.to,'+'+e.q+' '+(e.res==='food'?'comida':'prod.'),'#E9C46A',700,0,-10); break;
       case 'fight': {
-        fxBurst(e.zone,900);
+        fxBurst(e.zone,900); sfxLater('battle',900,250); if(e.facs.includes(ME)) setTimeout(shakeView,950);
         e.facs.forEach((f,i)=>{ const l=e.losses[f]; if(l&&(l.mil>0||l.civ>0)) fxFloat(e.zone,'−'+(l.mil+l.civ),PLN[f].col,1100+i*160,(i-(e.facs.length-1)/2)*70,-10); });
         e.surprise.forEach(f=>fxFloat(e.zone,'¡Sorpresa!','#FFE27A',900,0,-110));
         Object.keys(e.capt).forEach(f=>{ if(e.capt[f]>0) fxFloat(e.zone,'¡'+e.capt[f]+' capturados!',PLN[f].col,1500,0,-150); });
+        if(e.facs.includes(ME)&&e.battle!==undefined) toast('Combate en '+zname(G.zones[e.zone]),'Toca para ver la batalla golpe a golpe.','neg','⚔',{act:'battle',b:e.battle});
         break; }
-      case 'conq': fxRing(e.zone,PLN[e.f].col,1400); fxFloat(e.zone,'¡Conquistada!',PLN[e.f].col,1400,0,-120); if(e.f===ME) toast('Zona conquistada',zname(G.zones[e.zone])+' ahora es tuya.','pos','⚑'); else if(G.zones[e.zone]) toast(PLN[e.f].name+' conquista '+zname(G.zones[e.zone]),'','neg','⚔'); break;
-      case 'annex': fxRing(e.zone,PLN[e.f].col,1400); fxFloat(e.zone,'¡Anexada!',PLN[e.f].col,1400,0,-120); if(e.f===ME) toast('Tribu anexada',zname(G.zones[e.zone])+' se une a tu imperio.','pos','🤝'); break;
+      case 'conq': sfxLater(e.f===ME?'fanfare':'horn',1400,0); fxRing(e.zone,PLN[e.f].col,1400); fxFloat(e.zone,'¡Conquistada!',PLN[e.f].col,1400,0,-120); if(e.f===ME) toast('Zona conquistada',zname(G.zones[e.zone])+' ahora es tuya.','pos','⚑'); else if(G.zones[e.zone]) toast(PLN[e.f].name+' conquista '+zname(G.zones[e.zone]),'','neg','⚔'); break;
+      case 'annex': if(e.f===ME){ sfxLater('fanfare',1400,0); fxSparkle(e.zone,1400,PLN[ME].col); } fxRing(e.zone,PLN[e.f].col,1400); fxFloat(e.zone,'¡Anexada!',PLN[e.f].col,1400,0,-120); if(e.f===ME) toast('Tribu anexada',zname(G.zones[e.zone])+' se une a tu imperio.','pos','🤝'); break;
       case 'take': fxRing(e.zone,PLN[e.f].col,1400); if(e.f===ME) fxFloat(e.zone,'Zona tomada',PLN[e.f].col,1400,0,-120); break;
-      case 'built': fxBuild(e.zone,e.bt,1700); fxRing(e.zone,'#7CE0A0',1700); if(e.f===ME) toast('Obra terminada',BT[e.bt].n+' en '+zname(G.zones[e.zone]),'pos','🏗'); break;
-      case 'upg': fxFloat(e.zone,BT[e.bt].n+' nivel '+e.l,'#7CE0A0',1700,0,-100); fxRing(e.zone,'#FFE27A',1700); if(e.f===ME) toast('Edificio mejorado',BT[e.bt].n+' sube a nivel '+e.l,'pos','⬆'); break;
-      case 'train': if(e.f===ME) fxFloat(e.zone,'+'+e.n+' '+(e.n>1?UNP[e.u]:UN[e.u]).toLowerCase(),'#FFE27A',1500,0,-80); break;
-      case 'spec': if(e.f===ME) fxFloat(e.zone,e.n+' → '+UNP[e.to].toLowerCase(),'#FFE27A',1500,0,-60); break;
-      case 'born': if(e.f===ME) fxFloat(e.zone,'+'+e.n+' poblador'+(e.n>1?'es':''),'#9DC764',2000,0,-70); break;
-      case 'tech': if(e.f===ME){ toast('Tecnología desarrollada',e.name,'tech','🔬'); ui.justTech=e.name; setTimeout(()=>{ ui.justTech=null; },3500); } break;
-      case 'out': toast(PLN[e.f].name+' queda eliminado','Pasa a ser fantasma.','neg','☠'); break;
-      case 'prod': if(e.f===ME){ const items=[['food',e.food],['prod',e.prod],['gold',e.gold],['tech',e.tech]].filter(x=>x[1]>0); items.forEach((it,i)=>fxChip(e.zone,it[0],it[1],2400+i*140+(e.zone%5)*40,i%4)); } break;
+      case 'built': fxBuild(e.zone,e.bt,1700); fxRing(e.zone,'#7CE0A0',1700); fxDust(e.zone,1650); if(e.f===ME) sfxLater('built',1500,400); if(e.f===ME) toast('Obra terminada',BT[e.bt].n+' en '+zname(G.zones[e.zone]),'pos','🏗'); break;
+      case 'upg': fxFloat(e.zone,BT[e.bt].n+' nivel '+e.l,'#7CE0A0',1700,0,-100); fxRing(e.zone,'#FFE27A',1700); if(e.f===ME){ fxSparkle(e.zone,1700); sfxLater('upgrade',1700,300); } if(e.f===ME) toast('Edificio mejorado',BT[e.bt].n+' sube a nivel '+e.l,'pos','⬆'); break;
+      case 'train': if(e.f===ME) sfxLater('train',1500,200); if(e.f===ME) fxFloat(e.zone,'+'+e.n+' '+(e.n>1?UNP[e.u]:UN[e.u]).toLowerCase(),'#FFE27A',1500,0,-80); break;
+      case 'spec': if(e.f===ME) sfxLater('spec',1500,150); if(e.f===ME) fxFloat(e.zone,e.n+' → '+UNP[e.to].toLowerCase(),'#FFE27A',1500,0,-60); break;
+      case 'born': if(e.f===ME) sfxLater('born',2000,300); if(e.f===ME) fxFloat(e.zone,'+'+e.n+' poblador'+(e.n>1?'es':''),'#9DC764',2000,0,-70); break;
+      case 'tech': if(e.f===ME){ sfxLater('tech',600,300); const mc=myCapital(); if(G.zones[mc]&&G.zones[mc].owner===ME) fxSparkle(mc,600,'#7FB2E5'); toast('Tecnología desarrollada',e.name,'tech','🔬'); ui.justTech=e.name; setTimeout(()=>{ ui.justTech=null; },3500); } break;
+      case 'enc': if(e.f===ME){ if(e.ok){ sfxLater('coin',400,0); fxSparkle(e.zone,400,'#E9C46A'); } else sfxLater('badEvent',400,0); } break;
+      case 'out': sfxLater('out',300,0); toast(PLN[e.f].name+' queda eliminado','Pasa a ser fantasma.','neg','☠'); break;
+      case 'prod': if(e.f===ME){ if(e.gold>0) sfxLater('coin',2500,900); const items=[['food',e.food],['prod',e.prod],['gold',e.gold],['tech',e.tech]].filter(x=>x[1]>0); items.forEach((it,i)=>fxChip(e.zone,it[0],it[1],2400+i*140+(e.zone%5)*40,i%4)); } break;
     }
   });
   if(condsBefore){

@@ -5,7 +5,7 @@ function addOrder(o){ ui.orders.push(o); }
 function act(a,d){
   const z=ui.sel!==null?G.zones[ui.sel]:null;
   switch(a){
-    case 'stance': ui.orders=ui.orders.filter(o=>!(o.t==='stance'&&o.zone===z.id)); if(d.v!==z.stance) addOrder({t:'stance',zone:z.id,stance:d.v}); break;
+    case 'stance': { const t=Number(d.t); ui.orders=ui.orders.filter(o=>!(o.t==='stance'&&o.target===t)); if(d.v!==stanceOf(G,ME,t)) addOrder({t:'stance',target:t,stance:d.v}); break; }
     case 'spec': {
       const civT=CIV.filter(t=>availQ(z.id,t)>0); const from=civT.includes(fv('sp_from','pob'))?fv('sp_from','pob'):civT[0];
       const toT=CIV.filter(t=>t!==from); const to=toT.includes(fv('sp_to','agr'))?fv('sp_to','agr'):toT[0];
@@ -19,19 +19,33 @@ function act(a,d){
       const can=DEMOB_FROM.filter(t=>availQ(z.id,t)>0); if(!can.length) break;
       const u=can.includes(fv('dm_u',can[0]))?fv('dm_u',can[0]):can[0]; const to=CIV.includes(fv('dm_to','pob'))?fv('dm_to','pob'):'pob';
       const n=Math.min(Number(fv('dm_n',1))||0,availQ(z.id,u)); if(n>0) addOrder({t:'demob',zone:z.id,u,to,n}); break; }
-    case 'build': addOrder({t:'build',zone:Number(d.zone),bt:fv('bt',Object.keys(BT).filter(k=>k!=='mar'&&techOwn(G,ME,BT[k].unlock))[0])}); break;
+    case 'build': addOrder({t:'build',zone:Number(d.zone),bt:d.bt,spec:d.spec||null}); ui.bpick=null; break;
+    case 'bpick': ui.bpick=(ui.bpick&&ui.bpick.bt===d.bt&&ui.bpick.zone===Number(d.zone))?null:{zone:Number(d.zone),bt:d.bt}; break;
+    case 'battle': openBattle(Number(d.b)); return;
+    case 'bvgo': { stopBattle(); const k=Number(d.k); if(k===BV.k+1) battleSound(k); BV.k=k; renderBattle(); return; }
+    case 'bvplay': playBattle(); return;
     case 'wonder': addOrder({t:'wonder',zone:Number(d.zone)}); break;
     case 'upgrade': addOrder({t:'upgrade',zone:Number(d.zone),bi:Number(d.bi)}); break;
     case 'bspec': { const v=fv('bs_'+d.zone+'_'+d.bi,''); if(v) addOrder({t:'bspec',zone:Number(d.zone),bi:Number(d.bi),spec:v}); break; }
     case 'demolish': addOrder({t:'demolish',zone:Number(d.zone),bi:Number(d.bi)}); break;
     case 'send': { const others=G.zones.filter(a=>a.owner===ME&&a.id!==z.id); const to=others.some(a=>String(a.id)===String(fv('sd_to','')))?Number(fv('sd_to','')):others[0].id; const q=Number(fv('sd_q',5))||0; if(q>0) addOrder({t:'send',from:z.id,to,res:fv('sd_res','food'),q}); break; }
+    case 'fold': ui.det=ui.det||{}; ui.det[d.k]=!ui.det[d.k]; break;
+    case 'tutnext': tutNext(); return;
+    case 'tutstop': tutStop(); render(); return;
+    case 'encounter': ui.orders=ui.orders.filter(o=>o.t!=='encounter'); addOrder({t:'encounter',choice:d.v}); break;
+    case 'growmode': ui.orders=ui.orders.filter(o=>!(o.t==='growmode'&&o.zone===z.id)); if(d.v!==(z.growMode||GROW_MODE_DEFAULT)) addOrder({t:'growmode',zone:z.id,mode:d.v}); break;
+    case 'autospec': ui.orders=ui.orders.filter(o=>!(o.t==='autospec'&&o.zone===z.id)); if(d.v!==(z.autoSpec||'pob')) addOrder({t:'autospec',zone:z.id,to:d.v==='pob'?null:d.v}); break;
+    case 'route': { const from=d.from!==undefined?Number(d.from):z.id;
+      if(d.q==='0'){ addOrder({t:'route',from,to:Number(d.to),res:d.res,q:0}); break; }
+      const others=G.zones.filter(a=>a.owner===ME&&a.id!==from); const to=others.some(a=>String(a.id)===String(fv('rt_to','')))?Number(fv('rt_to','')):others[0].id;
+      const q=fv('rt_q','sobrante'); ui.orders=ui.orders.filter(o=>!(o.t==='route'&&o.from===from&&o.to===to&&o.res===fv('rt_res','food')));
+      addOrder({t:'route',from,to,res:fv('rt_res','food'),q:q==='sobrante'?'sobrante':Number(q)}); break; }
     case 'annex': addOrder({t:'annex',zone:Number(d.zone),from:Number(d.from)}); ui.mv=null; break;
     case 'tribute': addOrder({t:'tribute',tribe:Number(d.tribe),from:Number(d.from)}); break;
     case 'ally': addOrder({t:'ally',target:Number(d.t)}); break;
     case 'unally': addOrder({t:'ally',off:1}); break;
     case 'research': addOrder({t:'research',name:d.name}); break;
     case 'cancelres': addOrder({t:'cancelres',name:d.name}); break;
-    case 'assign': { const sciN=(z.units[ME]||[]).filter(u=>u.t==='cie'&&u.w===0).length; const n=Math.max(0,Math.min(Number(fv('rs_n',0))||0,sciN)); ui.orders=ui.orders.filter(o=>!(o.t==='assign'&&o.zone===z.id)); addOrder({t:'assign',zone:z.id,n}); break; }
     case 'del': ui.orders.splice(Number(d.i),1); break;
     case 'mvst': ui.mv.st=d.v; break;
     case 'mvcancel': ui.mv=null; break;
@@ -62,6 +76,7 @@ function act(a,d){
 }
 function onZone(id){
   if(ui.sel===id){ ui.tab='zona'; render(); return; }   // volver a tocar la zona elegida la mantiene
+  sfx('select');
   ui.mv=null; ui.sel=id; ui.tab='zona'; ui.zsub=(ui.zsub==='mover'&&!(G.zones[id].units[ME]||[]).length&&!mine(G.zones[id]))?'mover':ui.zsub;
   render();
   if(ui.view==='terr'){ const x=sx(id),y=sy(id); const mx=VIEW.w*0.18,my=VIEW.h*0.18; if(x<VIEW.x+mx||x>VIEW.x+VIEW.w-mx||y<VIEW.y+my||y>VIEW.y+VIEW.h-my) goZone(id,VIEW.w,500); }

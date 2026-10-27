@@ -9,7 +9,7 @@ Documento de trabajo para corregir y construir encima. Reúne todo lo conversado
 - ❓ **Por definir** — falta una decisión o hay ambigüedad.
 - 🆕 **Nuevo en la última sesión** (26 de octubre de 2026). Junto a ✅ o 💡 indica si lo decidieron ustedes o si es una propuesta mía.
 
-**Última actualización:** 26 de octubre de 2026 (prototipo v0.7).
+**Última actualización:** 26 de octubre de 2026 (prototipo v0.13).
 
 Cómo usarlo: cambien el emoji de estado cuando decidan algo, tachen lo que no les guste y escriban encima.
 
@@ -121,6 +121,7 @@ Cada zona tiene un terreno. Algunos efectos dependen de si la unidad es **atacan
 | 11 | Frontera ancha | Dos pasos paralelos entre vecinos | 3 |
 | 12 | Rueda | Todo pasa por un centro compartido | 7 |
 
+- ✅ 🆕 **Fronteras (26/10/2026, decidido por Pao: mapas más conectados y que las tribus no sean el colchón entre imperios):** entre cada par de imperios vecinos se agrega una **zona de frontera** («tierra de nadie»). El camino que unía las dos tribus ahora pasa por ella, y además se une con la zona libre más cercana de cada imperio, así que los vecinos se tocan directamente. 💡 Se ubica con un criterio geométrico para que sus caminos no pasen por encima de otras zonas; en 25 de los 36 mapas no hay ningún cruce (los mapas originales tenían 30 de 36). Ver la regla en la sección 11.
 - 💡 Para la primera partida de mesa, probar un mapa de ritmo medio (por ejemplo 1, 4 o 10) con 3 jugadores, y comparar después con uno rápido (8) y uno lento (7).
 - ❓ Especialización y tamaño de población de cada tribu en cada mapa.
 
@@ -146,7 +147,8 @@ Cada zona tiene un terreno. Algunos efectos dependen de si la unidad es **atacan
 - ✅ Convertir a civil básico cuesta **2** de producción; a civil especializado, **3**.
   - ✅ 🆕 Se hace con la orden **Licenciar** de la pestaña Militar; la tecnología *Reservistas* lo deja gratis.
   - 💡 🆕 Se puede licenciar en cualquier zona propia (sin Cuartel); las tropas heridas esperan a curarse; las máquinas de asedio no se licencian (ver pendiente 23).
-- ✅ Moverlos cuesta **1 de oro por unidad por espacio** movido.
+- ✅ Moverlos cuesta **1 de oro por unidad por espacio** movido. 🆕 El formulario de «Ir» y la flecha del mapa muestran el costo exacto, y recuerdan que los civiles se mueven gratis pero ese paso no producen.
+- ✅ 🆕 **Entrenar no necesita Cuartel (26/10/2026, decidido por Pao: el Cuartel frenaba el inicio y la agresividad):** se puede entrenar en cualquier zona propia. El Cuartel mantiene sus ventajas: sus militares no comen, dan movimiento extra y permite sus especializaciones.
 
 ### 5.3 Estados de una unidad
 
@@ -200,6 +202,7 @@ Cada zona tiene un terreno. Algunos efectos dependen de si la unidad es **atacan
 | **Gemas** | Montañas | Local | El Mercado de la zona da +1 de oro adicional por trabajador |
 | **Brea** | Ríos o Bosques | Local | Las máquinas de asedio fabricadas en la zona tienen +1 de fuerza |
 
+- ✅ 🆕 **Recursos disputados (26/10/2026, decidido por Pao: que se sientan más importantes):** además de su efecto, cada recurso **rinde más mientras más tiempo lo controles**: 💡 +1 por paso al tomarlo y +1 más cada 5 pasos, hasta +4 (comida o producción en la zona, oro o ciencia global, según el recurso). Si cambia de dueño, el contador vuelve a cero. Se ve en el mapa (con el color de quien lo tiene y su rendimiento) y en el panel Imperio, que lista todos los recursos del mapa. Los bots priorizan atacar zonas con recursos.
 - 💡 **Reparto en el mapa:** por jugador, 1 recurso global y 2 locales, en zonas que no sean la capital y repartidos igual para todos (para mantener la simetría). Las tribus también pueden custodiar recursos: conquistar o anexar la tribu te los da.
 - 💡 Las Maravillas podrían exigir tener cerca una Piedra de cantera; es opcional.
 - ❓ ¿Los recursos se agotan, o duran toda la partida? Se asume que duran.
@@ -238,12 +241,27 @@ Detalles:
 - ✅ 🆕 **Alimentación automática (26/10/2026, decidido por Pao):** cada zona come primero de lo suyo; lo que falte sale **sin costo** de la zona propia más cercana que tenga comida (guardada o producida), y luego de la siguiente. Vale igual para militares fuera de casa y para civiles de zonas que no producen comida. **Evitar el hambre va antes que crecer.** Después de alimentar a todos, el **excedente** se puede:
   1. **Almacenar** — ✅ 🆕 máximo **10 por punto de tamaño** de la zona, para comida y para producción por separado (antes 10 fijos). Ampliable con el Almacén (ver 15.1).
   2. **Enviar** a otra zona pagando la logística.
-  3. **Crecer:** se gasta en progreso hacia un nuevo aldeano. 💡 🆕 **La mitad del excedente del paso va a crecer y la otra mitad se guarda**; cuando el almacén está lleno, todo va a crecer (`GROW_SHARE = 0.5`). Sin esto, con el almacén nuevo la capital tardaría unos 15 pasos en tener su primer poblador.
+  3. **Crecer:** se gasta en progreso hacia un nuevo aldeano. 🆕 **Etapa de fundación:** hasta el paso 12, crecer cuesta la mitad, para que el inicio no sea tan lento (💡 `FOUNDING_STEPS = 12`). ✅ 🆕 **Cada zona elige su prioridad (decidido por Pao):** **Crecer** (todo el sobrante del paso, después de alimentar y de los envíos automáticos, va al crecimiento; es lo normal) o **Guardar** (el sobrante va al almacén; solo lo que no cabe va a crecer). Reemplaza la propuesta de repartir mitad y mitad.
 - ✅ Costo del nuevo poblador según el **tamaño de la zona** (número de crecimientos que ha hecho, no la población actual): el 3.º cuesta **6**, el 4.º **10**, el 5.º **15**… (fórmula equivalente: n(n+1)/2).
 - ✅ La comida invertida en crecer **se gasta** (a diferencia de almacenarla).
 - ✅ Al inicio de cada ronda se revisa si la ronda anterior alcanzó el costo; si sí, el nuevo aldeano **aparece y trabaja esa misma ronda**.
 - 💡 🆕 El progreso de crecimiento es **por zona** y **se acumula** si no se completa (así funciona el prototipo).
 - 💡 🆕 Con la capital a +2: 4 pobladores producen unos 6 de comida y consumen 4 (+2 por paso). Especializando 2 agricultores sube a +4. En la prueba el primer poblador nació a los 6 pasos. La placa de cada zona muestra en cuántos pasos nace el siguiente.
+
+### 8.0 Cadena de suministros (🆕 26/10/2026, decidido por Pao)
+
+- ✅ **Dentro de tu territorio** (y en las fronteras) la comida circula por tus caminos y llega lejos.
+- ✅ **Fuera**, tus tropas solo comen si hay una **línea de suministro**: un camino de como máximo 💡 **2 zonas** (3 con *Suministros de campaña*) hasta una zona tuya con comida, **sin pasar por zonas de un enemigo**.
+- ✅ Una tropa **con hambre pelea con la mitad de los dados** y, si sigue sin comer, muere (💡 `HUNGRY_FIGHT = 0.5`).
+- ✅ Una zona propia **rodeada** queda sitiada: solo come de sus reservas.
+- ✅ En el mapa se dibuja la línea de suministro (verde si llega, roja si hay hambre) y un aviso **⚠ Sin suministros** si está cortada; la pestaña Militar dice desde dónde viene.
+- 💡 Consecuencia buscada: **elegir dónde pelear** importa. Cortarle el camino al enemigo tomando una zona intermedia puede valer más que vencerlo de frente, y guardar comida (Recursos → Guardar) permite resistir un asedio.
+
+### 8.0b Automatizaciones (🆕 26/10/2026, decididas por Pao)
+
+- ✅ **Envíos automáticos:** una zona puede mandar cada paso comida o producción a otra zona propia (una cantidad fija o todo su sobrante), pagando la logística en oro como un envío normal. Se hace después de alimentar y antes de crecer.
+- ✅ **Oficio de los que nacen:** cada zona puede elegir que los nuevos pobladores se especialicen al nacer (agricultor, ingeniero, etc.) si hay producción para pagarlo; si no, quedan como pobladores.
+- ✅ **Prioridad de la comida:** Crecer o Guardar (ver arriba).
 
 ### 8.1 Tamaño de zona y migración
 
@@ -275,7 +293,7 @@ Detalles:
 | Berserker | Melé | 3 | 2 (sube hasta 4) | 3 | 0 | 6 |
 
 - ✅ **Al crear la unidad:** sin arma es soldado básico. Con **arco** → arquero. **Caballo** → caballero. **Escudo** → escudero. **Hacha** → berserker.
-- ✅ 🆕 **Costo con equipo (26/10/2026, decidido por Pao):** las tropas especializadas pagan su equipo además del soldado. 💡 Valores: soldado **2**; equipo = **3 × el nivel de su tecnología** (arco 3, escudo 6, caballo 9, hacha 9). Arquero 5, escudero 8, caballero y berserker 11. Equipar a un soldado existente paga solo el equipo.
+- ✅ 🆕 **Costo con equipo (26/10/2026, decidido por Pao):** las tropas especializadas pagan su equipo además del soldado. 💡 🆕 Valores bajados porque los militares salían muy caros: soldado **1**; equipo = **2 × el nivel de su tecnología** (arco 2, escudo 4, caballo 6, hacha 6). Arquero 3, escudero 5, caballero y berserker 7. Equipar a un soldado existente paga solo el equipo.
 - ✅ 🆕 **Equipo recuperable:** si una tropa con equipo muere **en tu territorio**, su arma queda guardada en la zona; cuando la zona deja de estar en conflicto, se puede usar para entrenar otra pagando solo el soldado. 💡 Si conquistan la zona, el equipo guardado se pierde.
 - ✅ **Berserker:** iniciativa **6** (antes 4). Actúa después del soldado básico (5) y antes del escudero (8) y el aldeano (10).
 - ✅ Las tecnologías y sus efectos sobre estas unidades se definen **después**, y recién ahí se hace el simulador de balance.
@@ -380,6 +398,7 @@ Detalles:
   - Ambos atacan → pelean sin ventaja.
 - ✅ La zona queda **en tensión**. Si hay conflicto en cualquier lugar del mapa entre esos dos jugadores, **todas las zonas en tensión** que tengan entre ellos pasan a conflicto. Los beneficios de la zona los sigue teniendo quien la controlaba.
 - ✅ **Zona en conflicto:** si alguien ataca y al terminar la ronda de combate quedan tropas de ambos sin retirarse, sigue en conflicto el siguiente paso.
+- ✅ 🆕 **Dilema del prisionero en la frontera (26/10/2026, decidido por Pao):** la frontera **nunca tiene dueño**; cualquiera puede entrar con civiles o tropas. Quien tiene gente ahí no produce y come de su zona más cercana, pero gana oro: 💡 **+3 por paso a cada uno** mientras todos los presentes estén en paz, o **+4** si está solo. Si alguien ataca, ese paso nadie gana, y el atacante tiene sorpresa si el otro estaba en Paz. Cooperar conviene a los dos; traicionar conviene a uno.
 - ✅ 🆕 **Postura entre jugadores (26/10/2026, decidido por Pao):** cada jugador tiene una postura **hacia cada rival**: **Paz** (por defecto) o **Alerta**. Con Alerta, sus tropas atacan a las de ese jugador **en cualquier zona donde coincidan**, con sorpresa si el otro está en Paz. Se elige en Imperio → Relaciones o en la pestaña Militar. Reemplaza la «postura de zona».
 
 ---
@@ -459,6 +478,17 @@ Detalles:
 - ✅ Se sortea **1 evento cada 3 rondas** a partir de la ronda 6 (antes era uno por ronda, y resultaba demasiado frecuente), con generador aleatorio con semilla para que las partidas se puedan repetir.
 - 💡 Conexión con las tecnologías: *Calendario*, *Astronomía* y *Pronóstico* (ver con más anticipación y evitar), *Semillas resistentes*, *Reservas de emergencia*, *Fortuna del temerario* y *Resistencia climática*.
 - ❓ ¿El evento afecta a todas las zonas del terreno indicado o solo a algunas sorteadas? Se asume que a todas, para que sea justo con el mapa simétrico.
+
+### 13.2 Encuentros (🆕 26/10/2026, decididos por Pao)
+
+- ✅ Llegan **sin aviso** a una zona del jugador (de preferencia de frontera) y se deciden **en ese mismo paso**; no hay que prepararse, hay que jugar alrededor de ellos.
+- ✅ 🆕 **Solo oportunidades (decidido por Pao):** son ofertas o apuestas que conviene aprovechar si se puede. **Nada negativo** si se rechazan o no se responden: una amenaza que llega sin aviso es demasiado al azar para poder prepararse.
+- ✅ **Entre más avanza la partida, más piden y más dan** (💡 los montos se multiplican por 1 + paso/15; las personas que llegan suben 1 cada 20 pasos).
+- 💡 Frecuencia: uno cada 4 a 7 pasos por jugador, desde el paso 4.
+- 💡 **20 tipos con 43 variantes** de quién llega; algunos dependen del terreno. Dos clases:
+  - **Ofertas** (pagas y recibes): mercenarios, veteranos, arqueros, jinetes, refugiados, artesanos, mercaderes, sabio, escuela, caravana de hierro, mercado de granos, compradores, herrero, armero, juglares, parteras, pescadores, mineros.
+  - **Apuestas** (pagas y puede salir mal): mapa del tesoro, alquimista.
+- ✅ Los bots también reciben encuentros y los deciden con una regla simple.
 
 ---
 
@@ -744,9 +774,15 @@ El catálogo completo está en **Tecnologias_v0.2.xlsx** (hojas *Reglas*, *Tecno
 26. ❓ **Economía militar:** 🆕 ahora las tropas con equipo cuestan más (sección 9) y la capital produce la mitad. Hay que volver a medir si los ejércitos quedan demasiado chicos.
 27. ❓ **Victoria tecnológica:** confirmar que las 5 tecnologías de nivel 5 sean de ramas distintas (14.1).
 28. ❓ 🆕 **Ritmo de la partida:** con la capital a +2 y el equipo más caro, en 72 partidas simuladas casi nadie gana antes del paso 60, ni siquiera en modo prueba. Revisar los umbrales del modo prueba o el ritmo económico.
-29. ❓ 🆕 **Reparto del sobrante de comida** (💡 mitad a crecer, mitad a guardar): confirmar jugando.
+29. ✅ 🆕 **Reparto del sobrante de comida:** resuelto. Cada zona elige Crecer o Guardar (sección 8).
 30. ❓ 🆕 **Segundo edificio del mismo tipo** (💡 +50 % de costo): confirmar que no rompe el balance, sobre todo con Almacén, Cuartel y Biblioteca.
-31. ❓ 🆕 **Valores del equipo** (💡 3 × nivel de la tecnología) y si el equipo guardado lo toma el conquistador en vez de perderse.
+31. ❓ 🆕 **Valores del equipo** (💡 ahora 2 × nivel de la tecnología y soldado 1) y si el equipo guardado lo toma el conquistador en vez de perderse.
+32. ❓ 🆕 **Economía estancada** (sigue abierta, aunque mejoró con la etapa de fundación y las fronteras): en las simulaciones la población se queda cerca de 10 hasta el paso 60 (ver `docs/balance_economia.md`). Decidir si se cambia el costo de crecer, lo que da el agricultor o el poblador, o si basta con que los jugadores se expandan.
+33. ❓ 🆕 **Tecnologías muy fuertes según la simulación** (`docs/balance_tecnologias.md`): *Arado* y *Moneda* se pagan en 2 o 3 pasos; la línea de *Fortificación* sube hasta +51 puntos el % de victorias al defender; *Armaduras ligeras* +28 y +30.
+34. ❓ 🆕 **Diseño para más tensión**, en el orden que eligió Pao: ✅ encuentros sorpresa y recursos disputados (secciones 13.2 y 6.3) → ✅ mapas más conectados con dilema del prisionero en la frontera (secciones 4.2 y 11) → tribus como amenaza latente y tributo negociado → multijugador por videollamada.
+36. ❓ 🆕 **Fronteras:** confirmar los bonos (+3 / +4) jugando, y revisar los 11 mapas donde un camino todavía pasa por encima de otra zona (sobre todo Espiral y Dientes de sierra).
+37. ✅ 🆕 **Maravillas:** no se podían construir (la orden no se atendía); corregido al agregar la revisión de tipos.
+35. ❓ 🆕 **Multijugador para el primer playtest** por videollamada, cada uno en su computadora.
 
 ---
 
@@ -787,20 +823,23 @@ El catálogo completo está en **Tecnologias_v0.2.xlsx** (hojas *Reglas*, *Tecno
 
 ---
 
-## 23. Prototipo jugable (v0.7) y repositorio
+## 23. Prototipo jugable (v0.13) y repositorio
 
 🆕 **El prototipo ya no es un solo archivo.** Vive en el repositorio **github.com/Alejandroinfo/Imperial-steps**, organizado en capas: `js/datos` (mapas y tecnologías), `js/config` (números de balance), `js/motor` (reglas, sin nada de pantalla) y `js/interfaz` (lo que se ve). Se abre con `index.html`, sin instalar nada. Para compartirlo en un solo archivo: `python herramientas/empaquetar.py` → `dist/Los_Pasos_del_Imperio.html`.
 
-**Pruebas automáticas** (`npm test`): `pruebas/revisar_capas.js` (el motor no toca la pantalla), `pruebas/probar_reglas.js` (14 casos concretos de reglas) y `pruebas/simular_partidas.js` (72 partidas entre bots en los 12 mapas, sin errores).
+**Pruebas automáticas** (`npm test`): `pruebas/revisar_capas.js` (el motor no toca la pantalla), `pruebas/probar_reglas.js` (37 casos concretos de reglas) y `pruebas/simular_partidas.js` (72 partidas entre bots en los 12 mapas, sin errores). 🆕 **Tipos** (`npm run check`): el motor se revisa con TypeScript a partir de `js/tipos.d.ts` (partida, zona, unidad, jugador, órdenes, encuentro), sin paso de compilación.
 
 **Qué es:** una versión jugable con casi todo lo diseñado. Juegas contra 1 a 3 bots en cualquiera de los **12 mapas**, para **2, 3 o 4 jugadores**. El paso avanza cuando todos están listos, sin reloj.
 
-### 23.1 Cambios de la sesión del 26 de octubre de 2026 (v0.3 → v0.7)
+### 23.1 Cambios de la sesión del 26 de octubre de 2026 (v0.3 → v0.13)
 
 **Interfaz**
 - Las opciones de partida nueva están en una ventana al empezar y en el **Menú**, no en pantalla mientras juegas.
 - El **turno** (paso, jugadores listos, recursos y ¡Listo!) está en la barra superior.
 - **Tecnologías** en subpestañas: Disponibles (solo las que puedes empezar, con filtro por tipo), En curso, Mías y Todas.
+- **Tecnologías recomendadas y por color:** arriba, «⭐ Te ayudan ahora» con las 3 o 4 que más aportan en tu situación; el resto, agrupado por rama con su color e ícono, en filas cortas con el impacto en íconos (la descripción aparece al pasar el mouse).
+- **Menos texto, más íconos:** 🌾 comida, ⚒ producción, 🪙 oro y 🔬 ciencia en costos, encuentros, tributos, anexiones, entrenamiento y reservas; las personas ofrecidas se muestran con su figura.
+- **Impacto de cada tecnología hoy:** una línea 💡 calcula con el motor tu próximo paso con y sin ella (ej.: con 3 agricultores, *Arado* → «🌾 +3 por paso»; *Molino de piedra* → «al mejorar tu Molino: 🌾 +2»). Si hoy no se nota, dice por qué («beneficia a los ingenieros: hoy no tienes ninguno»).
 - **Zona:** nombre corto de una palabra (Adrianópolis, Saucedo, Brasca…), tu gente al lado del nombre y el terreno en una línea (su efecto se ve al pasar el mouse).
 - **Resumen de zona nuevo:** comida neta del paso (lo producido menos lo que se come), reservas con barras, crecimiento con pasos hasta el próximo poblador, **quién trabaja y dónde** (oficio, edificio y lo que aporta cada uno), bonos de capital y de zona, tropas y de dónde vino la comida.
 - **Mapa como valle continuo:** las zonas se tocan; entre dos zonas con camino hay una cerca baja y entre dos sin camino, un barranco con rocas. Alrededor, bosque espeso. Tus zonas llevan un tinte de tu color.
@@ -811,6 +850,8 @@ El catálogo completo está en **Tecnologias_v0.2.xlsx** (hojas *Reglas*, *Tecno
 - **Tributos:** aviso rojo en el mapa y recuadro con botones de pago en la zona de la tribu.
 - **Visor de batallas:** cada combate se puede repetir golpe por golpe, oleada por oleada en orden de iniciativa: quién ataca, dados, aciertos, defensa absorbida, caídos y heridos, y un resultado final. Se abre desde el aviso, la zona o el Historial.
 - La partida empieza con tu capital elegida.
+- **Comienzo guiado (v0.12, decidido por Pao: 20 pasos y luego partida normal):** partida en el mapa Anillo contra un bot. Una tarjeta sobre el mapa presenta un sistema por paso y resalta el botón exacto; cada objetivo se cumple al hacerlo y las etapas que dependen de la partida se pueden saltar. Pasos 1 a 5: oficios (2 agricultores y 1 científico), tecnología, Molino y un constructor (sin pobladores ni constructores las obras no avanzan), frontera y victoria, y expansión; 6 eventos; 7 oficio al nacer; 8 primer encuentro (siempre el mismo: refugiados); 9 crecer o guardar; 10 Cuartel; 11 cola de investigación; 12 recursos estratégicos; 13 tribus; 14 postura; 15 envíos automáticos; 16 soldados; 17 historial; 18 mejorar edificios; 19 combates; 20 despedida. Los encuentros sorpresa se activan al terminar.
+- **Sonido y efectos:** sonidos generados por código (sin archivos): clic, ¡Listo!, resolución del paso, obras, tecnologías, monedas, nacimientos, combates golpe a golpe en el visor, conquistas, eventos buenos y malos, victoria y derrota; ambiente de viento y pájaros. Efectos nuevos: temblor en los combates, polvo al terminar una obra, destellos y confeti al ganar. Se controlan en el Menú (sonido, volumen, ambiente).
 
 **Reglas** (detalle en cada sección): licenciar tropas (5.2), capital +2 (7), almacén 10 × tamaño y alimentación automática (8), equipo con costo y recuperable (9), postura entre jugadores (11), científicos automáticos (14.0), construir en el nivel máximo con especialización y segundo edificio del mismo tipo (15).
 

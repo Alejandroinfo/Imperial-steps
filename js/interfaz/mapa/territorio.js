@@ -25,14 +25,18 @@ function buildWorld(){
   // Cada zona es una parcela del mismo valle: celdas de Voronoi limitadas por un borde orgánico.
   const abs=Z.map((z,i)=>{
     const rnd=mulberry32(77+i*31+(G.seed%1009)); const n=30; let poly=[];
-    for(let k=0;k<n;k++){ const a=2*Math.PI*k/n; const rr=RC*(0.9+0.14*rnd()); poly.push([WORLD.site[i][0]+rr*Math.cos(a),WORLD.site[i][1]+rr*Math.sin(a)]); }
-    Z.forEach((o,j)=>{ if(j===i) return; if(Math.hypot(WORLD.site[i][0]-WORLD.site[j][0],WORLD.site[i][1]-WORLD.site[j][1])>2*RC*1.1) return; poly=clipHalf(poly,WORLD.site[i],WORLD.site[j]); });
+    const fr=z.role==='frontera'?0.6:1;   // la frontera es un paso estrecho entre imperios
+    for(let k=0;k<n;k++){ const a=2*Math.PI*k/n; const rr=RC*fr*(0.9+0.14*rnd()); poly.push([WORLD.site[i][0]+rr*Math.cos(a),WORLD.site[i][1]+rr*Math.sin(a)]); }
+    Z.forEach((o,j)=>{ if(j===i) return; if(Math.hypot(WORLD.site[i][0]-WORLD.site[j][0],WORLD.site[i][1]-WORLD.site[j][1])>2*RC*1.1) return;
+      // contra una frontera, la línea divisoria se corre hacia ella (su celda es más chica)
+      const wj=Z[j].role==='frontera'?0.6:1, wi=z.role==='frontera'?0.6:1; const t=wi/(wi+wj); const S=WORLD.site[i], T=WORLD.site[j]; const m=[S[0]+(T[0]-S[0])*t*2, S[1]+(T[1]-S[1])*t*2];
+      poly=clipHalf(poly,S,m); });
     return poly;
   });
   WORLD.poly=abs.map((poly,i)=>poly.map(p=>[p[0]-WORLD.site[i][0],p[1]-WORLD.site[i][1]]));
   // Bordes compartidos: el tramo de la celda i que cae sobre la mediatriz con j.
   const conn=new Set(G.map.e.map(([a,b])=>Math.min(a,b)+'-'+Math.max(a,b)));
-  const shared=(i,j)=>{ const s=WORLD.site[i], t=WORLD.site[j]; const mx=(s[0]+t[0])/2,my=(s[1]+t[1])/2,nx=t[0]-s[0],ny=t[1]-s[1],L=Math.hypot(nx,ny);
+  const shared=(i,j)=>{ const s=WORLD.site[i], t=WORLD.site[j]; const wi=Z[i].role==='frontera'?0.6:1, wj=Z[j].role==='frontera'?0.6:1, k=wi/(wi+wj); const mx=s[0]+(t[0]-s[0])*k,my=s[1]+(t[1]-s[1])*k,nx=t[0]-s[0],ny=t[1]-s[1],L=Math.hypot(nx,ny);
     const near=p=>Math.abs(((p[0]-mx)*nx+(p[1]-my)*ny)/L)<0.6; const P=abs[i]; let best=null;
     for(let k=0;k<P.length;k++){ const a=P[k],b=P[(k+1)%P.length]; if(near(a)&&near(b)){ const l=Math.hypot(b[0]-a[0],b[1]-a[1]); if(l>8&&(!best||l>best.l)) best={a,b,l}; } }
     return best; };
@@ -83,7 +87,7 @@ function routeZones(a,b){ // camino más corto por el grafo
 }
 
 /* ---------- emblemas de especialización ---------- */
-const SPECC={agr:'#6FA83A',ing:'#C97A3A',con:'#8A8378',cie:'#4A7FC0',com:'#E0A21B',bas:'#B79A6A',tri:'#8A5A3A',free:'#9AA39C'};
+const SPECC={front:'#C9A24A',agr:'#6FA83A',ing:'#C97A3A',con:'#8A8378',cie:'#4A7FC0',com:'#E0A21B',bas:'#B79A6A',tri:'#8A5A3A',free:'#9AA39C'};
 const SPECL={agr:'Agrícola',ing:'Producción',con:'Industrial',cie:'Tecnología',com:'Comercial',bas:'Básica',tri:'Tribu',free:'Libre'};
 function emblem(sp,r){
   const c=SPECC[sp]||SPECC.free; let g='';
@@ -95,18 +99,20 @@ function emblem(sp,r){
     case 'com': g='<circle r="12" fill="#fff"/><text y="6" text-anchor="middle" font-size="17" font-weight="700" fill="#B07A10" class="zt">$</text>'; break;
     case 'tri': g='<polygon points="-13,12 0,-13 13,12" fill="#fff"/><polygon points="-4,12 0,2 4,12" fill="#8A5A3A"/>'; break;
     case 'free': g='<circle r="10" fill="none" stroke="#fff" stroke-width="3" stroke-dasharray="3 5"/>'; break;
+    case 'front': g='<path d="M-9,13 V-13 M-9,-13 L9,-7 L-9,-1" stroke="#fff" stroke-width="3" fill="#fff" stroke-linejoin="round"/><path d="M3,13 V-6" stroke="#fff" stroke-width="2.5"/>'; break;
     default: g='<path d="M-12,2 L0,-11 L12,2 v10 h-24 z" fill="#fff"/><rect x="-3" y="4" width="6" height="8" fill="#B79A6A"/>';
   }
   return `<g transform="scale(${r/24})"><circle r="24" fill="${c}" stroke="${INK}" stroke-width="3"/>${g}</g>`;
 }
 function zspec(z){
   if(z.owner===TRIBE) return {sp:'tri',lvl:0,lab:'Tribu '+({agr:'agrícola',ing:'de producción',com:'comercial',cie:'científica'})[z.tspec]};
+  if(z.role==='frontera') return {sp:'front',lvl:0,lab:'Frontera'};
   if(!isPl(z.owner)) return {sp:'free',lvl:0,lab:'Zona libre'};
   const s=zoneSpec(G,z,z.owner); const R=['','I','II','III'];
   return {sp:s.spec,lvl:s.lvl,lab:SPECL[s.spec]+(s.spec==='bas'?'':' '+R[s.lvl])};
 }
 function popOf(z){ let n=0; for(const f in z.units) n+=z.units[f].length; return n; }
-function ownPop(z){ return isPl(z.owner)||z.owner===TRIBE?(z.units[z.owner]||[]).length:0; }
+function ownPop(z){ if(z.role==='frontera') return popOf(z); return isPl(z.owner)||z.owner===TRIBE?(z.units[z.owner]||[]).length:0; }
 
 /* ---------- dibujo ---------- */
 function terrDecor(it){
@@ -168,11 +174,17 @@ function buildTerritoryDOM(){
   $('ordT').innerHTML=''; ui.ordSig='';
 }
 function zoneSig(z,i){
-  let s=[z.owner,z.size,z.conflict?1:0,z.res||'',Math.floor(z.prog),z.stance].join('|');
+  let s=[z.owner,z.size,z.conflict?1:0,z.res||'',Math.floor(z.prog)].join('|');
   for(const f in z.units){ const us=z.units[f]; const by={}; us.forEach(u=>{ by[u.t]=(by[u.t]||0)+(u.w>0?0.01:1); }); s+='|u'+f+':'+Object.keys(by).sort().map(k=>k+by[k]).join(','); }
   if(isPl(z.owner)){ const sp=zoneSpec(G,z,z.owner); s+='|sp'+sp.spec+sp.lvl; }
   z.b.forEach(b=>{ s+='|b'+b.t+b.l+(b.s||''); }); z.proj.forEach(p=>{ s+='|p'+Math.round(100*(p.tot-p.left)/p.tot); });
   if(z.tspec) s+='|t'+z.tspec;
+  if(z.owner===ME) s+='|r'+Math.floor(z.food)+','+Math.floor(z.prod)+','+growETA(G,z);
+  if((z.units[ME]||[]).some(u=>!UT[u.t].civ)&&z.owner!==ME) s+='|sup'+(((z.feed||{})[ME]||{}).line)+((z.units[ME]||[]).some(u=>u.hg>0)?'!':'');
+  if((G.tributes||[]).some(t=>t.zone===z.id&&!t.paid[ME])) s+='|tr';
+  if(G.F[ME].enc&&G.F[ME].enc.zone===z.id) s+='|enc'+G.F[ME].enc.step;
+  if(z.res) s+='|rh'+resBonus(z)+(z.owner);
+  if(z.role==='frontera') s+='|fg'+JSON.stringify(z.frontGain||{});
   return s+'|'+slotsOf(G,z);
 }
 function updateTerritory(){
@@ -181,7 +193,7 @@ function updateTerritory(){
     const e=ZG[i]; if(!e) return; const sig=zoneSig(z,i);
     if(e.sig!==sig){
       e.sig=sig; e.dyn.innerHTML=zoneContent(z,i);
-      e.own.innerHTML=isPl(z.owner)?`<polygon points="${ptsStr(WORLD.poly[i],0.955)}" fill="${PLN[z.owner].col}" fill-opacity=".10" stroke="${PLN[z.owner].col}" stroke-width="6" stroke-linejoin="round" opacity=".95"/>`:(z.owner===TRIBE?`<polygon points="${ptsStr(WORLD.poly[i],0.955)}" fill="none" stroke="#5E3B24" stroke-width="4" stroke-dasharray="14 10" stroke-linejoin="round"/>`:'');
+      e.own.innerHTML=z.role==='frontera'?`<polygon points="${ptsStr(WORLD.poly[i],0.955)}" fill="#E9C46A" fill-opacity=".10" stroke="#C9A24A" stroke-width="5" stroke-dasharray="18 10" stroke-linejoin="round"/>`:isPl(z.owner)?`<polygon points="${ptsStr(WORLD.poly[i],0.955)}" fill="${PLN[z.owner].col}" fill-opacity=".10" stroke="${PLN[z.owner].col}" stroke-width="6" stroke-linejoin="round" opacity=".95"/>`:(z.owner===TRIBE?`<polygon points="${ptsStr(WORLD.poly[i],0.955)}" fill="none" stroke="#5E3B24" stroke-width="4" stroke-dasharray="14 10" stroke-linejoin="round"/>`:'');
       const rn=z.role==='capital'?'Capital':z.role==='tribu'?'Tribu':'Zona libre';
       e.g.setAttribute('aria-label',`${zname(z)}, ${rn}, ${TERRN[z.terrain]}, dueño: ${z.owner===null?'sin dueño':PLN[z.owner].name}`);
     }
@@ -197,6 +209,13 @@ function zoneContent(z,i){
   let d='';
   if(z.role==='capital'){ d+=`<g transform="scale(2.1)">${church(-6,6,roof)}</g><g transform="scale(1.6)">${house(-52,34,roof,wall,15)}${house(52,30,roof,WALLS[(i+1)%4],14)}</g>`; }
   else if(z.role==='tribu'){ const cloth=(owner===TRIBE||owner===null)?PLN[TRIBE].col:PLN[owner].col; d+=`<g transform="scale(1.7)">${tent(-30,12,cloth)}${tent(26,10,cloth)}${tent(-2,26,cloth)}${totem(0,-6)}</g><g transform="translate(0,52)"><ellipse rx="9" ry="4" fill="#3a2418"/><path class="flame" d="M-4,0 Q0,-18 4,0 Z" fill="#E8765F"/><path class="flame f2" d="M-2,0 Q0,-11 2,0 Z" fill="#FFE27A"/></g>`; }
+  else if(z.role==='frontera'){
+    const here=presentF(z).filter(isPl); const cols=here.length?here.map(f=>PLN[f].col):['#B8A58C'];
+    d+=`<g transform="translate(0,-10)"><rect x="-9" y="-44" width="18" height="46" rx="3" fill="#A9A59C" stroke="${INK}" stroke-width="2"/><path d="M-9,-30 H9 M-9,-16 H9" stroke="#8C857C" stroke-width="2"/></g>`;
+    cols.forEach((c,k)=>{ const x=-70+k*140/(Math.max(1,cols.length-1)||1)*(cols.length>1?1:0)+(cols.length===1?70:0); d+=`<g transform="translate(${f1(cols.length===1?-48:x)},20)"><path d="M0,0 V-64" stroke="#5E3E29" stroke-width="3"/><path class="flag" d="M0,-64 L34,-54 L0,-44 Z" fill="${c}" stroke="${INK}" stroke-width="1.5"/></g>`; });
+    d+=`<g transform="scale(1.6)">${tent(-34,34,'#C9A24A')}${tent(30,36,'#B8433A')}</g>`;
+    if(z.frontGain){ const fs=Object.keys(z.frontGain); if(fs.length) d+=`<g class="lbl" style="transform:translate(0px,-84px) scale(var(--inv,1))"><rect x="-80" y="-14" width="160" height="26" rx="13" fill="#2A1B16" stroke="#E9C46A" stroke-width="2"/><text class="zt" x="0" y="4" text-anchor="middle" font-size="13" font-weight="700" fill="#E9C46A">🪙 +${z.frontGain[fs[0]]} ${fs.length>1?'a cada uno':'para uno'}</text></g>`; }
+  }
   else if(isPl(owner)&&civ>0){ const hN=Math.min(5,Math.ceil(civ/2)); const P=[[-40,-4],[46,-8],[0,16],[-80,20],[84,16]]; d+=`<g transform="scale(1.7)">`; for(let k=0;k<hN;k++) d+=house(P[k][0]/1.7,P[k][1]/1.7,roof,WALLS[(i+k)%4],13); d+=`</g>`; }
   if(isPl(owner)){
     z.b.forEach((b,k)=>{ const p=SLOT_POS[k%SLOT_POS.length]; d+=`<g transform="translate(${p[0]},${p[1]}) scale(1.35)">${bGlyph(b.t,b.l,true)}</g>`; });
@@ -208,28 +227,39 @@ function zoneContent(z,i){
     d+=`<g transform="translate(0,${y})"><rect x="-70" y="-12" width="140" height="24" rx="12" fill="#2A1B16" stroke="${col}" stroke-width="3"/><text class="zt" x="0" y="5" text-anchor="middle" font-size="13" font-weight="700" fill="#FBF8F2">${esc(PLN[f].name)}: ${k.c} civ · ${k.m} mil</text></g>`; });
   if(z.conflict) d+=`<g class="clash" transform="translate(0,-8)"><circle r="24" fill="#C8452F" stroke="${INK}" stroke-width="2"/><path d="M-12,-12 L12,12 M12,-12 L-12,12" stroke="#fff" stroke-width="5" stroke-linecap="round"/></g>`;
   let s=`<g class="detail">${d}</g>`;
-  if(z.res){ const r=RES[z.res]; s+=`<g class="detail" transform="translate(118,-96)"><circle r="17" fill="${r.col}" stroke="${INK}" stroke-width="2"/><text class="zt" text-anchor="middle" y="5" font-size="15" font-weight="700" fill="#10181B">${r.sc==='global'?'G':'L'}</text><text class="zt" text-anchor="middle" y="34" font-size="12" font-weight="700" fill="#2A1B16" stroke="#fff" stroke-width="3" paint-order="stroke">${r.n}</text></g>`; }
+  if(z.res){ const r=RES[z.res], own=isPl(z.owner), rc=own?PLN[z.owner].col:'#fff', k=RES_YIELD[z.res];
+    s+=`<g class="lbl" style="transform:translate(118px,-96px) scale(var(--inv,1))"><circle r="22" fill="${r.col}" stroke="${rc}" stroke-width="5"/><text class="zt" text-anchor="middle" y="6" font-size="18" font-weight="800" fill="#10181B">${r.sc==='global'?'G':'L'}</text><rect x="-54" y="27" width="108" height="${own?34:20}" rx="8" fill="#2A1B16" stroke="${rc}" stroke-width="2"/><text class="zt" text-anchor="middle" y="41" font-size="12" font-weight="700" fill="#FBF8F2">${esc(r.n)}</text>${own?`<text class="zt" text-anchor="middle" y="56" font-size="11.5" font-weight="700" fill="#FFE27A">${IMP_ICON[k]} +${resBonus(z)} por paso</text>`:''}</g>`; }
   s+=nameplate(z,i);
   return s;
 }
+const ROMAN=['','I','II','III'];
 function nameplate(z,i){
   const owner=z.owner, col=owner===null?'#8B7B6B':PLN[owner].col; const sp=zspec(z); const mine=ownPop(z);
-  const vis=(owner!==TRIBE)||tribeVisibleFor(z);
+  const vis=(owner!==TRIBE)||tribeVisibleFor(z); const own=owner===ME;
   const slots=isPl(owner)?slotsOf(G,z):0; const built=z.b.length, inProg=z.proj.filter(p=>p.k!=='u').length;
-  let pips=''; for(let k=0;k<Math.min(slots,8);k++){ const x=62+k*13; const st=k<built?'b':(k<built+inProg?'p':'f'); const bc=st==='b'?BT[z.b[k].t].col:null; pips+=`<rect x="${x}" y="11" width="10" height="10" rx="2" fill="${st==='b'?bc:st==='p'?'#7FB2E5':'none'}" stroke="${st==='f'?'#9A8F80':'#fff'}" stroke-width="1.6" ${st==='f'?'stroke-dasharray="2.5 2"':''}/>`; }
-  const sizeTxt=isPl(owner)||owner===null||owner===TRIBE?z.size:z.size;
-  const prog=isPl(owner)?Math.min(1,z.prog/growCost(G,owner,z)):0;
-  const nm=zname(z); const w=Math.max(214,66+nm.length*8.6), L=-w/2;
-  let s=`<g class="lbl" style="transform:translate(0px,-146px) scale(var(--inv,1))"><rect x="${f1(L)}" y="-27" width="${f1(w)}" height="58" rx="15" fill="#2A1B16" stroke="${col}" stroke-width="4"/>`
+  const nm=zname(z); const w=Math.max(own?268:230,66+nm.length*8.6), L=-w/2, H=own?76:58;
+  let pips=''; for(let k=0;k<Math.min(slots,8);k++){ const x=L+150+k*13; const st=k<built?'b':(k<built+inProg?'p':'f'); const bc=st==='b'?BT[z.b[k].t].col:null; pips+=`<rect x="${f1(x)}" y="12" width="10" height="10" rx="2" fill="${st==='b'?bc:st==='p'?'#7FB2E5':'none'}" stroke="${st==='f'?'#9A8F80':'#fff'}" stroke-width="1.6" ${st==='f'?'stroke-dasharray="2.5 2"':''}/>`; }
+  const lv=(sp.lvl>0&&!['bas','free','tri'].includes(sp.sp))?sp.lvl:0;
+  let s=`<g class="lbl" style="transform:translate(0px,-146px) scale(var(--inv,1))"><rect x="${f1(L)}" y="-27" width="${f1(w)}" height="${H}" rx="15" fill="#2A1B16" stroke="${col}" stroke-width="4"/>`
    +`<g transform="translate(${f1(L+24)},1)">${emblem(sp.sp,21)}</g>`
+   +(lv?`<g transform="translate(${f1(L+40)},-14)"><circle r="10" fill="#FFE27A" stroke="#2A1B16" stroke-width="2"/><text class="zt" text-anchor="middle" y="4" font-size="${lv===3?9:11}" font-weight="800" fill="#2A1B16">${ROMAN[lv]}</text></g>`:'')
    +`<text class="zt" x="${f1(L+50)}" y="-8" font-size="15" font-weight="700" fill="#FBF8F2">${esc(nm)}</text>`
-   +`<text class="zt" x="${f1(L+50)}" y="6" font-size="10.5" fill="#D9CDB8">${esc(sp.lab)}${z.role==='capital'?' · Capital':''} · ${TERRN[z.terrain]}</text>`
-   +`<g transform="translate(${f1(L+54)},19)">${iconCiv(0,0,col)}</g><text class="zt" x="${f1(L+63)}" y="23" font-size="13" font-weight="700" fill="#FBF8F2">${vis?mine:'?'}</text><text class="zt" x="${f1(L+81)}" y="23" font-size="10" fill="#D9CDB8">pob.</text>`
-   +`<g transform="translate(${f1(L+112)},18)"><path d="M-6,5 v-9 h3 v-3 h3 v3 h3 v-3 h3 v3 h3 v9 z" transform="scale(.85)" fill="#E6C9A8" stroke="#fff" stroke-width="1"/></g><text class="zt" x="${f1(L+121)}" y="23" font-size="13" font-weight="700" fill="#FBF8F2">${sizeTxt}</text><text class="zt" x="${f1(L+134)}" y="23" font-size="10" fill="#D9CDB8">tam.</text>`
-   +`<g transform="translate(${f1(L+150-62)},-1)">${pips}</g>`
-   +(prog>0?`<rect x="${f1(L+6)}" y="26" width="${f1(w-12)}" height="3" rx="1.5" fill="rgba(255,255,255,.2)"/><rect x="${f1(L+6)}" y="26" width="${((w-12)*prog).toFixed(1)}" height="3" rx="1.5" fill="#9DC764"/>`:'')
-   +`</g>`;
-  return s;
+   +`<text class="zt" x="${f1(L+50)}" y="6" font-size="10.5" fill="#D9CDB8">${esc(sp.lab)}${lv?' (nivel '+lv+')':''}${z.role==='capital'?' · Capital':''} · ${TERRN[z.terrain]}</text>`
+   +`<g transform="translate(${f1(L+54)},20)">${iconCiv(0,0,col)}</g><text class="zt" x="${f1(L+63)}" y="24" font-size="13" font-weight="700" fill="#FBF8F2">${vis?mine:'?'}</text><text class="zt" x="${f1(L+81)}" y="24" font-size="10" fill="#D9CDB8">pob.</text>`
+   +`<text class="zt" x="${f1(L+106)}" y="24" font-size="13" font-weight="700" fill="#FBF8F2">${z.size}</text><text class="zt" x="${f1(L+119)}" y="24" font-size="10" fill="#D9CDB8">tam.</text>`
+   +pips;
+  if(own){
+    const cf=capStore(G,z,'food'), cp=capStore(G,z,'prod'), eta=growETA(G,z);
+    const prog=Math.min(1,z.prog/growCost(G,owner,z));
+    s+=`<text class="zt" x="${f1(L+14)}" y="42" font-size="12.5" font-weight="700" fill="#C9E59A">🌾 ${Math.floor(z.food)}<tspan font-size="10" font-weight="400" fill="#D9CDB8">/${cf}</tspan></text>`
+      +`<text class="zt" x="${f1(L+86)}" y="42" font-size="12.5" font-weight="700" fill="#E6C9A8">⚒ ${Math.floor(z.prod)}<tspan font-size="10" font-weight="400" fill="#D9CDB8">/${cp}</tspan></text>`
+      +`<text class="zt" x="${f1(L+w-12)}" y="42" text-anchor="end" font-size="11.5" font-weight="700" fill="${eta===null?'#F0A06B':'#9DC764'}">${eta===undefined?'👶 —':eta===null?'👶 no crece':'👶 en '+eta+(eta===1?' paso':' pasos')}</text>`
+      +`<rect x="${f1(L+10)}" y="${H-35}" width="${f1(w-20)}" height="4" rx="2" fill="rgba(255,255,255,.18)"/><rect x="${f1(L+10)}" y="${H-35}" width="${((w-20)*prog).toFixed(1)}" height="4" rx="2" fill="#9DC764"/>`;
+  }
+  const tr=(G.tributes||[]).find(t=>t.zone===z.id&&!t.paid[ME]&&t.targets.includes(ME));
+  const en=G.F[ME].enc; if(en&&en.zone===z.id&&!tr) s+=`<g transform="translate(0,-44)"><rect x="-86" y="-14" width="172" height="26" rx="13" fill="${en.k==='amenaza'?'#C8452F':'#C9A24A'}" stroke="#fff" stroke-width="2.5" class="blink"/><text class="zt" x="0" y="4" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">${en.k==='amenaza'?'⚠':'📜'} Encuentro: decide en el panel</text></g>`;
+  if(tr) s+=`<g transform="translate(0,-44)"><rect x="-92" y="-14" width="184" height="26" rx="13" fill="#C8452F" stroke="#fff" stroke-width="2.5" class="blink"/><text class="zt" x="0" y="4" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">⚠ Exige ${tr.amount} de ${TSPEC_N[tr.res]}</text></g>`;
+  return s+`</g>`;
 }
 function tribeVisibleFor(z){ return z.adj.some(a=>(G.zones[a].units[ME]||[]).length>0)||(z.units[ME]||[]).length>0; }
 
@@ -249,7 +279,29 @@ function moveArrowSVG(fromId,toId,via,u,stance,key){
   const parts=[]; Object.keys(u||{}).forEach(t=>{ if(u[t]>0) parts.push([t,u[t]]); });
   const civ=parts.filter(p=>CIV.includes(p[0])).reduce((a,p)=>a+p[1],0), mil=parts.filter(p=>!CIV.includes(p[0])).reduce((a,p)=>a+p[1],0);
   const lbl=(civ?civ+' civ.':'')+(civ&&mil?' + ':'')+(mil?mil+' mil.':'');
-  if(midPt) h+=`<g class="lbl" style="transform:translate(${f1(midPt[0])}px,${f1(midPt[1])}px) scale(var(--inv,1))"><rect x="-70" y="-18" width="140" height="36" rx="18" fill="${col}" stroke="#fff" stroke-width="3"/><text class="zt" x="0" y="-2" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">${!contested?'➜ Mover':(stance==='ataque'?'⚔ Ataque':'☮ Paz')}</text><text class="zt" x="0" y="12" text-anchor="middle" font-size="12" fill="#fff">${esc(lbl)}</text></g>`;
+  const oro=moveGold(u,hops.length-1);
+  if(midPt) h+=`<g class="lbl" style="transform:translate(${f1(midPt[0])}px,${f1(midPt[1])}px) scale(var(--inv,1))"><rect x="-76" y="-25" width="152" height="50" rx="18" fill="${col}" stroke="#fff" stroke-width="3"/><text class="zt" x="0" y="-8" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">${!contested?'➜ Mover':(stance==='ataque'?'⚔ Ataque':'☮ Paz')}</text><text class="zt" x="0" y="5" text-anchor="middle" font-size="12" fill="#fff">${esc(lbl)}</text><text class="zt" x="0" y="18" text-anchor="middle" font-size="12" font-weight="700" fill="#FFE27A">${oro?'🪙 '+oro:'gratis'}</text></g>`;
+  return h;
+}
+// Líneas de suministro de tus tropas fuera de casa: verde si llega la comida, rojo si está cortada.
+function supplyLinesHTML(){
+  let h='';
+  G.zones.forEach((z,i)=>{
+    const us=z.units[ME]||[]; if(!us.length||z.owner===ME) return;
+    const mil=us.filter(u=>!UT[u.t].civ).length; if(!mil) return;
+    const fd=(z.feed||{})[ME]; const src=fd?fd.line:(supplySources(G,ME,i)[0]!==undefined?supplySources(G,ME,i)[0]:null);
+    const hambre=us.some(u=>u.hg>0);
+    if(src===null||src===undefined){
+      h+=`<g class="lbl" style="transform:translate(${f1(sx(i))}px,${f1(sy(i)+120)}px) scale(var(--inv,1))"><rect x="-92" y="-14" width="184" height="26" rx="13" fill="#C8452F" stroke="#fff" stroke-width="2.5" class="blink"/><text class="zt" x="0" y="4" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">⚠ Sin suministros</text></g>`;
+      return;
+    }
+    const col=hambre?'#C8452F':'#9DC764';
+    const path=ownPath(G,ME,src,i,6)||[i];
+    let prev=src;
+    path.forEach(n=>{ const {A,B,C}=hopPts(prev,n); h+=`<path d="M${f1(A[0])},${f1(A[1])} Q${f1(C[0])},${f1(C[1])} ${f1(B[0])},${f1(B[1])}" stroke="${col}" stroke-width="7" fill="none" stroke-dasharray="4 16" stroke-linecap="round" class="march" opacity=".9"/>`; prev=n; });
+    const m=hopPts(src,path[0]); const p=qpt(m.A,m.C,m.B,0.5);
+    h+=`<g class="lbl" style="transform:translate(${f1(p[0])}px,${f1(p[1])}px) scale(var(--inv,1))"><rect x="-54" y="-13" width="108" height="24" rx="12" fill="#2A1B16" stroke="${col}" stroke-width="2"/><text class="zt" x="0" y="4" text-anchor="middle" font-size="12" font-weight="700" fill="${col}">🍞 suministro</text></g>`;
+  });
   return h;
 }
 function drawOrderPreview(){
@@ -257,9 +309,10 @@ function drawOrderPreview(){
   ui.orders.forEach(o=>{
     if(o.t==='move') h+=`<g class="oprev">${moveArrowSVG(o.from,o.to,o.via,o.u,o.stance)}</g>`;
     else if(o.t==='send'){ const {A,B,C}=hopPts(o.from,o.to); h+=`<path d="M${f1(A[0])},${f1(A[1])} Q${f1(C[0])},${f1(C[1])} ${f1(B[0])},${f1(B[1])}" stroke="#E0A21B" stroke-width="9" stroke-dasharray="4 14" fill="none" stroke-linecap="round" class="march"/>`; }
-    else if(o.zone!==undefined){ const i=o.zone; const lab={build:'obra',upgrade:'mejora',wonder:'maravilla',train:'entrena',spec:'especializa',bspec:'especializa edif.',demolish:'demoler',annex:'anexar',stance:o.stance==='alerta'?'alerta':'paz'}[o.t]; if(lab) h+=`<g class="oprev lbl" style="transform:translate(${f1(sx(i))}px,${f1(sy(i)-205)}px) scale(var(--inv,1))"><rect x="-58" y="-13" width="116" height="24" rx="12" fill="#3B7DDD" stroke="#fff" stroke-width="2"/><text class="zt" x="0" y="4" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">⏳ ${lab}</text></g>`; }
+    else if(o.zone!==undefined){ const i=o.zone; const lab={build:'obra',upgrade:'mejora',wonder:'maravilla',train:'entrena',spec:'especializa',bspec:'especializa edif.',demolish:'demoler',annex:'anexar'}[o.t]; if(lab) h+=`<g class="oprev lbl" style="transform:translate(${f1(sx(i))}px,${f1(sy(i)-205)}px) scale(var(--inv,1))"><rect x="-58" y="-13" width="116" height="24" rx="12" fill="#3B7DDD" stroke="#fff" stroke-width="2"/><text class="zt" x="0" y="4" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">⏳ ${lab}</text></g>`; }
   });
   if(ui.mv){ const o=ui.mv; const u={}; CIV.concat(MIL).forEach(t=>{ const n=Number(fv('mv_'+t,0))||0; if(n>0) u[t]=n; }); const via=fv('mv_via','')===''?[]:[Number(fv('mv_via',''))]; h+=`<g class="oprev">${moveArrowSVG(o.from,o.to,via,u,o.st)}</g>`; }
+  h+=supplyLinesHTML();
   const sig=h; if(ui.ordSig!==sig){ ui.ordSig=sig; g.innerHTML=h; }
 }
 

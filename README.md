@@ -1,100 +1,117 @@
-# Los Pasos del Imperio
+# Los Pasos del Imperio *(Steps of the Empire)*
 
-Juego de estrategia por turnos simultáneos para jugar en línea con la familia. Todos planean **a la vez**; cuando todos presionan **¡Listo!**, el paso se resuelve y se ve qué pasó. La idea es recuperar la diversión de planificar en grupo con presión de tiempo, sin el micromanagement de un juego de estrategia en tiempo real.
+**A simultaneous-turn strategy game built to play online with family.** Everyone plans **at the same time**; when all players press **Ready**, the step resolves and the map animates what happened. The goal: the fun of planning together under time pressure, without the micromanagement of a real-time strategy game.
 
-> **Estado:** prototipo jugable v0.4 en el navegador (una persona contra 1 a 3 bots). El diseño de reglas está bastante cerrado; el motor definitivo se pasará a Python.
+▶ **[Play it in your browser](https://alejandroinfo.github.io/Imperial-steps/)**: no install, no account. *(The game's interface is in Spanish; it is made for our family.)*
 
-## Cómo jugarlo
+🇪🇸 [Leer en español](README.es.md)
 
-No hace falta instalar nada. Descarga el repositorio y abre `index.html` en el navegador (Chrome, Firefox o Edge). Para mandarlo en un solo archivo, corre `python herramientas/empaquetar.py` y comparte `dist/Los_Pasos_del_Imperio.html`. Elige mapa, número de jugadores y modo de victoria, y presiona **Empezar**. La **📖 Guía** dentro del juego explica cada sistema.
+![The valley map: each zone is a plot of land; fences mark roads, ravines mark borders you cannot cross](docs/img/valley.jpg)
 
-## Cómo probar el motor
+> **Status:** playable prototype v0.13 (one human against 1–3 bots, 12 maps, 2–4 players). The rules design is mostly settled; the final engine will be ported to Python.
 
-El motor no depende del navegador, así que se puede probar solo con [Node.js](https://nodejs.org) (versión 18 o más nueva):
+## What it shows
+
+| Area | What is in the project |
+|---|---|
+| **Game design** | A full rule set (supply lines that make *where* you fight matter, frontier zones that create a prisoner's dilemma between neighbours, unannounced encounters that scale with the game, strategic resources that grow while held, populations and jobs, local and global economy, 10 buildings with levels, 203 technologies in 12 branches, initiative-based combat, tribes, events, 7 victory conditions), documented with decided / proposed / open markers in [`docs/Reglas_v0.1.md`](docs/Reglas_v0.1.md). |
+| **Software architecture** | Four layers with a one-way dependency rule: `data → config → engine → interface`. The engine never touches the screen, so it runs headless in Node and can be ported to Python. |
+| **Testing** | An automated layer check, 37 rule-level tests and a simulation of 72 bot-vs-bot games on every map, run with `npm test` and on GitHub Actions. |
+| **Data & balance** | Simulators compare balance scenarios and rate all 203 technologies (economic payback and change in battle win rate); reports in [`docs/balance_tecnologias.md`](docs/balance_tecnologias.md) and [`docs/balance_economia.md`](docs/balance_economia.md). |
+| **UX** | Built and refined from play-testing: the technology panel recommends what helps most right now and previews each technology's impact on your current situation (e.g. “🌾 +3 per step”, computed by the engine itself), per-step suggestions, a zone summary of who works where, a step-by-step battle replay, procedurally generated sound effects and ambience (Web Audio, no audio files), and a map that reads as a landscape rather than a graph. |
+
+![Zone summary: net food, stocks, and who is working in which building](docs/img/zone.jpg)
+
+## How to play
+
+1. Open the game ([online](https://alejandroinfo.github.io/Imperial-steps/) or `index.html` locally). First time? Press **🎓 Comienzo guiado** (*guided start*): the first 20 steps of a real game introduce one system per step and highlight exactly what to click; then the game continues normally. Otherwise choose a map, the number of players and the victory mode, and press **Empezar** (*Start*).
+2. Each step, give orders: specialize villagers into jobs (farmer, engineer, builder, scientist, merchant), build, research, move people, pay or annex tribes, or attack.
+3. Press **¡Listo!** (*Ready*, or the Enter key). When everyone is ready, the step resolves.
+4. Win by meeting **2 of 7 victory conditions at the same time** (gold, population, technology, territory, capitals, buildings, wonders).
+
+Controls: drag to pan, scroll to zoom, double-click to center a zone; arrow keys or WASD also move the map. The **📖 Guía** button opens an in-game wiki.
+
+![Battle replay: each combat can be replayed blow by blow, wave by wave in initiative order](docs/img/battle.jpg)
+
+## Run and test locally
+
+No build step and no dependencies. Download the repository and open `index.html` in Chrome, Firefox or Edge.
 
 ```bash
-npm test                                   # regla de capas + 12 mapas × 2, 3 y 4 jugadores
-node pruebas/simular_partidas.js 10 80     # 10 semillas por combinación, hasta 80 pasos
+npm test                                   # layer check + rule tests + 72 simulated games
+npm run check                              # TypeScript check of the engine (no build step)
+npm run balance                            # balance scenarios and technology ratings
+node pruebas/simular_partidas.js 10 80     # 10 seeds per map and player count, up to 80 steps
+python herramientas/empaquetar.py          # bundle everything into one HTML file (dist/)
 ```
 
-`pruebas/revisar_capas.js` comprueba que el motor no use nada de la pantalla. `pruebas/simular_partidas.js` hace jugar a los bots entre sí en todos los mapas, revisa después de cada paso que no aparezcan cantidades imposibles (negativas o no numéricas) y resume con qué condiciones se ganó. Las dos pruebas corren en GitHub Actions con cada cambio.
+The tests need [Node.js](https://nodejs.org) 18 or newer. Randomness is seeded (`?seed=123` in the URL), so any game can be replayed exactly.
 
-## Cómo está organizado
+## Architecture
+
+```mermaid
+flowchart LR
+  D["js/datos<br/>12 maps · 203 technologies"] --> C["js/config<br/>balance numbers"]
+  C --> E["js/motor<br/>rules engine: resolveStep(state, orders)"]
+  E --> I["js/interfaz<br/>map, panels, battle replay, sound"]
+  T["js/tipos.d.ts<br/>Partida · Zona · Orden"] -. type-checks .-> E
+  E --> P["pruebas<br/>layer check · rule tests · 72 bot games"]
+  E --> H["herramientas<br/>balance scenarios · tech ratings"]
+```
+
+The dependency rule is one-way (`data → config → engine → interface`) and enforced by a test. The engine is pure game logic: it runs headless in Node for tests and simulations, and is type-checked with TypeScript through JSDoc and a declarations file, so there is no build step and the game still opens with a double click.
+
+## Engineering highlights
+
+- **Types that catch real bugs.** Every order the engine accepts is listed in a `Record<OrderType, …>`; when the type check was added it immediately showed that *wonder* orders were created by the interface but never handled, so wonders could not be built. Misspelled fields (`z.maravila`) are flagged before running anything.
+- **Simulation-driven design.** Balance questions are answered with data: `herramientas/escenarios_balance.js` compares rule variants over dozens of bot games, and `herramientas/balance_tecnologias.js` rates all 203 technologies by economic payback and by change in battle win rate. Those reports led to concrete changes (cheaper troops, per-zone growth priority, frontier zones).
+- **Reproducible games.** All randomness is seeded; any game or battle can be replayed exactly, and battles are recorded blow by blow for the in-game replay viewer.
+- **Bugs found by tests and simulation**, each now covered by a test: workers counted twice across buildings, empty tribes that crashed annexation, a tribute raid from a tribe with no people.
+
+## Project structure
 
 ```
-index.html                  Estructura de la página; carga los estilos y los scripts en orden
-css/estilos.css             Todo el aspecto visual
+index.html                  Page structure; loads the styles and scripts in order
+css/estilos.css             All visual styling
 js/
-  datos/                    Datos puros, sin lógica
-    mapas.js                Los 12 mapas para 2, 3 y 4 jugadores (zonas y caminos)
-    tecnologias.js          Las 203 tecnologías y las 12 ramas
-  config/                   Números de balance: cambiarlos cambia el juego sin tocar el motor
-    reglas.js               Unidades, costos, terrenos, edificios, recursos y eventos
-    efectos_tecnologias.js  Qué hace cada tecnología
-  motor/                    Reglas del juego; no sabe nada de la pantalla
-    estado.js               Azar con semilla y ayudantes del estado
-    partida.js              Crear una partida nueva
-    resolver_paso.js        resolveStep(estado, órdenes): aplica un paso completo
-    eventos.js              Eventos y tribus
-    economia.js             Producción, crecimiento, hambre y curación
-    combate.js              Combate por oleadas de iniciativa
-    victoria.js             Eliminación y condiciones de victoria
-    bots.js                 Jugadores automáticos
-  interfaz/                 Todo lo que se ve y se toca
-    mapa/territorio.js      Mapa, cámara, minimapa y flechas de órdenes
-    dibujo/                 Piezas SVG del terreno, edificios y personajes
-    paneles/                Panel lateral: zona, imperio, tecnologías, victoria, órdenes
-    animaciones.js          Lo que se anima al resolver un paso
-    guia.js                 Guía tipo wiki
-    sugerencias.js          Avisos y consejos del paso (hambre, tributos, eventos, qué hacer ahora)
-    acciones.js             Convierte los botones en órdenes
-    flujo.js                Empezar, ¡Listo!, resolver y fin de partida
-    render.js               Redibuja el estado actual
-  main.js                   Punto de entrada
-pruebas/
-  revisar_capas.js          Comprueba que datos, config y motor no dependan de la interfaz
-  simular_partidas.js       Partidas entre bots sin navegador
-herramientas/
-  empaquetar.py             Junta todo en un solo HTML para mandarlo a la familia
-  atlas_mapas.html          Atlas visual de los 12 mapas (selector de 2, 3 o 4 jugadores)
-docs/
-  Reglas_v0.1.md            Fuente de verdad de las reglas (✅ decidido, 💡 propuesta, ❓ por definir)
-  TRASPASO_Los_Pasos_del_Imperio.md   Resumen para retomar el proyecto en 10 minutos
-  Como_manejar_el_proyecto.md         Cómo trabajamos
-  Tecnologias_v0.2.xlsx     Catálogo de tecnologías con valoración y riesgo de balance
+  datos/                    Pure data: the 12 maps and the 203 technologies
+  config/                   Balance numbers: change the game without touching the engine
+  motor/                    Game rules (engine). No access to the screen
+    resolver_paso.js        resolveStep(state, orders): applies one full step
+    economia.js             Production, automatic feeding, growth, healing
+    combate.js              Initiative-wave combat, recorded blow by blow
+    bots.js                 Computer players that use the same rules as humans
+  interfaz/                 Everything you see and touch
+    mapa/territorio.js      The valley map, camera and minimap
+    paneles/                Side panels: zone, empire, technologies, victory, orders
+    batalla.js              Battle replay viewer
+    sugerencias.js          Per-step warnings and tips
+pruebas/                    Layer check, rule tests and the game simulator
+herramientas/empaquetar.py  Bundles the game into a single HTML file to share
+docs/                       Rules, hand-off documents and how we work (in Spanish),
+                            plus the balance reports and screenshots
 ```
 
-La regla de dependencias es simple: `datos` → `config` → `motor` → `interfaz`. Cada capa puede usar las anteriores, nunca las siguientes. Por eso la prueba del motor carga solo las tres primeras carpetas.
+How one step resolves: births → event → orders (research, specialize, train, build, send, annex) → movement → combat → zone control → economy → victory check.
 
-Los archivos se cargan con `<script>` normales, en el orden de `index.html`, para que el juego se abra con doble clic sin servidor.
+## Design decisions
 
-## Cómo funciona un paso
-
-1. Cada jugador da órdenes (especializar, construir, investigar, entrenar, mover, anexar…). Lo que no cambia sigue como estaba.
-2. Cuando todos presionan ¡Listo!, `resolveStep` aplica en orden: nacimientos, evento, órdenes, movimientos, combates, control de zonas, economía y victoria.
-3. La interfaz anima lo que pasó y empieza el paso siguiente.
-
-El azar usa una semilla (`?seed=123` en la dirección del navegador), así que una partida se puede repetir exactamente igual.
-
-## Decisiones de diseño
-
-| Decisión | Por qué |
+| Decision | Why |
 |---|---|
-| Turnos simultáneos con botón ¡Listo! | La tensión viene de decidir bajo presión, no de la destreza con el mouse |
-| Sin reloj en las primeras pruebas | Primero se mide cuánto tarda la gente; el juego registra tiempo hasta ¡Listo! y órdenes por paso |
-| Civiles capturados en vez de muertos | Frena la bola de nieve del que va ganando |
-| Ganar con 2 de 7 condiciones a la vez | Hay caminos pacíficos, agresivos y mixtos, y los rivales ven el avance y pueden reaccionar |
-| Motor separado de la interfaz | Se puede simular y probar sin pantalla, y luego pasar a Python con las mismas reglas |
-| Números en tablas de configuración | Balancear sin reescribir el motor |
+| Simultaneous steps with a Ready button | Tension comes from deciding under pressure, not from mouse speed |
+| No timer during play-tests | First measure how long people take; the game logs time-to-ready and orders per step |
+| Captured civilians instead of killed ones | Slows down the runaway leader |
+| Win with 2 of 7 conditions at once | Peaceful, aggressive and mixed paths, visible to everyone so rivals can react |
+| Repetitive chores are automatic (feeding, research) | The interesting decisions are the ones each step, not upkeep |
+| Engine separated from the interface | Testable without a screen and portable to Python with the same rules |
+| All numbers in configuration tables | Balance without rewriting the engine |
 
-La lista completa está en [`docs/TRASPASO_Los_Pasos_del_Imperio.md`](docs/TRASPASO_Los_Pasos_del_Imperio.md).
+## Roadmap
 
-## Qué sigue
+1. Play-test with family and decide what feels heavy.
+2. Port the engine to **Python** with `pytest`, plus a balance simulator running thousands of games.
+3. Real online multiplayer with **FastAPI + WebSockets** (rooms with a code, reconnection).
 
-1. Jugarlo con la familia y decidir qué se siente pesado.
-2. Pasar el motor a **Python** con `pytest` y un simulador de balance de miles de partidas.
-3. Multijugador real con **FastAPI + WebSockets** (salas con código y reconexión).
+## Team
 
-## Equipo
-
-Diseño de **Pao** (idea inicial) y **Alejandro**. Cómo colaborar: [`CONTRIBUTING.md`](CONTRIBUTING.md).
+Designed by **Pao** (original idea) and **Alejandro**. How to contribute: [`CONTRIBUTING.md`](CONTRIBUTING.md).

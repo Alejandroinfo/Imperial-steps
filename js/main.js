@@ -4,6 +4,8 @@
 document.addEventListener('click',e=>{
   const sm=e.target.closest&&e.target.closest('summary'); if(sm&&ui&&sm.parentElement.dataset&&sm.parentElement.dataset.d){ ui.det=ui.det||{}; ui.det[sm.parentElement.dataset.d]=!sm.parentElement.open; }
   const wl_=e.target.closest('[data-wiki]'); if(wl_){ e.preventDefault(); const id=wl_.dataset.wiki; if(!WIKI||!$('dlgWiki').open){ openWiki(id); } else { ui.wikiId=id; renderWiki(); } return; }
+  sfxInit();
+  if(e.target.closest('button,.bcard')&&!e.target.closest('#readyBtn')) sfx('click',40);
   if(SUPPRESS) return;
   const mb=e.target.closest('.mvb'); if(mb&&ui&&ui.sel!==null){ const zg0=mb.closest('g.zone'); openMove(ui.sel,Number(zg0.dataset.id)); render(); return; }
   const zg=e.target.closest('g.zone'); if(zg&&document.querySelector('.viewport').contains(zg)){ onZone(Number(zg.dataset.id)); return; }
@@ -51,7 +53,9 @@ function openSetup(){
 }
 function showMapShort(){ const m=DATA.maps[Number($('selMap').value)]; $('mapShort').textContent=m?m.short+'.':''; }
 $('selMap').addEventListener('change',showMapShort);
-$('btnStart').addEventListener('click',()=>{ $('dlgSetup').close(); startGame(); });
+$('btnStart').addEventListener('click',()=>{ sfxInit(); $('dlgSetup').close(); if(TUT.on) tutStop(); startGame(); });
+$('btnTut').addEventListener('click',()=>{ sfxInit(); $('dlgSetup').close(); tutStart(); });
+$('btnTut2').addEventListener('click',()=>{ $('dlgMenu').close(); tutStart(); });
 $('setupCancel').addEventListener('click',()=>$('dlgSetup').close());
 $('dlgSetup').addEventListener('cancel',e=>{ if(!G||G.over) e.preventDefault(); });
 $('btnNew').addEventListener('click',openSetup);
@@ -63,6 +67,9 @@ $('bCap').addEventListener('click',()=>{ if(ui.view!=='terr') setViewMode('terr'
 $('bAll').addEventListener('click',()=>{ if(ui.view!=='terr') setViewMode('terr'); fitAll(800); });
 $('bSel').addEventListener('click',()=>{ if(ui.sel!==null){ if(ui.view!=='terr') setViewMode('terr'); goZone(ui.sel,820,600); } });
 $('chkEdge').addEventListener('change',e=>{ VIEW.edge=e.target.checked; });
+$('chkSound').addEventListener('change',e=>{ sfxInit(); sfxSetOn(e.target.checked); });
+$('rngVol').addEventListener('input',e=>{ sfxInit(); sfxSetVolume(Number(e.target.value)/100); sfx('coin',0); });
+$('chkAmb').addEventListener('change',e=>{ sfxInit(); sfxSetAmbient(e.target.checked); });
 $('chkAnim').addEventListener('change',e=>{ FXS.on=e.target.checked; document.body.classList.toggle('noanim',!e.target.checked); });
 if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches){ FXS.on=false; document.body.classList.add('noanim'); $('chkAnim').checked=false; }
 initTerrInput();

@@ -22,5 +22,7 @@ function renderPanel(){
   document.querySelectorAll('.tabs button').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===ui.tab));
   const sc=$('tabBody').scrollTop; $('tabBody').innerHTML=tabs[ui.tab](); $('tabBody').scrollTop=sc;
   $('ordCount').textContent=ui.orders.length||'';
+  $('encBar').innerHTML=encBarHTML();
+  setTimeout(tutRender,0);
   $('sugBar').innerHTML=sugBarHTML();
 }

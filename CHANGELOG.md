@@ -1,0 +1,43 @@
+# Changelog
+
+All notable changes, newest first. The game and the design documents are in Spanish; this log is in English.
+
+## 0.13
+- **Supply lines**: outside your own territory, troops only eat if there is a safe path of at most 2 zones to a zone of yours with food. Hungry troops fight with half their dice. Supply lines are drawn on the map (green, red, or a "no supply" warning), so cutting an enemy's route is now a real tactic.
+- Training no longer requires barracks, so armies can appear earlier.
+- **Founding era**: growth costs half until step 12, making the opening faster.
+- Movement and shipping costs are shown explicitly (totals on the button, breakdown below, cost on the map arrow).
+- Long side-panel sections are now collapsible and remembered.
+
+## 0.12
+- **Guided start**: the first 20 steps of a real game introduce one system per step (jobs, technology, buildings, expansion, frontier, victory, events, a first encounter, growth priority, barracks, research queue, resources, tribes, stance, shipments, soldiers, history, upgrades, combat). A coach card highlights the exact button; goals complete when the player does them, optional ones can be skipped. Then the game continues normally, with encounters.
+
+## 0.11
+- **Frontier zones** between neighbouring empires: no one can own them; everyone present earns 3 gold per step while at peace, or 4 if alone (a prisoner's dilemma). Tribes are no longer the only buffer between empires.
+- **TypeScript checking** of the engine through `js/tipos.d.ts` and JSDoc (`npm run check`, also in CI). It found that wonders could not be built.
+- Bots expand toward frontiers, station troops there and sometimes betray a shared frontier.
+- Fixed: empty tribe zones now become free; tribute raids from empty tribes no longer crash.
+
+## 0.10
+- **Encounters**: unannounced offers and gambles (20 types, 43 variants) that scale with the game. Only opportunities: refusing has no downside.
+- **Strategic resources** yield more the longer they are held (+1 to +4 per step).
+- Technology panel recommends what helps most right now; branches have their own colour and icon; less text, more icons.
+
+## 0.9
+- Per-zone food priority (grow or store), automatic shipments between zones, and auto-specialization of newborns.
+- Cheaper troops; smarter bots; balance scenario and technology rating tools.
+
+## 0.8
+- Procedurally generated sound effects and ambience (Web Audio); screen shake, dust, sparkles and confetti.
+- Each technology previews its impact on your current situation.
+
+## 0.7
+- Battle replay viewer, blow by blow in initiative order. Buildings are built at the highest unlocked level.
+
+## 0.4 – 0.6
+- Project split into layers (`data → config → engine → interface`) with tests and CI.
+- Map redrawn as a continuous valley (fences where there is a road, ravines where there is not).
+- Zone summary showing who works where; stance is now between players instead of per zone; automatic feeding from the nearest zone; storage scales with zone size; recoverable military equipment.
+
+## 0.3
+- First playable prototype in a single HTML file: 12 maps, 203 technologies, combat, tribes, events and 7 victory conditions.

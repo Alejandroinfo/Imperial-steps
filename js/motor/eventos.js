@@ -1,7 +1,9 @@
+// @ts-check
 'use strict';
 // Eventos (uno cada 3 pasos desde el paso 6), tribus: anexión, tributos e invasiones.
 
 const EV_EVERY=3;   // un evento cada 3 pasos; el primero cae en el paso 6
+/** @param {Partida} g */
 function scheduleEvents(g){
   while(g.evq.length<6){
     const last=g.evq.length?g.evq[g.evq.length-1].step:6-EV_EVERY;
@@ -9,6 +11,7 @@ function scheduleEvents(g){
     g.evq.push({step:last+EV_EVERY,id:e.id});
   }
 }
+/** @param {Partida} g */
 function applyEventMods(g,ev,L){
   g.logiMult=1; g.fever=0; g.growHalfEv=0;
   g.zones.forEach(z=>{ z.ev={}; });
@@ -40,10 +43,11 @@ function applyEventMods(g,ev,L){
     }
   });
 }
+/** @param {Partida} g */
 function tribalEvent(g,e,L){
   const tz=g.zones.filter(z=>z.owner===TRIBE); if(!tz.length) return;
   const z=tz[Math.floor(g.rng()*tz.length)];
-  if(!z.tspec) z.tspec=['agr','ing','com','cie'][Math.floor(g.rng()*4)];
+  if(!z.tspec) z.tspec=/** @type {Civil[]} */(['agr','ing','com','cie'])[Math.floor(g.rng()*4)];
   if(e.id==='inquietud'){ lst(z,TRIBE).push(mkUnit(g,TRIBE,z.tspec)); L('La tribu de '+zname(z)+' crece.'); }
   else if(e.id==='furia'){ lst(z,TRIBE).forEach(u=>{ if(u.t==='sol') u.t='ber'; }); L('La tribu de '+zname(z)+' se vuelve berserker.'); }
   else if(e.id==='exodo'){
@@ -57,6 +61,7 @@ function tribalEvent(g,e,L){
     if(pls.length){ g.tributes.push({zone:z.id,amount:6,due:g.step+1,paid:{},targets:pls,res:TSPEC_RES[z.tspec]}); L('La tribu de '+zname(z)+' exige '+6+' de '+TSPEC_N[TSPEC_RES[z.tspec]]+' a sus vecinos antes del próximo paso.'); }
   }
 }
+/** @param {Partida} g */
 function upcomingEvents(g,f){
   const M=g.M[f]||newMods();
   return g.evq.filter(e=>e.step>=g.step&&e.step<=g.step+M.foresight-1+1).map(e=>({step:e.step,ev:EVT[e.id]}));

@@ -23,7 +23,8 @@ function panelHistorial(){
   h+='<div class="hist">';
   hist.forEach(e=>{
     const lines=e.lines.filter(l=>f==='todo'||cls(l)===f); if(!lines.length) return; shown++;
-    h+=`<div class="hstep"><div class="hsh">Paso ${e.step}${e.ev?` · <b>${esc(EVT[e.ev].n)}</b>`:''}</div>`+lines.map(l=>`<div class="hl ${cls(l)}">${esc(l)}</div>`).join('')+'</div>';
+    const bb=(f==='todo'||f==='guerra')?battlesAt(null,e.step):[];
+    h+=`<div class="hstep"><div class="hsh">Paso ${e.step}${e.ev?` · <b>${esc(EVT[e.ev].n)}</b>`:''}</div>`+lines.map(l=>`<div class="hl ${cls(l)}">${esc(l)}</div>`).join('')+(bb.length?`<div class="row">${battleButtons(bb)}</div>`:'')+'</div>';
   });
   h+='</div>';
   if(!shown) h+='<div class="hint">Nada de ese tipo todavía.</div>';

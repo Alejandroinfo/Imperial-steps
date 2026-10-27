@@ -43,19 +43,30 @@ function fig(t,x,y,col,s,quiet){
 }
 function uIcon(t,sz){ sz=sz||22; const big=(t==='ari'||t==='lan'); return `<svg class="uic" width="${sz}" height="${sz}" viewBox="-12 -19 24 24" aria-hidden="true">${fig(t,0,0,'#C8452F',big?0.85:1,true)}</svg>`; }
 
-/* filas de figuras por tipo, con contador, para el interior de una zona */
+/* figuras de cada oficio y tropa dentro de la zona: una figura por persona (hasta 6 por tipo; si hay más,
+   un globo con el resto). Si la zona tiene el edificio del oficio, la gente trabaja a su lado. */
+const JOB_BLD={agr:'molino',ing:'taller',com:'mercado',cie:'biblio',sol:'cuartel',cab:'cuartel',ber:'cuartel',arq:'fort',esc:'fort',ari:'cuartel',lan:'cuartel'};
+const FIG_MAX=6;
 function figRows(z,f,col){
   const us=z.units[f]||[]; const by={}; us.forEach(u=>{ const k=by[u.t]||(by[u.t]={n:0,w:0}); k.n++; if(u.w>0) k.w++; });
-  const civ=CIV.filter(t=>by[t]), mil=MIL.filter(t=>by[t]);
-  const row=(types,y)=>{
-    let s=''; if(!types.length) return s; const gw=Math.min(58,330/types.length); const x0=-(types.length-1)*gw/2;
-    types.forEach((t,i)=>{
-      const k=by[t], cx=x0+i*gw, nf=Math.min(3,Math.ceil(k.n/3)), big=(t==='ari'||t==='lan');
-      for(let j=0;j<nf;j++) s+=fig(t,cx+(j-(nf-1)/2)*(big?0:12),y+(j%2)*2,col,big?1.7:2);
-      s+=`<g transform="translate(${f1(cx+16)},${f1(y-1)})"><circle r="8.5" fill="#2A1B16" stroke="${col}" stroke-width="2.2"/><text class="zt" text-anchor="middle" y="4.3" font-size="12" font-weight="700" fill="#FBF8F2">${k.n}</text></g>`;
-      if(k.w) s+=`<g transform="translate(${f1(cx-16)},${f1(y-1)})"><circle r="7" fill="#C8452F" stroke="#fff" stroke-width="1.6"/><path d="M-3,0 h6 M0,-3 v6" stroke="#fff" stroke-width="1.8"/></g>`;
+  const types=CIV.concat(MIL).filter(t=>by[t]); const anchor={}, used={};
+  if(z.owner===f){
+    types.forEach(t=>{
+      let k=-1; if(JOB_BLD[t]) k=z.b.findIndex(b=>b.t===JOB_BLD[t]);
+      if(t==='con'&&z.proj.length) k=z.b.length;   // los constructores, junto a la obra
+      if(k>=0){ const p=SLOT_POS[k%SLOT_POS.length]; const off=(used[k]||0); used[k]=off+1; anchor[t]=[p[0]+(off?34:0)*(off%2?1:-1),p[1]+30+off*22]; }
     });
-    return s;
-  };
-  return row(civ,100)+row(mil,140);
+  }
+  const rest={civ:types.filter(t=>!anchor[t]&&CIV.includes(t)),mil:types.filter(t=>!anchor[t]&&MIL.includes(t))};
+  const place=(list,y)=>{ const gw=Math.min(70,340/Math.max(1,list.length)); const x0=-(list.length-1)*gw/2; list.forEach((t,i)=>{ anchor[t]=[x0+i*gw,y]; }); };
+  place(rest.civ,100); place(rest.mil,142);
+  let s='';
+  types.forEach(t=>{
+    const k=by[t], [cx,cy]=anchor[t], big=(t==='ari'||t==='lan'); const n=Math.min(FIG_MAX,k.n);
+    const per=big?2:3, sp=big?26:12;
+    for(let j=0;j<n;j++){ const r=Math.floor(j/per), c=j%per, inRow=Math.min(per,n-r*per); s+=fig(t,cx+(c-(inRow-1)/2)*sp,cy+r*13,col,big?1.5:1.8); }
+    if(k.n>FIG_MAX) s+=`<g transform="translate(${f1(cx+26)},${f1(cy-6)})"><rect x="-13" y="-9" width="26" height="17" rx="8.5" fill="#2A1B16" stroke="${col}" stroke-width="2"/><text class="zt" text-anchor="middle" y="4" font-size="11" font-weight="700" fill="#FBF8F2">+${k.n-FIG_MAX}</text></g>`;
+    if(k.w) s+=`<g transform="translate(${f1(cx-26)},${f1(cy-6)})"><circle r="7" fill="#C8452F" stroke="#fff" stroke-width="1.6"/><path d="M-3,0 h6 M0,-3 v6" stroke="#fff" stroke-width="1.8"/><text class="zt" x="10" y="4" font-size="10" font-weight="700" fill="#fff" stroke="#2A1B16" stroke-width="2.5" paint-order="stroke">${k.w}</text></g>`;
+  });
+  return s;
 }

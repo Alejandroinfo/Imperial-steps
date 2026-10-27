@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Los Pasos del Imperio — prototipo v0.4</title>
+<title>Los Pasos del Imperio — prototipo v0.13</title>
 <link rel="stylesheet" href="css/estilos.css">
 </head>
 <body>
@@ -37,6 +37,7 @@
         <div id="banner" class="banner"></div>
         <div id="toasts" aria-live="polite"></div>
         <div id="startMsg" class="startmsg"></div>
+        <div id="tutor" class="tutor" hidden aria-live="polite"></div>
         <div class="dpad" aria-label="Mover el mapa">
           <span></span><button data-dir="0,-1" aria-label="Arriba">▲</button><button id="zIn" aria-label="Acercar">＋</button>
           <button data-dir="-1,0" aria-label="Izquierda">◀</button><span></span><button data-dir="1,0" aria-label="Derecha">▶</button>
@@ -45,6 +46,7 @@
       </div>
     </section>
     <aside class="panel" aria-label="Panel de control">
+      <div id="encBar" aria-live="polite"></div>
       <div id="sugBar" aria-live="polite"></div>
       <div class="tabs" role="tablist">
         <button data-tab="zona" role="tab">Zona</button>
@@ -68,16 +70,21 @@
   </div>
   <p class="hint" id="mapShort"></p>
   <p class="warn" id="setupWarn" hidden>Se termina la partida actual.</p>
-  <div class="dactions"><button class="btn" id="setupCancel">Volver a la partida</button><button class="btn primary" id="btnStart">Empezar</button></div>
+  <div class="dactions"><button class="btn" id="setupCancel">Volver a la partida</button><button class="btn" id="btnTut" title="Los primeros 20 pasos guiados en el mapa Anillo, contra un bot; después sigues jugando normal">🎓 Comienzo guiado</button><button class="btn primary" id="btnStart">Empezar</button></div>
+  <p class="hint">¿Primera vez? El <b>comienzo guiado</b> te acompaña los primeros 20 pasos y después sigues jugando esa misma partida.</p>
 </dialog>
 <dialog id="dlgMenu" class="menu" aria-labelledby="menuTitle">
   <h2 id="menuTitle">Menú</h2>
   <div class="mgrid">
     <button class="btn" id="btnNew">Partida nueva…</button>
+    <button class="btn" id="btnTut2">🎓 Comienzo guiado (20 pasos)</button>
     <button class="btn" id="btnAuto" title="El bot toma tus decisiones durante 5 pasos">Bot por mí (5 pasos)</button>
     <button class="btn" id="btnGallery">Galería de estilo</button>
   </div>
   <h4>Ajustes</h4>
+  <label class="mopt"><input type="checkbox" id="chkSound" checked> Sonido</label>
+  <label class="mopt">Volumen <input type="range" id="rngVol" min="0" max="100" value="55" aria-label="Volumen"></label>
+  <label class="mopt"><input type="checkbox" id="chkAmb" checked> Ambiente (viento y pájaros)</label>
   <label class="mopt"><input type="checkbox" id="chkAnim" checked> Animaciones</label>
   <label class="mopt"><input type="checkbox" id="chkEdge"> Mover el mapa al acercar el mouse a los bordes</label>
   <p class="hint" id="menuInfo"></p>
@@ -99,6 +106,7 @@
   </div>
   <form method="dialog" class="dclose"><button class="btn primary">Cerrar</button></form>
 </dialog>
+<dialog id="dlgBattle" class="big battle"><div id="battleBody"></div><form method="dialog" class="dclose"><button class="btn primary">Cerrar</button></form></dialog>
 <dialog id="dlgGallery"><h2>Galería de estilo</h2><p class="hint">Cada zona es una maqueta de pueblo vista desde arriba. Los techos toman el color del jugador.</p><div class="gal" id="galGrid"></div><form method="dialog" style="margin-top:10px"><button class="btn primary">Cerrar</button></form></dialog>
 <dialog id="dlgEnd"><h2 id="endTitle"></h2><div id="endBody"></div><form method="dialog" style="margin-top:10px"><button class="btn primary" id="endNew">Partida nueva…</button></form></dialog>
 
@@ -113,10 +121,13 @@
 <script src="js/motor/economia.js"></script>
 <script src="js/motor/combate.js"></script>
 <script src="js/motor/victoria.js"></script>
+<script src="js/motor/encuentros.js"></script>
 <script src="js/motor/bots.js"></script>
+<script src="js/motor/proyeccion.js"></script>
 <script src="js/interfaz/dibujo/terreno.js"></script>
 <script src="js/interfaz/estado_interfaz.js"></script>
 <script src="js/interfaz/dibujo/figuras.js"></script>
+<script src="js/interfaz/sonido.js"></script>
 <script src="js/interfaz/animaciones.js"></script>
 <script src="js/interfaz/mapa/territorio.js"></script>
 <script src="js/interfaz/paneles/especializar.js"></script>
@@ -128,7 +139,9 @@
 <script src="js/interfaz/paneles/imperio.js"></script>
 <script src="js/interfaz/paneles/tecnologias.js"></script>
 <script src="js/interfaz/paneles/ordenes.js"></script>
+<script src="js/interfaz/batalla.js"></script>
 <script src="js/interfaz/sugerencias.js"></script>
+<script src="js/interfaz/tutorial.js"></script>
 <script src="js/interfaz/render.js"></script>
 <script src="js/interfaz/acciones.js"></script>
 <script src="js/interfaz/flujo.js"></script>

@@ -54,7 +54,7 @@ const FX = {
   'Servicio médico de campaña':M=>{M.milHeal+=1;},
   // --- diplomacia / imperio ---
   'Ofrendas':M=>{M.annexDisc*=0.75;}, 'Diplomacia tribal':M=>{M.tribDisc=0.75;}, 'Anexión a distancia':M=>{M.annexDist=2;},
-  'Capital próspera':M=>{M.capExtra=2;}, 'Capital fortificada':M=>{M.capDef=2;}, 'Graneros comunes':M=>{M.freeFoodAdj=1;}, 'Corte imperial':M=>{M.corte=1;},
+  'Capital próspera':M=>{M.capExtra=1;}, 'Capital fortificada':M=>{M.capDef=2;}, 'Graneros comunes':M=>{M.freeFoodAdj=1;}, 'Corte imperial':M=>{M.corte=1;},
   // --- militares ---
   'Marcha forzada':M=>{M.cuartelExtra=2;}, 'Marcha relámpago':M=>{M.cuartelExtra=3;},
   'Entrenamiento continuo':M=>{M.forceStep=2;}, 'Veteranos':M=>{M.forceMax=5;}, 'Lanceros':M=>{M.lanceros=1;},

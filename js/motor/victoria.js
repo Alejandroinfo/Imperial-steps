@@ -1,11 +1,13 @@
+// @ts-check
 'use strict';
 // Eliminación (fantasmas) y las 7 condiciones de victoria (2 a la vez).
 
+/** @param {Partida} g */
 function checkOut(g,L){
   for(let f=0;f<g.N;f++){
     const F=g.F[f]; if(F.out) continue;
     if(totalPop(g,f)===0){
-      F.out=true; L(PLN[f].name+' queda eliminado y pasa a ser fantasma.'); g.fx.push({k:'out',f});
+      F.out=true; F.enc=null; L(PLN[f].name+' queda eliminado y pasa a ser fantasma.'); g.fx.push({k:'out',f});
       g.zones.forEach(z=>{ if(z.owner===f){ z.owner=null; z.proj=[]; } });
       const tz=g.zones.filter(z=>z.owner===TRIBE&&(z.units[TRIBE]||[]).length);
       if(tz.length){ const z=tz[Math.floor(g.rng()*tz.length)]; z.owner=f; z.units[f]=z.units[TRIBE]; delete z.units[TRIBE]; F.ghost=true; L(PLN[f].name+' controla ahora la tribu de '+zname(z)+'.'); }
@@ -13,7 +15,9 @@ function checkOut(g,L){
     }
   }
 }
+/** @param {Partida} g */
 function thrOf(g){ return g.thr==='prueba'?{gold:300,pop:25,tech:3,terr:0.4,dev:7,wond:2}:{gold:1000,pop:75,tech:5,terr:0.7,dev:20,wond:3}; }
+/** @param {Partida} g */
 function victoryConds(g,f){
   const T=thrOf(g), F=g.F[f]; const zs=zonesOf(g,f);
   const l5=new Set(TECHS.filter(t=>F.techs[t.n]&&t.l===5).map(t=>t.r)).size;
@@ -32,6 +36,7 @@ function victoryConds(g,f){
     {k:'Maravillas',d:'Maravillas',v:wond,t:T.wond,ok:wond>=T.wond}
   ];
 }
+/** @param {Partida} g */
 function checkVictory(g,L){
   const alive=[]; for(let f=0;f<g.N;f++) if(!g.F[f].out) alive.push(f);
   g.vic=alive.map(f=>({f,n:victoryConds(g,f).filter(c=>c.ok).length}));

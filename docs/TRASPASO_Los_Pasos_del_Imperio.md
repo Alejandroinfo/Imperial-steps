@@ -4,7 +4,7 @@
 
 **Última actualización:** 26 de octubre de 2026
 **Autores del diseño:** Pao (idea inicial) y Alejandro.
-**Estado:** diseño en papel bastante cerrado; prototipo jugable v0.7 en el navegador, organizado como proyecto en GitHub con pruebas automáticas; sin servidor multijugador todavía.
+**Estado:** diseño en papel bastante cerrado; prototipo jugable v0.13 en el navegador, organizado como proyecto en GitHub con pruebas automáticas; sin servidor multijugador todavía.
 
 ---
 
@@ -18,7 +18,7 @@
 | **Objetivo del diseño** | Recuperar la sencillez y la diversión de planificar en grupo, con presión de tiempo, **sin el micromanagement** de un RTS. Este objetivo es la vara con la que se mide cada regla nueva. |
 | **Jugadores** | Pensado para 4, diseñado para N (de 2 a 4 en el prototipo). |
 | **Documento maestro de reglas** | `docs/Reglas_v0.1.md` (23 secciones). **Es la fuente de verdad.** |
-| **Repositorio** | **github.com/Alejandroinfo/Imperial-steps**. El juego se abre con `index.html`; en un solo archivo, `dist/Los_Pasos_del_Imperio.html` (se genera con `python herramientas/empaquetar.py`). |
+| **Repositorio** | **github.com/Alejandroinfo/Imperial-steps** (README en inglés, para reclutadores). 🆕 Para jugar en el navegador: **alejandroinfo.github.io/Imperial-steps** (hay que activar GitHub Pages). El juego se abre con `index.html`; en un solo archivo, `dist/Los_Pasos_del_Imperio.html` (se genera con `python herramientas/empaquetar.py`). |
 
 ---
 
@@ -30,10 +30,11 @@
 |---|---|---|
 | **`docs/Reglas_v0.1.md`** | Todas las reglas, con ✅ decidido, 💡 propuesta, ❓ por definir y 🆕 nuevo. La sección 20 lista los pendientes y la 23 el estado del prototipo. | Vivo |
 | **`docs/TRASPASO_Los_Pasos_del_Imperio.md`** | Este documento. | Vivo |
+| **`docs/TRASPASO_sesion_2026-10-26.md`** | 🆕 Traspaso detallado de la sesión del 26/10/2026 (v0.3 → v0.13): qué se decidió, qué cambió y qué quedó pendiente. | Vivo |
 | **`docs/Como_manejar_el_proyecto.md`** | Cómo trabajamos. | Estable |
 | **`Tecnologias_v0.2.xlsx`** | Catálogo de 203 tecnologías. ⚠ Los textos de Almacén, Intereses del almacén y Capital próspera cambiaron en el juego y falta pasarlos al Excel. | Vivo |
 | **`index.html`, `css/`, `js/`** | El juego. `js/datos` (mapas y tecnologías), `js/config` (números de balance), `js/motor` (reglas, sin pantalla) y `js/interfaz` (lo que se ve). | Vivo |
-| **`pruebas/`** | `revisar_capas.js`, `probar_reglas.js` (14 casos) y `simular_partidas.js` (72 partidas entre bots). Se corren con `npm test`. | Vivo |
+| **`pruebas/`** | `revisar_capas.js`, `probar_reglas.js` (37 casos) y `simular_partidas.js` (72 partidas entre bots). Se corren con `npm test`. | Vivo |
 | **`herramientas/empaquetar.py`** | Junta todo en un solo HTML. | Estable |
 | **`atlas_mapas.html`** | Atlas visual de los 12 mapas. | Estable |
 
@@ -66,10 +67,11 @@
 ### Población y economía
 - **Civiles:** poblador (1 comida + 1 producción), agricultor (2 comida), ingeniero (2 producción), constructor (2 de capacidad de obra), científico (2 de ciencia o 2 para investigar), comerciante (2 de oro). Fuerza de combate 1. Se mueven gratis pero ese paso no producen. **Solo entran a zonas libres o propias.**
 - **Especializar** cuesta 1 de producción (2 entre oficios, porque primero vuelven a básicos).
-- **Militares:** consumen 2 de comida y no producen. Fuerza 2 que sube +1 por paso hasta 4. Moverlos cuesta 1 de oro por unidad por zona. 🆕 Entrenar cuesta el soldado (2) más su **equipo** (arco 3, escudo 6, caballo o hacha 9); si una tropa muere en tu territorio, su arma se guarda y se reutiliza. Se pueden **licenciar** para volver a ser civiles (2 o 3 de producción).
+- **Militares:** consumen 2 de comida y no producen. Fuerza 2 que sube +1 por paso hasta 4. Moverlos cuesta 1 de oro por unidad por zona. 🆕 Entrenar cuesta el soldado (1) más su **equipo** (arco 2, escudo 4, caballo o hacha 6); si una tropa muere en tu territorio, su arma se guarda y se reutiliza. Se pueden **licenciar** para volver a ser civiles (2 o 3 de producción).
 - **Recursos:** comida y producción son **locales** (🆕 tope **10 por tamaño** de zona, ampliable con Almacén); oro y ciencia son **globales**. Enviar comida o producción entre zonas cuesta oro según la distancia y los Caminos.
-- 🆕 **La comida se reparte sola:** cada zona come de lo suyo y lo que falta sale de la zona propia más cercana que tenga. Alimentar a todos va antes que crecer.
-- **Crecimiento:** 💡 🆕 la mitad del sobrante del paso va a crecer y la otra mitad se guarda; lo que no cabe en el almacén va todo a crecer. Costo = (tamaño+1)×(tamaño+2)/2.
+- 🆕 **La comida se reparte sola** dentro de tu territorio. **Fuera, hace falta una línea de suministro** de hasta 2 zonas sin pasar por el enemigo: sin ella las tropas pasan hambre y pelean con la mitad de los dados. Alimentar a todos va antes que crecer.
+- **Crecimiento:** 🆕 cada zona elige **Crecer** (todo el sobrante va a crecer) o **Guardar** (se acumula). Costo = (tamaño+1)×(tamaño+2)/2.
+- 🆕 **Automatizaciones:** envíos automáticos entre zonas cada paso y oficio para los que nacen.
 - **Hambre:** 2 pasos sin comer y mueren (3 con *Despensas*). Herido + hambriento = muerte inmediata.
 
 ### Combate
@@ -96,7 +98,10 @@
 - **Maravilla:** 500 de producción, sin trabajadores, ocupa un espacio; si pierdes la zona, el conquistador se la queda.
 
 ### Tribus, eventos, victoria y fantasmas
+- 🆕 **Fronteras:** entre imperios vecinos hay una tierra de nadie sin dueño; quienes estén ahí ganan 🪙 +3 por paso cada uno mientras haya paz (+4 si hay uno solo). Es el dilema del prisionero del juego.
 - **Tribus:** una por oficio. **Anexar** cuesta `16 + 3 por civil + 5 por guerrero` (una típica, 30), pagado con las reservas de tus zonas cercanas; si dos pagan a la vez nadie la anexa y el precio se duplica. **Conquistar** da el 60 % de ese valor. A veces exigen **tributo** (6) y, si nadie paga, invaden.
+- 🆕 **Encuentros:** sin aviso, cada 4 a 7 pasos, en una zona tuya; 20 tipos de ofertas y apuestas que piden y dan más a medida que avanza la partida. Se deciden en el mismo paso. **Solo oportunidades:** rechazarlos no tiene consecuencias.
+- 🆕 **Recursos estratégicos:** rinden más mientras más tiempo los controles (+1 a +4 por paso).
 - **Eventos:** 16 en total; **uno cada 3 pasos desde el paso 6**; se anuncian con 2 pasos de anticipación (más con tecnología); el terreno multiplica el efecto.
 - **Victoria (2 de 7 a la vez):** Comercial (1000 de oro), Económica (75 de población), Tecnología (5 de nivel 5 de ramas distintas), Territorial (>70 % del mapa), Militar (2 capitales), Desarrollo (20 edificios), Maravillas (3). Empate: la partida sigue hasta que uno tenga una condición más.
 - **Eliminación:** solo al quedarse sin gente. Pasa a **fantasma**, controla una tribu y puede **aliarse** con un jugador vivo (ambos deben aceptar) y ganar con él. Las alianzas solo existen entre fantasma y jugador vivo.
@@ -110,7 +115,8 @@
 | **Lenguaje principal del producto final** | **Python** para motor, simulaciones y análisis | Alejandro apunta a puestos de data analytics y data science; es su lenguaje fuerte |
 | **Prototipo actual** | 🆕 Repositorio con HTML, CSS y JavaScript en carpetas por capas, cargados con `<script>` normales (se abre con doble clic, sin servidor); empaquetable en un solo archivo | Legible para un equipo y fácil de compartir con la familia |
 | **Capas** | 🆕 `datos → config → motor → interfaz`; el motor no puede usar nada de la pantalla (lo revisa una prueba) | Permite probar el motor en Node y pasarlo a Python sin reescribir reglas |
-| **Pruebas** | 🆕 `npm test` y GitHub Actions: regla de capas, 14 casos de reglas y 72 partidas entre bots | Detectar errores antes de jugar |
+| **Pruebas** | 🆕 `npm test` y GitHub Actions: regla de capas, 37 casos de reglas y 72 partidas entre bots | Detectar errores antes de jugar |
+| **Tipos** | 🆕 `js/tipos.d.ts` + JSDoc, revisado con TypeScript (`npm run check`), sin compilar | Encontró que las Maravillas no se podían construir; marca campos mal escritos y órdenes sin atender |
 | **Servidor futuro** | FastAPI + WebSockets; cliente sencillo en HTML/JS (D3 o SVG) | Con pasos largos, la latencia no importa; lo más simple que funcione |
 | **Motor** | Función pura `resolver_paso(estado, ordenes, rng)` con generador aleatorio **con semilla**, probada con **pytest** | Partidas reproducibles y tests fiables |
 | **Configuración** | Todos los números en tablas o archivos de configuración, no dentro del código | Cambiar balance sin reescribir código |
@@ -125,8 +131,8 @@
 - **Reglas en papel:** casi todo el juego, con 23 secciones y los puntos marcados como decididos o pendientes.
 - **12 mapas** generados y validados por código, con atlas visual.
 - **Catálogo de 203 tecnologías** en 12 ramas con columna vertebral.
-- **Prototipo jugable v0.7** con los 12 mapas, de 2 a 4 jugadores, economía local y global, 6 oficios, 10 edificios con niveles y especializaciones, las 203 tecnologías, 8 tipos de unidad, combate completo, tribus, eventos, fantasmas, alianzas y las 7 condiciones de victoria.
-- 🆕 **Interfaz (26/10/2026):** mapa como valle continuo (cercas donde hay camino, barrancos donde no), resumen de zona con quién trabaja y dónde, placas con reservas y pasos hasta el próximo poblador, edificios en tarjetas, tecnologías en subpestañas, sugerencias del paso, tributos visibles, **visor de batallas golpe por golpe**, postura con cada jugador y turno en la barra superior.
+- **Prototipo jugable v0.13** con los 12 mapas, de 2 a 4 jugadores, economía local y global, 6 oficios, 10 edificios con niveles y especializaciones, las 203 tecnologías, 8 tipos de unidad, combate completo, tribus, eventos, fantasmas, alianzas y las 7 condiciones de victoria.
+- 🆕 **Interfaz (26/10/2026):** mapa como valle continuo (cercas donde hay camino, barrancos donde no), resumen de zona con quién trabaja y dónde, placas con reservas y pasos hasta el próximo poblador, edificios en tarjetas, tecnologías en subpestañas, con **«⭐ Te ayudan ahora»**, colores por rama y el **impacto que tendrían hoy** (ej.: «🌾 +3 por paso»), sugerencias del paso, tributos visibles, **visor de batallas golpe por golpe**, **sonido y efectos** (generados por código, con controles en el Menú), postura con cada jugador y turno en la barra superior.
 - 🆕 **Proyecto en GitHub** (github.com/Alejandroinfo/Imperial-steps) organizado por capas, con README, guía de colaboración y pruebas automáticas.
 
 ---
@@ -134,23 +140,27 @@
 ## 6. Qué falta (por prioridad)
 
 ### Alta
-1. **Jugarlo con la familia.** 🆕 Ya se trabajó lo que se sentía mal al jugar sola (opciones de partida, tecnologías, zona, mapa, edificios, combate). Falta probarlo con más personas.
+0. 🆕 **La sensación de Pao jugando (26/10/2026): no se siente diversión.** Los bots casi no atacan, no hay tensión para invertir en lo militar, las tribus se compran baratas y los recursos pasan desapercibidos. Las simulaciones lo confirman: 0 a 3 combates por partida y población estancada cerca de 10 (`docs/balance_economia.md`). **Esto es lo primero a resolver.**
+1. 🆕 **Orden elegido por Pao para dar tensión:** (1) ✅ encuentros sorpresa y recursos disputados; (2) ✅ mapas más conectados con dilema del prisionero en zonas de frontera; (3) tribus como amenaza latente y tributo negociado (ofertas secretas; atacan al que dio menos); (4) multijugador.
+1a. 🆕 **Multijugador para el primer playtest:** cada uno en su computadora, en videollamada. Propuesta: conexión directa entre navegadores (WebRTC con PeerJS), donde uno crea la sala y los demás entran con un código, sin servidor propio y funcionando desde GitHub Pages.
+1b. **Jugarlo con la familia.** 🆕 Ya se trabajó lo que se sentía mal al jugar sola (opciones de partida, tecnologías, zona, mapa, edificios, combate). Falta probarlo con más personas.
 2. 🆕 **Ritmo y balance después de los cambios de hoy:** con la capital a +2 y el equipo más caro, casi nadie gana antes del paso 60 en las simulaciones (pendientes 26 y 28). Revisar los umbrales del modo prueba.
 3. 🆕 **Confirmar las propuestas 💡 de hoy:** reparto del sobrante de comida (pendiente 29), costo del segundo edificio (30) y valores del equipo (31).
 4. **19 de 203 tecnologías no tienen efecto simulado** (lista en la sección 23.2 de las reglas).
 5. **Pasar el motor a Python** con pytest y tablas de configuración; después, el simulador de balance. 🆕 La separación por capas ya lo deja preparado.
 6. **Multijugador real** (FastAPI + WebSockets, salas con código, reconexión).
+7. 🆕 **Subir la v0.13 del código a GitHub y activar GitHub Pages** (Settings → Pages → rama `main`, carpeta raíz), para que el enlace «Play it in your browser» del README funcione.
 
 ### Media
 7. **Bots mejores:** siguen atacando poco.
 8. **Interfaz de órdenes** para muchas zonas: seleccionar varias, repetir órdenes, plantillas.
 9. **Movimientos simultáneos:** qué pasa exactamente cuando dos ejércitos se cruzan en una frontera.
-10. **Tutorial** para que un primo entienda el juego en 5 minutos. 🆕 Las sugerencias del paso son un primer paso.
+10. ✅ 🆕 **Comienzo guiado** de los primeros 20 pasos, que luego sigue como partida normal (v0.12). Falta probarlo con alguien que no conozca el juego.
 11. **Pendientes de reglas:** los ❓ de `docs/Reglas_v0.1.md` (sección 20 y repartidos).
 12. 🆕 **Pasar al Excel** los textos de tecnologías que cambiaron (pendiente 22).
 
 ### Baja
-13. Arte definitivo, música, sonidos.
+13. Arte definitivo y música. 🆕 Ya hay efectos de sonido y ambiente generados por código; falta música.
 14. Accesibilidad (daltonismo, tamaño de texto), más de 4 jugadores, mapas aleatorios simétricos.
 15. 🆕 Ideas de interfaz que quedaron para después: ficha rápida al pasar el mouse por una zona y deshacer la última orden (Ctrl+Z).
 
@@ -181,6 +191,7 @@
 8. **Estilo visual:** colores planos, formas duras, vista desde arriba, humor pequeño; la claridad por encima del detalle, porque el juego se decide en segundos.
 9. **Sin reloj por ahora:** el paso avanza cuando todos están listos; primero se mide cuánto tarda la gente.
 10. 🆕 **Trabajo en equipo:** ramas, *issues* y *pull requests* como dice `CONTRIBUTING.md`; el motor nunca toca la pantalla.
+11. 🆕 **Idioma del repositorio:** el juego, las reglas y el traspaso van en español; lo que ve un visitante o reclutador va en **inglés** (`README.md`, `CONTRIBUTING.md`, descripción del proyecto), con versión en español (`README.es.md`, `CONTRIBUTING.es.md`). Los mensajes de commit pueden ir en inglés.
 
 ---
 
@@ -188,6 +199,7 @@
 
 Sube a un **Proyecto de Claude** como conocimiento del proyecto:
 
+- `docs/TRASPASO_sesion_2026-10-26.md` (lo último que se hizo)
 - `docs/TRASPASO_Los_Pasos_del_Imperio.md` (este documento)
 - `docs/Reglas_v0.1.md`
 - `Tecnologias_v0.2.xlsx`
@@ -230,3 +242,13 @@ Al cerrar cada sesión:
 | 🆕 Postura entre jugadores en vez de por zona | La relación es entre dos jugadores, no de un lugar |
 | 🆕 Capital a la mitad (+2) | Generaba demasiado |
 | 🆕 Edificios en su nivel máximo y segundo del mismo tipo con nivel 3 | Evitar obras repetidas y dar más peso a las especializaciones |
+| 🆕 README y guía de colaboración en inglés, con capturas y enlace para jugar | Que un reclutador entienda el proyecto y lo pruebe en un minuto |
+| 🆕 Prioridad de crecer o guardar por zona, envíos automáticos y oficio al nacer | Menos micromanagement y más control sobre el ritmo de cada zona |
+| 🆕 Militares más baratos (soldado 1, equipo 2 × nivel) | Con 2 y 3 × nivel nadie armaba ejércitos |
+| 🆕 Entrenar sin Cuartel | El Cuartel frenaba el inicio y la agresividad |
+| 🆕 Cadena de suministros fuera del territorio propio | Que elegir dónde pelear y cortar el camino al enemigo sean decisiones de verdad |
+| 🆕 Etapa de fundación (crecer a mitad de precio hasta el paso 12) | El arranque era lento y con pocas decisiones |
+| 🆕 Encuentros solo positivos o neutros (sin amenazas) | Un ataque inesperado de bandidos es demasiado al azar para prepararse |
+| 🆕 Fronteras sin dueño entre imperios vecinos (dilema del prisionero) | Las tribus eran el único colchón y no había tensión entre vecinos |
+| 🆕 Tipos con TypeScript sobre el motor, sin compilar | Detectan órdenes sin atender y campos mal escritos; documentan las reglas |
+| 🆕 Seguir con SVG para dibujar; PixiJS como opción si hace falta más fluidez | En la comparación, PixiJS se ve igual y SVG funcionó bien en una computadora normal |

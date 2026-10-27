@@ -30,7 +30,7 @@ function pullRes(g,f,z,res,need,maxDist){
 // y nadie la atiende, `npm run check` falla. Así se encontró que la Maravilla no se podía construir.
 /** @type {Record<TipoOrden, number>} */
 const ORDER_PHASE = {research:1,cancelres:1,stance:2,encounter:2,spec:3,demob:3,train:3,build:4,wonder:4,upgrade:4,bspec:4,demolish:4,
-  send:5,route:5,growmode:5,pausebuild:5,autospec:5,tribute:6,ally:6,annex:7,move:8};
+  send:5,route:5,bid:5,growmode:5,pausebuild:5,autospec:5,tribute:6,ally:6,annex:7,move:8};
 /**
  * Aplica un paso completo: nacimientos, evento, órdenes, movimientos, combates, control y economía.
  * @param {Partida} g estado de la partida (se modifica)
@@ -71,6 +71,7 @@ function resolveStep(g,orders){
     const refund=Math.floor(b.cost*0.5); z.b.splice(o.bi,1); z.proj=z.proj.filter(p=>!(p.k==='u'&&p.bi===o.bi)); z.proj.forEach(p=>{ if(p.k==='u'&&p.bi>o.bi) p.bi--; }); z.prod=Math.min(capStore(g,z,'prod'),z.prod+refund); L(zname(z)+': se destruye un '+BT[b.t].n+' y se recuperan '+refund+' de producción.'); });
   by('send').forEach(o=>{ doSend(g,o,L); });
   by('route').forEach(o=>{ const z=Z[o.from]; if(!z||z.owner!==o.f) return; z.routes=(z.routes||[]).filter(r=>!(r.to===o.to&&r.res===o.res)); if(o.q&&o.to!==o.from) z.routes.push({to:o.to,res:o.res==='prod'?'prod':'food',q:o.q==='sobrante'?'sobrante':Math.max(1,Math.floor(o.q))}); });
+  by('bid').forEach(o=>{ doBid(g,o,L); });
   by('growmode').forEach(o=>{ const z=Z[o.zone]; if(z&&z.owner===o.f) z.growMode=o.mode==='guardar'?'guardar':'crecer'; });
   by('pausebuild').forEach(o=>{ const z=Z[o.zone]; if(z&&z.owner===o.f) z.pauseBuild=!!o.on; });
   by('autospec').forEach(o=>{ const z=Z[o.zone]; if(z&&z.owner===o.f) z.autoSpec=CIV.includes(o.to)&&o.to!=='pob'?o.to:null; });
@@ -97,7 +98,7 @@ function resolveStep(g,orders){
     });
     const pairs=[]; facs.forEach(a=>facs.forEach(b=>{ if(a<b&&isEnemy(g,a,b)) pairs.push([a,b]); }));
     if(!pairs.length){ z.conflict=false; return; }
-    if(facs.some(f=>att[f])){ fightZone(g,z,facs,att,L); pairs.forEach(p=>hostile.push(p)); }
+    if(facs.some(f=>att[f])){ if(z.owner===TRIBE) facs.forEach(f=>{ if(isPl(f)&&att[f]) declareTribeWar(g,z,f,L); }); fightZone(g,z,facs,att,L); pairs.forEach(p=>hostile.push(p)); }
     else z.conflict=false;
   });
   // tensión: si dos jugadores pelean, todas las zonas donde coexisten pasan a conflicto
@@ -116,6 +117,8 @@ function resolveStep(g,orders){
   // eventos futuros y encuentros nuevos
   scheduleEvents(g);
   scheduleEncounters(g);
+  tribeRequests(g,L);
+  auctionTick(g,L);
   g.hist=g.hist||[]; if(g.logNow.length||g.evNow) g.hist.push({step:g.step,ev:g.evNow?g.evNow.id:null,lines:g.logNow.slice()});
   g.step++; g.log=g.logNow;
   return g.log;
@@ -204,9 +207,11 @@ function doBuild(g,o,L){
 // Maravilla: 500 de producción (menos con tecnologías y piedra), sin trabajadores, ocupa un espacio.
 /** @param {Partida} g */
 function doWonder(g,o,L){
-  const z=g.zones[o.zone]; if(!z||z.owner!==o.f||!techOwn(g,o.f,'Maravillas')) return;
+  const z=g.zones[o.zone]; const W=WONDERS[o.w]; if(!z||z.owner!==o.f||!W||!techOwn(g,o.f,W.tech)) return;
+  if(wonderBuilt(g,o.w)||wonderRace(g,o.w).some(x=>x.f===o.f)) return;   // ya existe, o ya la estás construyendo
   const used=z.b.length+z.proj.filter(p=>p.k==='b'||p.k==='w').length; if(used>=slotsOf(g,z)) return;
-  const c=wonderCostOf(g,o.f,z); z.proj.push({k:'w',left:c,tot:c}); L(zname(z)+': '+PLN[o.f].name+' empieza una Maravilla.');
+  const c=wonderCostOf(g,o.f,z); z.proj.push({k:'w',w:o.w,left:c,tot:c});
+  L('¡Carrera! '+PLN[o.f].name+' empieza '+W.n+' en '+zname(z)+'. Quien la termine primero se la queda.'); g.fx.push({k:'wstart',zone:z.id,f:o.f,w:o.w});
 }
 /** @param {Partida} g */
 function doUpgrade(g,o,L){
@@ -229,11 +234,14 @@ function doSend(g,o,L){
   if(M.logiRefund&&cost>0) F.gold+=Math.floor(cost*M.logiRefund);
   if(!o.auto){ g.fx.push({k:'send',from:a.id,to:b.id,f:o.f,res,q}); L(PLN[o.f].name+' envía '+q+' de '+(res==='food'?'comida':'producción')+': '+zname(a)+' → '+zname(b)+' (coste '+cost+' de oro).'); }
 }
+// Cumplir un pedido sube la relación con la tribu (0 a 3); con 3 se puede anexar.
+/** @param {Partida} g */
+function tribeRel(g,zid,f,L){ const tz=g.zones[zid]; tz.rel=tz.rel||{}; tz.rel[f]=Math.min(TRIBE_REL_MAX,(tz.rel[f]||0)+1); L(PLN[f].name+' cumple el pedido de la tribu de '+zname(tz)+': relación '+tz.rel[f]+'/'+TRIBE_REL_MAX+' ('+TRIBE_REL_N[tz.rel[f]]+').'); }
 /** @param {Partida} g */
 function doTribute(g,o,L){
   const t=g.tributes.find(x=>x.zone===o.tribe); const z=g.zones[o.from]; if(!t||!z||z.owner!==o.f) return;
-  const res=t.res; if(res==='food'||res==='prod'){ const key=res==='food'?'food':'prod'; if(z[key]>=t.amount){ z[key]-=t.amount; t.paid[o.f]=1; L(PLN[o.f].name+' paga el tributo a la tribu de '+zname(g.zones[t.zone])+'.'); } }
-  else { const F=g.F[o.f]; const k=res==='gold'?'gold':'tech'; if(F[k]>=t.amount){ F[k]-=t.amount; t.paid[o.f]=1; L(PLN[o.f].name+' paga el tributo a la tribu de '+zname(g.zones[t.zone])+'.'); } }
+  const res=t.res; if(res==='food'||res==='prod'){ const key=res==='food'?'food':'prod'; if(z[key]>=t.amount){ z[key]-=t.amount; t.paid[o.f]=1; tribeRel(g,t.zone,o.f,L); } }
+  else { const F=g.F[o.f]; const k=res==='gold'?'gold':'tech'; if(F[k]>=t.amount){ F[k]-=t.amount; t.paid[o.f]=1; tribeRel(g,t.zone,o.f,L); } }
 }
 /** @param {Partida} g */
 function doAlly(g,o,L){
@@ -251,6 +259,7 @@ function resolveAnnex(g,list,L){
   list.forEach(o=>{
     const t=g.zones[o.zone]; if(!t||t.owner!==TRIBE||!(t.units[TRIBE]||[]).length) return;
     if(!nearOwnZones(g,o.f,t).length) return;
+    if(((t.rel||{})[o.f]||0)<TRIBE_REL_MAX) return;   // primero hay que ganarse su confianza
     const price=annexPrice(g,o.f,t), res=TSPEC_RES[t.tspec];
     if(annexHave(g,o.f,t)<price) return;
     (by[t.id]=by[t.id]||[]).push({o,price,res});

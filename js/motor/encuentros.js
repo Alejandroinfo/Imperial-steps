@@ -39,6 +39,16 @@ const ENCOUNTERS = [
   {id:'tesoro', k:'apuesta', who:['Un viejo con un mapa','Un buscador de tesoros'], txt:'jura que sabe dónde hay oro enterrado', cost:{res:'gold',n:4}, gain:{gamble:{p:0.5,res:'gold',n:16}}},
   {id:'alquimista', k:'apuesta', who:['Un alquimista','Una inventora excéntrica'], txt:'promete un gran descubrimiento', cost:{res:'gold',n:5}, gain:{gamble:{p:0.5,res:'tech',n:22}}}
 ];
+// Encuentros de elegir entre dos (13.3): llegan dos ofertas y eliges una o ninguna. Da costo de oportunidad sin castigar.
+const ENC_CHOICE_P = 1/3;   // uno de cada tres encuentros
+const CHOICES = [
+  {id:'ch_tropas', who:['Dos emisarios rivales','Un capitán y un cazador'], txt:'ofrecen tropas, pero solo puedes aceptar a uno', opts:[{lbl:'Mercenarios',cost:{res:'gold',n:5},gain:{units:{sol:2}}},{lbl:'Arqueros',cost:{res:'gold',n:7},gain:{units:{arq:2}}}]},
+  {id:'ch_saber', who:['Un maestro y una sabia','Dos viajeros de otras tierras'], txt:'ofrecen enseñar, pero solo a uno le harás caso', opts:[{lbl:'Formar a un científico',cost:{res:'food',n:4},gain:{units:{cie:1}}},{lbl:'Compartir su saber',cost:{res:'gold',n:5},gain:{res:'tech',n:10}}]},
+  {id:'ch_mercado', who:['Dos caravanas que llegan a la vez'], txt:'venden lo suyo, pero no hay sitio para las dos', opts:[{lbl:'Granos',cost:{res:'gold',n:4},gain:{res:'food',n:12}},{lbl:'Hierro y madera',cost:{res:'gold',n:6},gain:{res:'prod',n:12}}]},
+  {id:'ch_fiesta', who:['Unos juglares y unas parteras'], txt:'se ofrecen para ayudar a tu gente', opts:[{lbl:'Juglares',cost:{res:'gold',n:3},gain:{prog:10}},{lbl:'Parteras',cost:{res:'food',n:4},gain:{prog:12}}]},
+  {id:'ch_oficios', who:['Un gremio de canteros y una familia de mercaderes'], txt:'quieren instalarse en tu zona', opts:[{lbl:'Artesanos',cost:{res:'food',n:5},gain:{units:{ing:2}}},{lbl:'Mercaderes',cost:{res:'gold',n:6},gain:{units:{com:2}}}]},
+  {id:'ch_armas', who:['Un herrero y un armero'], txt:'fabrican para tu cuartel, pero solo uno a la vez', opts:[{lbl:'Arcos',cost:{res:'gold',n:5},gain:{eq:{arq:2}}},{lbl:'Escudos',cost:{res:'prod',n:7},gain:{eq:{esc:2}}}]}
+];
 const ENC={}; ENCOUNTERS.forEach(e=>{ ENC[e.id]=e; });
 const ENC_VARIANTS=ENCOUNTERS.reduce((a,e)=>a+e.who.length,0);
 
@@ -56,12 +66,24 @@ function encUnits(g,u){ const out={}; Object.keys(u).forEach(t=>{ out[t]=u[t]+Ma
 
 // Arma un encuentro concreto (con montos ya calculados) para el jugador f en la zona z.
 /** @param {Partida} g */
+function scaleGain(g,gain){
+  const o=gain?JSON.parse(JSON.stringify(gain)):null;
+  if(o){ if(o.res) o.n=encAmount(g,o.n); if(o.units) o.units=encUnits(g,o.units); if(o.prog) o.prog=encAmount(g,o.prog); if(o.gamble) o.gamble.n=encAmount(g,o.gamble.n); }
+  return o;
+}
+// Un encuentro de elegir entre dos, con los montos ya calculados.
+/** @param {Partida} g */
+function makeChoice(g,f,z){
+  const e=CHOICES[Math.floor(g.rng()*CHOICES.length)], who=e.who[Math.floor(g.rng()*e.who.length)];
+  const opts=e.opts.map(o=>({lbl:o.lbl,cost:{res:o.cost.res,n:encAmount(g,o.cost.n)},gain:scaleGain(g,o.gain)}));
+  return /** @type {Encuentro} */({id:e.id,k:'eleccion',who,txt:e.txt,zone:z.id,cost:null,gain:null,refuse:null,step:g.step,str:0,opts});
+}
+/** @param {Partida} g */
 function makeEncounter(g,f,z){
   const opts=ENCOUNTERS.filter(e=>!e.terr||e.terr.includes(z.terrain));
   const e=opts[Math.floor(g.rng()*opts.length)], who=e.who[Math.floor(g.rng()*e.who.length)];
   const c=e.cost?{res:e.cost.res,n:encAmount(g,e.cost.n)}:null;
-  const gain=e.gain?JSON.parse(JSON.stringify(e.gain)):null;
-  if(gain){ if(gain.res) gain.n=encAmount(g,gain.n); if(gain.units) gain.units=encUnits(g,gain.units); if(gain.prog) gain.prog=encAmount(g,gain.prog); if(gain.gamble) gain.gamble.n=encAmount(g,gain.gamble.n); }
+  const gain=scaleGain(g,e.gain);
   const refuse=e.refuse?JSON.parse(JSON.stringify(e.refuse)):null;
   if(refuse&&refuse.bandits) refuse.bandits+=Math.floor(g.step/10);
   return /** @type {Encuentro} */({id:e.id,k:e.k,who,txt:encConj(who,e.txt),zone:z.id,cost:c,gain,refuse,step:g.step,str:e.str||0});
@@ -76,16 +98,32 @@ function encGive(g,f,z,res,n){ if(res==='gold') g.F[f].gold+=n; else if(res==='t
 // Resuelve la decisión del jugador (o la falta de decisión: cuenta como rechazo).
 /** @param {Partida} g */
 function resolveEncounter(g,f,choice,L){
+  const enc=g.F[f].enc; let tag=null;
+  if(enc&&enc.story&&enc.opts){ const i=['a','b','c'].indexOf(choice), z=g.zones[enc.zone]; if(i>=0&&enc.opts[i]&&z&&z.owner===f&&encHave(g,f,{cost:enc.opts[i].cost,zone:enc.zone})) tag=enc.opts[i].t; }
+  resolveEncounterBody(g,f,choice,L);
+  if(enc&&enc.story) storyAdvance(g,f,tag,L);   // aceptes o no, la historia sigue
+}
+/** @param {Partida} g */
+function resolveEncounterBody(g,f,choice,L){
   const F=g.F[f], enc=F.enc; if(!enc) return; F.enc=null;
   const z=g.zones[enc.zone]; const W=enc.who.charAt(0).toLowerCase()+enc.who.slice(1);
   if(!z||z.owner!==f){ L(PLN[f].name+': el encuentro con '+W+' se pierde; ya no controla esa zona.'); return; }
   const tag=PLN[f].name+' · '+zname(z)+': ';
-  if(choice==='si'&&encHave(g,f,enc)){
-    encPay(g,f,enc); const gn=enc.gain;
+  // en los de elegir entre dos, 'a' y 'b' son las opciones; en los demás, 'si' acepta
+  let use=enc, go=(choice==='si');
+  const oi=['a','b','c'].indexOf(choice);
+  if(enc.opts&&oi>=0&&enc.opts[oi]){ const o=enc.opts[oi]; use=Object.assign({},enc,{cost:o.cost,gain:o.gain}); go=true; }
+  if(go&&encHave(g,f,use)){
+    encPay(g,f,use); const gn=use.gain;
     if(gn&&gn.units){ Object.keys(gn.units).forEach(t=>{ for(let i=0;i<gn.units[t];i++){ const u=mkUnit(g,f,t); if(enc.str&&!UT[t].civ) u.str=enc.str; lst(z,f).push(u); } });
       L(tag+'trato con '+W+': llegan '+Object.keys(gn.units).map(t=>gn.units[t]+' '+(gn.units[t]>1?UNP[t]:UN[t]).toLowerCase()).join(' y ')+'.'); }
     if(gn&&gn.res){ encGive(g,f,z,gn.res,gn.n); L(tag+'trato con '+W+': +'+gn.n+' de '+TSPEC_N[gn.res]+'.'); }
     if(gn&&gn.eq){ z.eq=z.eq||{}; Object.keys(gn.eq).forEach(t=>{ z.eq[t]=(z.eq[t]||0)+gn.eq[t]; }); L(tag+'trato con '+W+': '+Object.keys(gn.eq).map(t=>gn.eq[t]+' '+EQUIP_N[t][gn.eq[t]>1?1:0]).join(' y ')+' guardados en la zona.'); }
+    if(gn&&gn.rel){ const tz=g.zones.find(a=>a.owner===TRIBE&&a.adj.some(x=>g.zones[x].owner===f)); if(tz) tribeRel(g,tz.id,f,L); else { encGive(g,f,z,'gold',8); L(tag+'no hay una tribu cerca: recibes 8 de oro.'); } }
+    if(gn&&gn.tpob){ const u=mkUnit(g,f,'pob'); u.tr=gn.tpob.map(x=>({k:x.k,l:x.l})); lst(z,f).push(u); L(tag+'llega un poblador extraordinario con '+u.tr.map(x=>TRAIT_INFO[x.k].n+' '+(x.l>0?'+':'')+x.l).join(' y ')+'.'); }
+    if(gn&&gn.saber) grantTech(g,f,gn.saber,L,tag);
+    if(gn&&gn.bld){ const used=z.b.length+z.proj.filter(p=>p.k==='b'||p.k==='w').length; if(used<slotsOf(g,z)&&!z.b.some(b=>b.t===gn.bld)){ const lv=buildLevel(g,f,gn.bld); z.b.push({t:gn.bld,l:lv,s:null,wk:0,cost:20*lv}); L(tag+'recibes un '+BT[gn.bld].n+' ya construido.'); } else { encGive(g,f,z,'gold',15); L(tag+'no había espacio para el edificio: recibes 15 de oro.'); } }
+    if(gn&&gn.tres){ F.tres=(F.tres||[]).filter(r=>r.key!==gn.tres.key); F.tres.push({key:gn.tres.key,until:g.step+AUCTION_RES_STEPS}); L(tag+RES[gn.tres.key].n+' durante '+AUCTION_RES_STEPS+' pasos ('+RES[gn.tres.key].d+')'); }
     if(gn&&gn.prog){ z.prog+=gn.prog; L(tag+'trato con '+W+': +'+gn.prog+' de crecimiento.'); }
     if(gn&&gn.gamble){ if(g.rng()<gn.gamble.p){ encGive(g,f,z,gn.gamble.res,gn.gamble.n); L(tag+'¡salió bien el trato con '+W+'! +'+gn.gamble.n+' de '+TSPEC_N[gn.gamble.res]+'.'); } else L(tag+'el trato con '+W+' salió mal: se pierde lo pagado.'); }
     if(!gn) L(tag+'se paga a '+W+' y se evita el problema.');
@@ -115,22 +153,29 @@ function resolveEncounter(g,f,choice,L){
 }
 // Al final de cada paso: quien no tenga uno pendiente y ya le toque, recibe un encuentro nuevo.
 /** @param {Partida} g */
+function L2(g,m){ g.logNow.push(m); }
+/** @param {Partida} g */
 function scheduleEncounters(g){
   for(let f=0;f<g.N;f++){
     const F=g.F[f]; if(F.out||F.enc) continue;
+    if(F.encNext===999) continue;   // comienzo guiado: sin encuentros ni historias
+    if(!F.story) F.story={id:STORY_IDS[Math.floor(g.rng()*STORY_IDS.length)],ch:1,next:Math.max(STORY_FIRST,g.step+2)+Math.floor(g.rng()*3),tags:[]};
+    if(!F.story.done&&g.step+1>=F.story.next){ const ch=makeChapter(g,f); if(ch){ F.enc=ch; L2(g,PLN[f].name+': llega un capítulo de «'+STORIES[F.story.id].n+'».'); continue; } }
     if(F.encNext===undefined) F.encNext=ENC_FIRST+Math.floor(g.rng()*3);
     if(g.step+1<F.encNext) continue;
     const zs=zonesOf(g,f).filter(z=>(z.units[f]||[]).length); if(!zs.length) continue;
     // de preferencia en una zona de frontera
     const border=zs.filter(z=>z.adj.some(a=>g.zones[a].owner!==f));
     const pool=border.length&&g.rng()<0.7?border:zs; const z=pool[Math.floor(g.rng()*pool.length)];
-    F.enc=makeEncounter(g,f,z); F.encNext=g.step+1+ENC_MIN_GAP+Math.floor(g.rng()*(ENC_MAX_GAP-ENC_MIN_GAP+1));
+    F.enc=g.rng()<ENC_CHOICE_P?makeChoice(g,f,z):makeEncounter(g,f,z); F.encNext=g.step+1+ENC_MIN_GAP+Math.floor(g.rng()*(ENC_MAX_GAP-ENC_MIN_GAP+1));
   }
 }
 // Decisión simple para los bots: aceptan si pueden pagar y casi siempre si es una amenaza.
 /** @param {Partida} g */
+/** @returns {'si'|'no'|'a'|'b'|'c'|null} */
 function botEncounter(g,f){
   const enc=g.F[f].enc; if(!enc) return null;
+  if(enc.opts){ const ok=enc.opts.map((o,i)=>i).filter(i=>encHave(g,f,{cost:enc.opts[i].cost,zone:enc.zone})); if(!ok.length) return 'no'; return g.rng()<0.8?/** @type {'a'|'b'|'c'} */(['a','b','c'][ok[Math.floor(g.rng()*ok.length)]]):'no'; }
   if(!encHave(g,f,enc)) return 'no';
   if(enc.k==='apuesta') return g.rng()<0.4?'si':'no';
   return g.rng()<0.75?'si':'no';

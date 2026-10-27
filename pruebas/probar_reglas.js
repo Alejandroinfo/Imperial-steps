@@ -121,12 +121,24 @@ prueba('Un recurso estratégico rinde más mientras más tiempo se controla', ba
 prueba('Cada mapa tiene zonas de frontera entre imperios vecinos', base + `
   const fr=G.zones.filter(z=>z.role==='frontera'); return fr.length>=1&&fr.every(z=>z.adj.length>=2&&z.owner===null);`);
 
-prueba('Frontera en paz: cada jugador presente gana el bono compartido', base + `
-  const fz=G.zones.find(z=>z.role==='frontera'); fz.units[0]=[civ('pob')]; fz.units[1]=[mkUnit(G,1,'pob')]; const g0=G.F[0].gold, g1=G.F[1].gold;
+prueba('Zona peligrosa en paz: cada jugador con tropas gana el bono compartido', base + `
+  const fz=G.zones.find(z=>z.role==='frontera'); fz.units[0]=[civ('sol')]; fz.units[1]=[mkUnit(G,1,'sol')]; const g0=G.F[0].gold, g1=G.F[1].gold;
   paso(); return fz.frontGain[0]===FRONTIER_SHARED&&fz.frontGain[1]===FRONTIER_SHARED&&fz.owner===null;`);
 
-prueba('Frontera con uno solo: gana el bono mayor, pero nunca se adueña de la zona', base + `
-  const fz=G.zones.find(z=>z.role==='frontera'); fz.units[0]=[civ('pob')]; paso(); paso(); return fz.owner===null&&fz.frontGain[0]===FRONTIER_ALONE;`);
+prueba('Zona peligrosa con uno solo: gana el bono mayor, pero nunca se adueña de la zona', base + `
+  const fz=G.zones.find(z=>z.role==='frontera'); fz.units[0]=[civ('sol')]; paso(); return fz.owner===null&&fz.frontGain[0]===FRONTIER_ALONE;`);
+
+prueba('Zona peligrosa: el bono sube un 10 % por paso hasta +100 % mientras mantengas tropas', base + `
+  G.F[0].gold=500; cap.food=40; cap.units[0]=[civ('agr'),civ('agr'),civ('agr'),civ('agr')]; const fz=G.zones.find(z=>z.role==='frontera'); fz.units[0]=[civ('sol')]; const g=[]; for(let i=0;i<13;i++){ paso(); g.push(fz.frontGain[0]); cap.food=40; G.F[0].gold=500; }
+  return g[0]===FRONTIER_ALONE&&g[1]===Math.round(FRONTIER_ALONE*1.1)&&g[5]===Math.round(FRONTIER_ALONE*1.5)&&g[10]===FRONTIER_ALONE*2&&g[12]===FRONTIER_ALONE*2;`);
+
+prueba('Zona peligrosa: si pierdes la presencia, el bono empieza otra vez de 0', base + `
+  G.F[0].gold=500; cap.food=40; cap.units[0]=[civ('agr'),civ('agr'),civ('agr'),civ('agr')]; const fz=G.zones.find(z=>z.role==='frontera'); fz.units[0]=[civ('sol')]; for(let i=0;i<5;i++){ paso(); cap.food=40; G.F[0].gold=500; }
+  const alto=fz.frontGain[0]>FRONTIER_ALONE; fz.units[0]=[]; paso(); const sin=!fz.frontGain[0]&&!(fz.fh||{})[0]; fz.units[0]=[civ('sol')]; paso(); return alto&&sin&&fz.frontGain[0]===FRONTIER_ALONE;`);
+
+prueba('Zona peligrosa: compartida también crece, y la racha sigue aunque haya pelea (si echas al otro, pasas al bono de estar solo)', base + `
+  G.F[0].gold=500; G.F[1].gold=500; const fz=G.zones.find(z=>z.role==='frontera'); fz.units[0]=[civ('sol')]; fz.units[1]=[mkUnit(G,1,'sol')]; cap.food=40;
+  paso(); const a=fz.frontGain[0]===FRONTIER_SHARED; cap.food=40; paso(); const b=fz.frontGain[0]===Math.round(FRONTIER_SHARED*1.1)&&fz.frontGain[1]===Math.round(FRONTIER_SHARED*1.1); const fuertes=[civ('sol'),civ('sol'),civ('sol'),civ('sol')]; fuertes.forEach(u=>{u.str=4;}); fz.units[0]=fuertes; paso([{t:'stance',target:1,stance:'alerta'}]); const c=(fz.fh||{})[0]===3&&fz.frontGain[0]===Math.round(FRONTIER_ALONE*1.2); return a&&b&&c;`);
 
 prueba('Frontera con traición: si alguien ataca, ese paso nadie gana el bono', base + `
   const fz=G.zones.find(z=>z.role==='frontera'); fz.units[0]=[civ('sol'),civ('sol'),civ('sol')]; fz.units[1]=[mkUnit(G,1,'pob'),mkUnit(G,1,'sol')];
@@ -135,8 +147,8 @@ prueba('Frontera con traición: si alguien ataca, ese paso nadie gana el bono', 
 prueba('Una tribu que se queda sin gente deja su zona libre', base + `
   const t=G.zones.find(z=>z.owner===4); t.units={}; paso(); return t.owner===null;`);
 
-prueba('Se puede empezar una Maravilla (antes la orden se perdía)', base + `
-  cap.size=6; G.F[0].techs['Maravillas']=1; paso([{t:'wonder',zone:cap.id}]); return cap.proj.some(p=>p.k==='w'&&p.tot>=300);`);
+prueba('Se puede empezar una maravilla si tienes la tecnología de su rama (La Plaza Mayor ← Maravillas)', base + `
+  cap.size=6; G.F[0].techs['Maravillas']=1; paso([{t:'wonder',zone:cap.id,w:'urb'}]); return cap.proj.some(p=>p.k==='w'&&p.w==='urb'&&p.tot>=300);`);
 
 prueba('Tropas lejos del territorio propio reciben suministro si el camino es corto', base + `
   const v=G.zones[cap.adj[0]]; v.units[0]=[civ('sol'),civ('sol')]; cap.food=30;
@@ -269,6 +281,214 @@ prueba('Los rasgos viajan con la persona al cambiar de oficio', base + `
 prueba('Obras: el reparto usa el rendimiento de cada persona y guarda a quién elige', base + `
   cap.terrain='lla'; cap.capital=false; const a=conRasgo('ing','ing',2), b=civ('ing'); cap.units[0]=[a,b]; cap.prod=0; cap.proj=[{k:'b',bt:'molino',left:40,tot:40,dup:0,lvl:2,spec:null}];
   const pl=buildPlan(G,cap,0,false); return pl.ing===1&&pl.ids.length===1&&(pl.ids[0]===a.id||pl.ids[0]===b.id);`);
+
+// ---- Fase C: salud y fuerza (enteros) ----
+prueba('Fuerza buena: un soldado pelea con 1 dado más; muy mala: nunca baja de 1 dado', base + `
+  const v=G.zones.find(z=>z.owner===null&&z.role!=='frontera'); const a=civ('sol'), b=civ('sol'); a.str=2; b.str=2; a.tr=[{k:'fue',l:1}]; b.tr=[{k:'fue',l:-2}];
+  v.units[0]=[a,b]; v.units[1]=[mkUnit(G,1,'sol')]; G.fx=[]; G.battles=[]; fightZone(G,v,[0,1],{0:true,1:true},()=>{});
+  const us=G.battles[0].units.filter(u=>u.f===0); return us.some(u=>u.dice===3)&&us.some(u=>u.dice===1);`);
+
+prueba('Salud buena o mala: +1 o −1 de vida, siempre entera y de al menos 1', base + `
+  const v=G.zones.find(z=>z.owner===null&&z.role!=='frontera'); const a=civ('sol'), b=civ('sol'), c=civ('sol'); a.tr=[{k:'sal',l:2}]; b.tr=[{k:'sal',l:-1}]; c.tr=[{k:'sal',l:-2}];
+  v.units[0]=[a,b,c]; v.units[1]=[mkUnit(G,1,'sol')]; G.fx=[]; G.battles=[]; fightZone(G,v,[0,1],{0:true,1:true},()=>{});
+  const hs=G.battles[0].units.filter(u=>u.f===0).map(u=>u.hpMax).sort(); return JSON.stringify(hs)===JSON.stringify([1,2,5])&&hs.every(Number.isInteger);`);
+
+// ---- Maravillas únicas (15.3) ----
+const maravilla = `cap.size=6; cap.terrain='lla'; `;
+prueba('Sin la tecnología de la rama no se puede empezar su maravilla', base + `
+  cap.size=6; paso([{t:'wonder',zone:cap.id,w:'agr'}]); return !cap.proj.some(p=>p.k==='w');`);
+
+prueba('Una maravilla ya construida no se puede empezar ni investigar de nuevo', base + `
+  const c1=G.zones.find(z=>z.capital&&z.owner===1); c1.b.push({t:'mar',l:1,s:null,wk:0,cost:500,w:'agr'});
+  cap.size=6; G.F[0].techs['Cosecha comunal']=1; return researchBlock(G,0,'Granjas modelo')==='Su maravilla ya fue construida'&&(G.F[0].techs['Granjas modelo']=1,paso([{t:'wonder',zone:cap.id,w:'agr'}]),!cap.proj.some(p=>p.k==='w'));`);
+
+prueba('La vertebral de nivel 5 ya no da su efecto: lo da la maravilla mientras la controlas', base + `
+  G.F[0].techs['Granjas modelo']=1; recomputeMods(G); const sin=G.M[0].agrFood;
+  cap.b.push({t:'mar',l:1,s:null,wk:0,cost:500,w:'agr'}); recomputeMods(G); const con=G.M[0].agrFood;
+  cap.owner=1; recomputeMods(G); const rival=G.M[1].agrFood, yo=G.M[0].agrFood; cap.owner=0; return sin===0&&con===1&&rival===1&&yo===0;`);
+
+prueba('Terminar una maravilla cancela la de los rivales: conservan la tecnología y recuperan la mitad de la producción', base + `
+  const c1=G.zones.find(z=>z.capital&&z.owner===1); G.F[0].techs['Granjas modelo']=1; G.F[1].techs['Granjas modelo']=1; recomputeMods(G);
+  cap.units[0]=[civ('ing'),civ('ing'),civ('ing')]; cap.prod=60; cap.proj=[{k:'w',w:'agr',left:4,tot:500}];
+  c1.prod=0; c1.proj=[{k:'w',w:'agr',left:300,tot:500}]; const t1=G.F[1].tech;
+  paso(); const hecha=cap.b.some(b=>b.t==='mar'&&b.w==='agr'); return hecha&&!c1.proj.some(p=>p.k==='w')&&!!G.F[1].techs['Granjas modelo']&&G.F[1].tech<t1+20&&c1.prod>0&&G.M[1].agrFood===0;`);
+
+prueba('Si la tecnología aún estaba en la cola cuando otro termina la maravilla, se cancela y se recupera la mitad de la ciencia gastada', base + `
+  G.F[0].techs['Granjas modelo']=1; cap.units[0]=[civ('ing'),civ('ing'),civ('ing')]; cap.prod=60; cap.proj=[{k:'w',w:'agr',left:4,tot:500}];
+  G.F[1].rq=[{name:'Granjas modelo',left:40,tot:100}]; const t1=G.F[1].tech; paso(); return G.F[1].rq.length===0&&!G.F[1].techs['Granjas modelo']&&G.F[1].tech>=t1+30;`);
+
+prueba('Quien tenía la tecnología pero no había empezado la obra la conserva (sin efecto)', base + `
+  const c1=G.zones.find(z=>z.capital&&z.owner===1); G.F[0].techs['Granjas modelo']=1; G.F[1].techs['Granjas modelo']=1;
+  cap.units[0]=[civ('ing'),civ('ing'),civ('ing')]; cap.prod=60; cap.proj=[{k:'w',w:'agr',left:4,tot:500}]; paso();
+  return !!G.F[1].techs['Granjas modelo']&&G.M[1].agrFood===0;`);
+
+prueba('Empate: gana quien podía destinar más producción a terminarla ese paso', base + `
+  const c1=G.zones.find(z=>z.capital&&z.owner===1); [cap,c1].forEach(z=>{ z.terrain='lla'; z.size=6; });
+  cap.units[0]=[civ('ing'),civ('ing')]; c1.units[1]=[mkUnit(G,1,'ing'),mkUnit(G,1,'ing')]; c1.units[1].forEach(u=>{u.tr=[];});
+  cap.prod=40; c1.prod=30; cap.proj=[{k:'w',w:'agr',left:3,tot:500}]; c1.proj=[{k:'w',w:'agr',left:3,tot:500}];
+  G.F[0].techs['Granjas modelo']=1; G.F[1].techs['Granjas modelo']=1; paso();
+  return cap.b.some(b=>b.t==='mar'&&b.w==='agr')&&!c1.b.some(b=>b.t==='mar')&&!c1.proj.some(p=>p.k==='w');`);
+
+prueba('Empate exacto: nadie la logra, se deshace el último paso y lo que falta se duplica', base + `
+  const c1=G.zones.find(z=>z.capital&&z.owner===1); [cap,c1].forEach(z=>{ z.terrain='lla'; z.size=6; });
+  cap.units[0]=[civ('ing'),civ('ing')]; c1.units[1]=[mkUnit(G,1,'ing'),mkUnit(G,1,'ing')]; c1.units[1].forEach(u=>{u.tr=[];});
+  cap.prod=40; c1.prod=40; cap.proj=[{k:'w',w:'agr',left:3,tot:500}]; c1.proj=[{k:'w',w:'agr',left:3,tot:500}];
+  G.F[0].techs['Granjas modelo']=1; G.F[1].techs['Granjas modelo']=1; paso();
+  return !cap.b.some(b=>b.t==='mar')&&!c1.b.some(b=>b.t==='mar')&&cap.proj[0].left===6&&c1.proj[0].left===6;`);
+
+prueba('La Plaza Mayor abarata las obras un 25 % pero no las maravillas', base + `
+  cap.size=9; cap.units[0]=[civ('ing')]; cap.prod=40; G.F[0].techs['Molino de piedra']=1; recomputeMods(G); const c0=wonderCostOf(G,0,cap);
+  cap.b.push({t:'mar',l:1,s:null,wk:0,cost:500,w:'urb'}); recomputeMods(G); paso([{t:'build',zone:cap.id,bt:'molino'}]); const p=cap.proj.find(p=>p.bt==='molino');
+  return G.M[0].bPct===0.75&&!!p&&p.tot===Math.max(10,Math.round(20*p.lvl*0.75))&&wonderCostOf(G,0,cap)===c0;`);
+
+prueba('La Torre de los Sabios: cada científico usa 3 en vez de 2 al investigar', base + `
+  cap.units[0]=[civ('cie'),civ('cie')]; G.F[0].tech=5; G.F[0].rq=[{name:'Arado',left:20,tot:20}]; const sin=researchPlan(G,0)[cap.id].n;
+  cap.b.push({t:'mar',l:1,s:null,wk:0,cost:500,w:'cie'}); recomputeMods(G); const con=researchPlan(G,0)[cap.id].n; return sin===2&&con===1&&G.M[0].cieTech===1;`);
+
+prueba('Las Termas de la Salud: todas las unidades con 2 de vida más', base + `
+  const v=G.zones.find(z=>z.owner===null&&z.role!=='frontera'); const a=civ('sol'); v.units[0]=[a]; v.units[1]=[mkUnit(G,1,'sol')];
+  cap.b.push({t:'mar',l:1,s:null,wk:0,cost:500,w:'san'}); recomputeMods(G); G.fx=[]; G.battles=[]; fightZone(G,v,[0,1],{0:true,1:true},()=>{});
+  return G.battles[0].units.find(u=>u.f===0).hpMax===5;`);
+
+prueba('El Bastión Eterno: los defensores tienen +4 de defensa y +1 de vida', base + `
+  cap.b.push({t:'mar',l:1,s:null,wk:0,cost:500,w:'def'}); recomputeMods(G); const v=cap; v.units[0]=[civ('sol')]; v.units[1]=[mkUnit(G,1,'sol')]; G.fx=[]; G.battles=[];
+  fightZone(G,v,[0,1],{0:false,1:true},()=>{}); const u=G.battles[0].units.find(x=>x.f===0); return u.cush>=4&&u.hpMax===4;`);
+
+prueba('La Puerta de los Estandartes: los atacantes tienen +1 de fuerza', base + `
+  cap.b.push({t:'mar',l:1,s:null,wk:0,cost:500,w:'gue'}); recomputeMods(G); const v=G.zones.find(z=>z.owner===null&&z.role!=='frontera'); const a=civ('sol'); a.str=2; v.units[0]=[a]; v.units[1]=[mkUnit(G,1,'sol')];
+  G.fx=[]; G.battles=[]; fightZone(G,v,[0,1],{0:true,1:false},()=>{}); return G.battles[0].units.find(u=>u.f===0).dice>=3;`);
+
+prueba('La Calzada sin Fin: mover recursos por su zona es gratis', base + `
+  const v=G.zones[cap.adj[0]]; const antes=shipFactor(G,[v.id]); v.b.push({t:'mar',l:1,s:null,wk:0,cost:500,w:'log'}); return antes>0&&shipFactor(G,[v.id])===0;`);
+
+prueba('Las vertebrales de nivel 5 de Camino, Hospital y Fortificación ya no dan nivel 5 del edificio', base + `
+  G.F[0].techs['Hospital imperial']=1; G.F[0].techs['Red de caminos II']=1; G.F[0].techs['Ciudadela']=1;
+  return capLevel(G,0,'hospital')<5&&capLevel(G,0,'camino')<5&&capLevel(G,0,'fort')<5;`);
+
+prueba('Las 12 maravillas tienen su tecnología y hay una por rama', base + `
+  const rs=Object.keys(WONDERS).map(k=>TECH[WONDERS[k].tech]); return rs.length===12&&rs.every(t=>t&&t.l===5&&t.v===1)&&new Set(rs.map(t=>t.r)).size===12;`);
+
+// ---- Parte 3: zonas peligrosas, elegir entre dos, tribus ----
+prueba('Zona peligrosa: los civiles no cuentan, solo las tropas', base + `
+  const fz=G.zones.find(z=>z.role==='frontera'); fz.units[0]=[civ('pob'),civ('pob')]; paso(); const sinTropas=!fz.frontGain[0];
+  fz.units[1]=[mkUnit(G,1,'sol')]; paso(); return sinTropas&&fz.frontGain[1]===FRONTIER_ALONE&&!fz.frontGain[0];`);
+
+prueba('Los mapas de 2 jugadores tienen 2 zonas peligrosas; los de 3 y 4, una por pareja vecina', base + `
+  let ok=true; for(let mi=0;mi<12;mi++){ const a=newGame(mi,2,1,'normal').zones.filter(z=>z.role==='frontera'); if(a.length!==2||a.some(z=>z.adj.length<2)) ok=false; }
+  const t3=newGame(0,3,1,'normal').zones.filter(z=>z.role==='frontera').length, t4=newGame(0,4,1,'normal').zones.filter(z=>z.role==='frontera').length; return ok&&t3===3&&t4===4;`);
+
+const OPCIONES = `[{lbl:'Mercenarios',cost:{res:'gold',n:5},gain:{units:{sol:2}}},{lbl:'Arqueros',cost:{res:'gold',n:7},gain:{units:{arq:2}}}]`;
+prueba('Encuentro de elegir entre dos: pagas y recibes solo la opción elegida', base + `
+  cap.units[0]=[civ('pob')]; G.F[0].gold=50; G.F[0].enc={id:'ch_tropas',k:'eleccion',who:'Dos emisarios',txt:'',zone:cap.id,cost:null,gain:null,refuse:null,step:1,str:0,opts:${OPCIONES}};
+  paso([{t:'encounter',choice:'b'}]); return cap.units[0].filter(u=>u.t==='arq').length===2&&!cap.units[0].some(u=>u.t==='sol')&&G.F[0].gold<=43+cap.last.gold;`);
+
+prueba('Encuentro de elegir: no elegir ninguna no tiene consecuencias, y una opción que no te alcanza no se cobra', base + `
+  cap.units[0]=[civ('pob')]; G.F[0].gold=6; G.F[0].enc={id:'ch_tropas',k:'eleccion',who:'Dos emisarios',txt:'',zone:cap.id,cost:null,gain:null,refuse:null,step:1,str:0,opts:${OPCIONES}};
+  paso([{t:'encounter',choice:'b'}]); const sinAlcanzar=cap.units[0].length===1;
+  G.F[0].enc={id:'ch_tropas',k:'eleccion',who:'Dos emisarios',txt:'',zone:cap.id,cost:null,gain:null,refuse:null,step:2,str:0,opts:${OPCIONES}}; paso(); return sinAlcanzar&&cap.units[0].length===1;`);
+
+prueba('Entre los encuentros de la partida aparecen los de elegir entre dos', base + `
+  cap.units[0]=[civ('pob')]; let visto=false; for(let i=0;i<160&&!visto;i++){ paso(); const e=G.F[0].enc; if(e&&e.k==='eleccion'&&e.opts&&e.opts.length===2) visto=true; if(e) G.F[0].enc=null; } return visto;`);
+
+const TRIBU = `const tz=G.zones.find(z=>z.owner===4); tz.tspec='agr'; const n=G.zones[tz.adj.find(a=>G.zones[a].role!=='frontera'&&G.zones[a].owner===null)]; n.owner=0; n.size=6; n.units[0]=[civ('pob'),civ('pob')]; n.food=45;`;
+prueba('Tribus: cada 5 pasos piden lo de su oficio a los vecinos, y rechazar no tiene castigo', base + TRIBU + `
+  tz.tspec='com'; G.step=5; const u0=(tz.units[4]||[]).length; paso(); const t=G.tributes.find(t=>t.zone===tz.id);
+  const pide=!!t&&t.res==='gold'&&t.targets.includes(0); for(let i=0;i<7;i++) paso(); return pide&&!G.tributes.some(x=>x.zone===tz.id&&x===t)&&(tz.units[4]||[]).length>=u0&&!G.hist.some(h=>h.lines.some(l=>l.includes('ataca '+zname(n))));`);
+
+prueba('Tribus: cumplir un pedido sube la relación (0 a 3)', base + TRIBU + `
+  tz.tspec='com'; G.step=5; paso(); G.F[0].gold=60; paso([{t:'tribute',tribe:tz.id,from:n.id}]); return (tz.rel||{})[0]===1;`);
+
+prueba('Tribus: sin relación 3 no se puede anexar; con relación 3 sí', base + TRIBU + `
+  tz.rel={0:2}; G.F[0].gold=0; paso([{t:'annex',zone:tz.id,from:n.id}]); const antes=tz.owner===4; tz.rel={0:3}; n.food=45; paso([{t:'annex',zone:tz.id,from:n.id}]); return antes&&tz.owner===0;`);
+
+prueba('Tribus: atacarlas es entrar en guerra: sus civiles se vuelven guerreros y te atacan', base + TRIBU + `
+  for(let i=0;i<6;i++) tz.units[4].push(mkUnit(G,4,'sol')); tz.rel={0:2}; G.F[0].gold=50; n.units[0]=[civ('sol'),civ('sol'),civ('sol')];
+  paso([{t:'move',from:n.id,to:tz.id,u:{sol:3},stance:'ataque'}]);
+  const guerra=G.wars.some(w=>w.tribe===tz.id&&w.f===0)&&tz.rel[0]===0; const berserkers=(tz.units[4]||[]).every(u=>u.t==='ber');
+  paso(); const ataca=G.hist.some(h=>h.lines.some(l=>l.includes('ataca '))); for(let i=0;i<6;i++) paso(); return guerra&&berserkers&&ataca&&G.wars.length===0;`);
+
+// ---- Subasta (13.3) ----
+const SUB = `G.fx=[]; const logs=[]; const L=m=>logs.push(m); const item=(cat,tier,det)=>({cat,tier,det:det||{}});`;
+prueba('La subasta se anuncia 2 pasos antes del paso 20, con tantos objetos como jugadores', base + `
+  let antes=true; for(let i=1;i<17;i++){ paso(); if(G.auction) antes=false; } paso();
+  const a=G.auction; return antes&&!!a&&a.step===20&&a.items.length===2&&['gold','tech','food','prod'].includes(a.cur)&&a.items.every(it=>AUCTION_CATS[it.cat]&&it.tier>=0&&it.tier<=2);`);
+
+prueba('Subasta: gana la oferta más alta y solo el ganador paga', base + SUB + `
+  G.auction={step:20,cur:'gold',items:[item('car',0,{res:'food'})],bids:{0:{0:30},1:{0:20}}}; G.F[0].gold=100; G.F[1].gold=100; const p0=cap.prog; auctionResolve(G,L);
+  return G.F[0].gold===70&&G.F[1].gold===100&&cap.prog===p0+30&&G.auction===null;`);
+
+prueba('Subasta: si empatan arriba, todos los empatados se lo llevan y cada uno paga lo suyo', base + SUB + `
+  const c1=G.zones.find(z=>z.capital&&z.owner===1); G.auction={step:20,cur:'gold',items:[item('car',0,{res:'food'})],bids:{0:{0:25},1:{0:25}}}; G.F[0].gold=100; G.F[1].gold=100; const a0=cap.prog, a1=c1.prog; auctionResolve(G,L);
+  return G.F[0].gold===75&&G.F[1].gold===75&&cap.prog===a0+30&&c1.prog===a1+30;`);
+
+prueba('Subasta: solo cuentan las ofertas que puedes pagar (se conservan las más altas)', base + SUB + `
+  G.auction={step:20,cur:'gold',items:[item('car',0,{res:'prod'}),item('car',0,{res:'prod'})],bids:{0:{0:60,1:50}}}; G.F[0].gold=80; auctionResolve(G,L);
+  return G.F[0].gold===20&&logs.some(l=>l.includes('nadie ofreció'));`);
+
+prueba('Subasta: la comida se paga de todo el imperio, en igual porcentaje de cada zona', base + SUB + `
+  const n=G.zones[cap.adj[0]]; n.owner=0; n.units[0]=[civ('pob')]; n.size=6; cap.size=9; cap.food=60; n.food=20; G.auction={step:20,cur:'food',items:[item('pel',0)],bids:{0:{0:40}}};
+  auctionResolve(G,L); return cap.food===30&&n.food===10&&cap.units[0].filter(u=>u.t==='sol').length===2;`);
+
+prueba('Subasta: un saber regala una tecnología sin pagar su costo', base + SUB + `
+  const t0=Object.keys(G.F[0].techs).length, c0=G.F[0].tech; G.auction={step:20,cur:'gold',items:[item('sab',0)],bids:{0:{0:5}}}; G.F[0].gold=50; auctionResolve(G,L);
+  return Object.keys(G.F[0].techs).length===t0+1&&G.F[0].tech===c0;`);
+
+prueba('Subasta: un poblador extraordinario trae 2 rasgos de oficio distintos de nivel alto', base + `
+  G.fx=[]; const L=()=>{}; G.auction={step:20,cur:'gold',items:[{cat:'pob',tier:2,det:{}}],bids:{0:{0:5}}}; G.F[0].gold=50; const n0=cap.units[0].length; auctionResolve(G,L);
+  const u=cap.units[0][cap.units[0].length-1]; return cap.units[0].length===n0+1&&u.t==='pob'&&u.tr.length===2&&u.tr[0].k!==u.tr[1].k&&u.tr.every(x=>x.l===2&&['agr','ing','com','cie'].includes(x.k));`);
+
+prueba('Subasta: un pelotón de oro trae 7 soldados con su equipo', base + SUB + `
+  G.auction={step:20,cur:'gold',items:[item('pel',2)],bids:{0:{0:5}}}; G.F[0].gold=50; const n0=cap.units[0].length; auctionResolve(G,L); return cap.units[0].length===n0+7;`);
+
+prueba('Subasta: un recurso temporal funciona 40 pasos y luego se acaba', base + SUB + `
+  G.auction={step:20,cur:'gold',items:[item('rec',2,{key:'ruinas'})],bids:{0:{0:5}}}; G.F[0].gold=50; const antes=hasRes(G,0,'ruinas'); G.step=20; auctionResolve(G,L);
+  const ahora=hasRes(G,0,'ruinas'); G.step=61; return !antes&&ahora&&!hasRes(G,0,'ruinas');`);
+
+prueba('Subasta: se puede ofertar con una orden y cambiarla hasta el paso de la subasta', base + `
+  G.step=19; G.auction={step:20,cur:'gold',items:[{cat:'car',tier:0,det:{res:'food'}}],bids:{}}; G.F[0].gold=100;
+  paso([{t:'bid',item:0,amount:10}]); const a=G.auction&&G.auction.bids[0]&&G.auction.bids[0][0]; paso([{t:'bid',item:0,amount:40}]); return a===10&&G.F[0].gold<=70+30&&G.F[0].gold>=50;`);
+
+// ---- Historias de 4 capítulos (13.3) ----
+const HIST = `const F=G.F[0]; const nuevo=(id,ch,tags)=>{ F.story={id,ch,next:0,tags}; F.enc=null; F.encNext=999; F.enc=makeChapter(G,0); return F.enc; };`;
+prueba('Las 3 historias están completas: 4 capítulos, variantes por camino y finales por camino', base + `
+  const ganaOk=g=>!g||Object.keys(g).every(k=>['units','res','n','eq','prog','rel','tpob','saber','bld','tres'].includes(k));
+  return STORY_IDS.length===3&&STORY_IDS.every(id=>{ const S=STORIES[id]; const t=S.tags; const optOk=o=>o.lbl&&(o.cost===null||(o.cost.res&&o.cost.n>0));
+    const c1=S[1].opts.length>=2&&S[1].opts.every(o=>optOk(o)&&ganaOk(o.gain));
+    const c23=[2,3].every(c=>t.every(tag=>S[c][tag]&&S[c][tag].txt&&S[c][tag].opts.length===2&&S[c][tag].opts.every(o=>optOk(o)&&ganaOk(o.gain)&&t.includes(o.t))));
+    const c4=t.every(tag=>S[4].txt[tag])&&S[4].opts.length===2&&S[4].opts.every(o=>optOk(o)&&t.every(tag=>ganaOk(o.g[tag])&&o.g[tag])); return c1&&c23&&c4; });`);
+
+prueba('Cada jugador recibe su primer capítulo hacia el paso 10, como un encuentro de historia', base + `
+  let visto=0; for(let i=0;i<16&&!visto;i++){ paso(); const e=G.F[0].enc; if(e&&e.k==='historia') visto=G.step; else if(e) G.F[0].enc=null; }
+  const e=G.F[0].enc; return visto>=9&&visto<=14&&e.story.ch===1&&e.who.includes('capítulo 1 de 4')&&e.opts.length>=2;`);
+
+prueba('Historia: lo que eliges cambia el siguiente capítulo y se programa 8 pasos después', base + HIST + `
+  nuevo('caravana',1,[]); paso([{t:'encounter',choice:'a'}]); const a=F.story.ch===2&&F.story.tags[0]==='C'&&F.story.next===G.step-1+STORY_GAP;
+  const t1=nuevo('caravana',2,['C']).txt, t2=nuevo('caravana',2,['T']).txt; return a&&t1.includes('mercaderes')&&t2.includes('tribu vecina')&&t1!==t2;`);
+
+prueba('Historia: dejarlo pasar no cuesta nada ni castiga, y la historia sigue', base + HIST + `
+  nuevo('maestro',1,[]); const oro=F.gold===undefined?G.F[0].gold:0; const c0=cap.units[0].length; paso([{t:'encounter',choice:'no'}]);
+  return F.story.ch===2&&F.story.tags.length===1&&cap.units[0].length===c0&&!G.hist.some(h=>h.lines.some(l=>l.includes('pierde')||l.includes('muere')));`);
+
+prueba('Historia: una opción que no te alcanza cuenta como dejarlo pasar', base + HIST + `
+  nuevo('caravana',2,['T']); G.F[0].gold=0; paso([{t:'encounter',choice:'b'}]); const sin=F.story.tags[1]==='T';
+  nuevo('caravana',2,['T']); F.story.tags=['T']; F.story.ch=2; G.F[0].gold=60; F.enc=makeChapter(G,0); paso([{t:'encounter',choice:'b'}]); return sin&&F.story.tags[1]==='C';`);
+
+prueba('Historia: el capítulo final depende del camino que más tomaste', base + HIST + `
+  const c=nuevo('caravana',4,['C','C','T']).opts[0].gain, t=nuevo('caravana',4,['T','T','C']).opts[0].gain; const p1=nuevo('heredero',4,['R','T','R']).txt, p2=nuevo('heredero',4,['T','R','T']).txt;
+  return c.res==='gold'&&c.n>=30&&t.rel===1&&p1!==p2;`);
+
+prueba('Historia: al cerrar el capítulo 4 la historia termina y no llegan más capítulos', base + HIST + `
+  nuevo('maestro',4,['S','O','S']); paso([{t:'encounter',choice:'a'}]); const fin=F.story.done===1&&F.story.ch===5; let mas=false; F.encNext=undefined; for(let i=0;i<24;i++){ paso(); if(G.F[0].enc&&G.F[0].enc.k==='historia') mas=true; G.F[0].enc=null; } return fin&&!mas;`);
+
+prueba('Historia: ganancias nuevas (relación, poblador extraordinario, saber, edificio, recurso temporal)', base + HIST + `
+  const tz=G.zones.find(z=>z.owner===4); const n=G.zones[tz.adj.find(a=>G.zones[a].role!=='frontera'&&G.zones[a].owner===null)]; n.owner=0; n.units[0]=[civ('pob')];
+  cap.size=9; const t0=Object.keys(G.F[0].techs).length; F.story={id:'caravana',ch:1,next:99,tags:[]};
+  const gana=g=>{ F.enc={id:'x',k:'historia',who:'t',txt:'t',zone:cap.id,cost:null,gain:null,refuse:null,step:G.step,str:0,story:{id:'caravana',ch:1},opts:[{lbl:'a',t:'C',cost:null,gain:g}]}; F.story.ch=1; paso([{t:'encounter',choice:'a'}]); };
+  gana({rel:1}); const r=(tz.rel||{})[0]===1; const n0=cap.units[0].length; gana({tpob:[{k:'com',l:2},{k:'agr',l:1}]}); const pob=cap.units[0].length===n0+1&&cap.units[0][cap.units[0].length-1].tr[0].k==='com';
+  gana({saber:3}); const sab=Object.keys(G.F[0].techs).length===t0+1; gana({bld:'taller'}); const bld=cap.b.some(b=>b.t==='taller'); gana({tres:{key:'sal'}}); return r&&pob&&sab&&bld&&hasRes(G,0,'sal');`);
+
+prueba('Durante el comienzo guiado no llegan historias', base + `
+  G.F[0].encNext=999; let hay=false; for(let i=0;i<20;i++){ paso(); if(G.F[0].enc) hay=true; } return !hay&&!G.F[0].story;`);
 
 console.log(fallos ? `\n${fallos} reglas fallan.` : '\nTodas las reglas probadas se cumplen.');
 process.exit(fallos ? 1 : 0);

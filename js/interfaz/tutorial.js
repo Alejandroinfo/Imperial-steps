@@ -32,7 +32,7 @@ const TUT_STEPS=[
   {step:5, t:'🚶 Expándete', x:'Cada poblador nuevo cuesta más que el anterior en la misma zona: conviene tener varias. En <b>Resumen → Ir a una zona vecina</b>, toca <b>Ir</b> en una zona <b>libre</b>, deja 1 persona (un poblador o cualquier civil) y toca <b>Mandar</b>.', hl:'.nbs button[data-act="openmv"], button[data-act="mvgo"]', prep:()=>{ ui.sel=tutCap(); ui.tab='zona'; ui.zsub='resumen'; }, done:()=>tutOrders('move').some(o=>Object.keys(o.u).some(t=>CIV.includes(t))), opt:true},
   {step:5, t:'💡 Las sugerencias', x:'La línea de arriba del panel te sugiere qué hacer y avisa si algo urge. Tócala cuando no sepas qué seguir.'+LISTO, hl:'#sugBar, #readyBtn', wait:true},
   // ---- paso 5: frontera y victoria ----
-  {step:4, t:'🚩 La frontera', x:'Entre tu imperio y el vecino hay una <b>frontera</b> de borde dorado, sin dueño. Si los dos tienen gente ahí y están en paz, ganan 🪙 +3 cada uno por paso. Abre <b>Imperio</b>: ahí está tu postura con cada jugador.', hl:'.tabs button[data-tab="imperio"]', done:()=>ui.tab==='imperio'},
+  {step:4, t:'🚩 La zona peligrosa', x:'Entre tu imperio y el vecino hay una <b>zona peligrosa</b> de borde dorado, sin dueño. Si los dos ponen <b>tropas</b> ahí y están en paz, ganan 🪙 +'+FRONTIER_SHARED+' cada uno por paso (los civiles no cuentan). Abre <b>Imperio</b>: ahí está tu postura con cada jugador.', hl:'.tabs button[data-tab="imperio"]', done:()=>ui.tab==='imperio'},
   {step:4, t:'🏆 Cómo se gana', x:'Abre <b>Victoria</b>: se gana cumpliendo <b>2 de 7 condiciones a la vez</b>. Ahí ves tu avance y el de los demás.', hl:'.tabs button[data-tab="vic"]', done:()=>ui.tab==='vic'},
   {step:4, t:'✅ ¡Listo!', x:'Vas muy bien.'+LISTO, hl:'#readyBtn', wait:true},
   // ---- paso 6: eventos ----
@@ -44,7 +44,7 @@ const TUT_STEPS=[
   {step:8, t:'📜 Tu primer encuentro', x:'¡Llegó alguien! Los <b>encuentros</b> aparecen sin aviso arriba del panel: alguien ofrece algo a cambio de un pago. Siempre son oportunidades: si no te conviene, no pasa nada. Decide <b>Aceptar</b> o <b>Rechazar</b>.', hl:'#encBar', done:()=>tutOrders('encounter').length>0||!G.F[ME].enc},
   {step:8, t:'✅ ¡Listo!', x:'Se resuelve al terminar el paso. Desde el paso 20 llegarán solos, cada 4 a 7 pasos.'+LISTO, hl:'#readyBtn', wait:true},
   // ---- paso 9: crecer o guardar ----
-  {step:9, t:'🏺 Crecer o guardar', x:'En <b>Recursos</b> eliges qué hace la zona con la comida que sobra: <b>Crecer</b> (todo va a nuevos pobladores) o <b>Guardar</b> (se acumula para pagar una tribu o sostener una guerra).', hl:'.subtabs button[data-s="recursos"], button[data-act="growmode"]', prep:()=>{ ui.sel=tutCap(); ui.tab='zona'; }, done:()=>ui.zsub==='recursos'},
+  {step:9, t:'🏺 Crecer o guardar', x:'En <b>Recursos</b> eliges qué hace la zona con la comida que sobra: <b>Crecer</b> (todo va a nuevos pobladores) o <b>Pausar crecimiento</b> (se guarda, para pagar una tribu o sostener una guerra).', hl:'.subtabs button[data-s="recursos"], button[data-act="growmode"]', prep:()=>{ ui.sel=tutCap(); ui.tab='zona'; }, done:()=>ui.zsub==='recursos'},
   {step:9, t:'✅ ¡Listo!', x:'La comida se reparte sola: si una zona no tiene, come de tu zona más cercana.'+LISTO, hl:'#readyBtn', wait:true},
   // ---- paso 10: cuartel ----
   {step:10, t:'🛡 Un Cuartel', x:'Para tener tropas necesitas un <b>Cuartel</b>. Construye uno en una zona con espacio libre (hay 1 espacio por cada 3 de tamaño). Si ahora no hay espacio, puedes saltar esta etapa.', hl:'.subtabs button[data-s="edificios"], .bcard[data-bt="cuartel"]', prep:()=>{ ui.sel=tutFreeSlotZone(); ui.tab='zona'; ui.zsub='edificios'; }, done:()=>tutOrders('build').some(o=>o.bt==='cuartel')||zonesOf(G,ME).some(z=>z.b.some(b=>b.t==='cuartel')||z.proj.some(p=>p.bt==='cuartel')), opt:true},
@@ -55,8 +55,8 @@ const TUT_STEPS=[
   // ---- paso 12: recursos estratégicos ----
   {step:12, t:'💎 Recursos estratégicos', x:'Los círculos <b>G</b> (global) y <b>L</b> (local) del mapa son recursos: dan un efecto especial y <b>rinden más mientras más tiempo los tengas</b>. En <b>Imperio</b> está la lista de todos y de quién son.'+LISTO, hl:'.tabs button[data-tab="imperio"], #readyBtn', wait:true},
   // ---- paso 13: tribus ----
-  {step:13, t:'⛺ Las tribus', x:'Las zonas con tiendas son <b>tribus</b>. Toca una en el mapa: puedes <b>anexarla</b> pagando lo que piden o conquistarla. A veces exigen <b>tributo</b> a sus vecinos, y si nadie paga, atacan.', hl:'#vp', done:()=>ui.sel!==null&&G.zones[ui.sel]&&G.zones[ui.sel].role==='tribu', opt:true},
-  {step:13, t:'✅ ¡Listo!', x:'Anexar suma gente sin pelear; conquistar da recursos pero hay que vencer a sus guerreros.'+LISTO, hl:'#readyBtn', wait:true},
+  {step:13, t:'⛺ Las tribus', x:'Las zonas con tiendas son <b>tribus</b>. Toca una en el mapa: cada 5 pasos te <b>piden algo</b> de su oficio; si lo cumples sube tu <b>relación</b> (0 a 3) y con 3 puedes <b>anexarla</b>. Rechazar no tiene castigo, pero <b>atacarla es entrar en guerra</b>: sus civiles se vuelven guerreros y te atacan.', hl:'#vp', done:()=>ui.sel!==null&&G.zones[ui.sel]&&G.zones[ui.sel].role==='tribu', opt:true},
+  {step:13, t:'✅ ¡Listo!', x:'Anexar suma gente sin pelear, pero exige confianza; conquistar da recursos pero es la guerra.'+LISTO, hl:'#readyBtn', wait:true},
   // ---- paso 14: postura ----
   {step:14, t:'☮ Paz o Alerta', x:'Tu <b>postura</b> con cada jugador (en Imperio o en Militar) decide qué pasa cuando tus tropas y las suyas coinciden: en <b>Paz</b> conviven; en <b>Alerta</b> atacas, con sorpresa si el otro estaba en paz. Cambiarla es una decisión grande.'+LISTO, hl:'.tabs button[data-tab="imperio"], #readyBtn', wait:true},
   // ---- paso 15: envíos automáticos ----

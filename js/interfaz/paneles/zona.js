@@ -14,20 +14,21 @@ function unitsTable(z){
 }
 function tribeVisible(z){ return z.adj.some(a=>(G.zones[a].units[ME]||[]).length>0)||(z.units[ME]||[]).length>0; }
 // Tributo que exige una tribu: cuánto, para cuándo y desde dónde pagar.
-// La frontera: tierra de nadie donde se gana oro si todos los presentes están en paz.
+// La zona peligrosa (antes frontera): se gana oro con tropas ahí si todos los presentes están en paz.
 function frontierHTML(z){
   const here=presentF(z).filter(isPl); const me=here.includes(ME); const others=here.filter(f=>f!==ME);
-  const gain=(z.frontGain||{})[ME];
-  let h=`<div class="frontier"><div class="trh">🚩 <b>Tierra de nadie</b> · nadie puede adueñarse de ella</div>`;
+  const gain=(z.frontGain||{})[ME]; const racha=(z.fh||{})[ME]||0, extra=Math.round(100*Math.min(FRONTIER_GROW_MAX,FRONTIER_GROW*racha));
+  let h=`<div class="frontier"><div class="trh">🚩 <b>Zona peligrosa</b> · nadie puede adueñarse de ella; pagan a quien la protege con tropas</div>`;
   h+=`<table class="dil"><tr><th></th><th>El otro, en paz</th><th>El otro ataca</th></tr><tr><th>Tú, en paz</th><td class="ok">🪙 +${FRONTIER_SHARED} los dos</td><td class="neg">te atacan por sorpresa</td></tr><tr><th>Tú atacas</th><td>pelea con sorpresa; si lo echas, 🪙 +${FRONTIER_ALONE} solo para ti</td><td class="neg">guerra sin ventaja</td></tr></table>`;
-  h+=`<div class="hint">${me?(others.length?`Compartes la frontera con ${others.map(f=>`<b style="color:${PLN[f].col}">${esc(PLN[f].name)}</b>`).join(' y ')}. Tu postura hacia ${others.length>1?'ellos':'él'}: ${others.map(f=>stanceOf(G,ME,f)==='alerta'?'⚔ Alerta':'☮ Paz').join(', ')}.`:'Estás solo aquí: ganas el bono mayor mientras nadie más llegue.'):(others.length?`Aquí está ${others.map(f=>esc(PLN[f].name)).join(' y ')}. Puedes entrar con civiles: si los dos están en paz, ganan los dos.`:'Está vacía: quien llegue primero gana el bono mayor.')} La gente aquí no produce y come de tu zona más cercana.${gain?` Último paso: ${rq('gold',gain,true)}.`:''}</div></div>`;
+  h+=`<div class="hint">⏫ El bono sube un ${Math.round(FRONTIER_GROW*100)} % por cada paso seguido con tropas aquí, hasta +${Math.round(FRONTIER_GROW_MAX*100)} %. ${me?`Llevas ${racha} paso${racha===1?'':'s'}: <b>+${extra} %</b>. `:''}Si pierdes la presencia, vuelves a 0.</div>`;
+  h+=`<div class="hint">${me?(others.length?`Compartes la zona peligrosa con ${others.map(f=>`<b style="color:${PLN[f].col}">${esc(PLN[f].name)}</b>`).join(' y ')}. Tu postura hacia ${others.length>1?'ellos':'él'}: ${others.map(f=>stanceOf(G,ME,f)==='alerta'?'⚔ Alerta':'☮ Paz').join(', ')}.`:'Estás solo aquí: ganas el bono mayor mientras nadie más ponga tropas.'):(others.length?`Aquí está ${others.map(f=>esc(PLN[f].name)).join(' y ')}. Puedes entrar con civiles: si los dos están en paz, ganan los dos.`:'Está vacía: quien llegue primero gana el bono mayor.')} La gente aquí no produce y come de tu zona más cercana.${gain?` Último paso: ${rq('gold',gain,true)}.`:''}</div></div>`;
   return h;
 }
 function tributeHTML(z){
   const t=(G.tributes||[]).find(x=>x.zone===z.id&&x.targets.includes(ME)); if(!t) return '';
   const res=t.res, local=(res==='food'||res==='prod'); const F=G.F[ME];
   const inQ=ui.orders.some(o=>o.t==='tribute'&&o.tribe===z.id);
-  let h=`<div class="tribute"><div class="trh">⚠ <b>Exige ${rq(res,t.amount)}</b> antes del paso ${t.due}</div><div class="hint">Si ningún vecino paga a tiempo, sus guerreros invaden la zona vecina más débil.</div>`;
+  const rel=((z.rel||{})[ME])||0; let h=`<div class="tribute"><div class="trh">🤝 <b>Pide ${rq(res,t.amount)}</b> hasta el paso ${t.due}</div><div class="hint">Cumplirlo sube tu relación con ella (${rel}/${TRIBE_REL_MAX}). Rechazarlo no tiene castigo; con relación ${TRIBE_REL_MAX} podrás anexarla.</div>`;
   if(t.paid[ME]) return h+'<div class="ok">✓ Ya pagaste tu parte.</div></div>';
   if(inQ) return h+'<div class="ok">✓ El pago está en cola: se hace al presionar ¡Listo!</div></div>';
   const mine=zonesOf(G,ME).filter(a=>z.adj.includes(a.id));
@@ -41,7 +42,11 @@ function annexHTML(z){
   if(z.owner!==TRIBE) return '';
   if(!tribeVisible(z)) return '<div class="hint">Acércate con una unidad para ver qué piden.</div>';
   const price=annexPrice(G,ME,z), res=TSPEC_RES[z.tspec]; const near=nearOwnZones(G,ME,z), have=annexHave(G,ME,z), p=tribePop(z);
+  const rel=((z.rel||{})[ME])||0, war=(G.wars||[]).find(w=>w.tribe===z.id&&w.f===ME);
   let h=`<div class="box"><b>Tribu ${esc(({agr:'agrícola',ing:'de producción',com:'comercial',cie:'de tecnología'})[z.tspec]||'')}</b> · ${p.civ} civiles y ${p.mil} guerreros<div class="hint">Para unirse piden <b>${rq(res,price)}</b>${z.tmult>1?' (×2 por un empate)':''} · conquistarla da ${rq(res,conquestReward(z))}</div>`;
+  h+=`<div class="relbar" title="Cumple sus pedidos (uno cada ${TRIBE_REQ_EVERY} pasos) para ganarte su confianza">Relación: ${[0,1,2,3].map(i=>`<i class="${i<rel?'on':''}"></i>`).join('')} <b>${TRIBE_REL_N[rel]}</b> (${rel}/${TRIBE_REL_MAX})</div>`;
+  if(war) return h+`<div class="warn">⚔ <b>En guerra contigo</b>: sus civiles se volvieron guerreros y atacan tus zonas cercanas (${war.left} paso${war.left===1?'':'s'} más, o hasta que la conquistes).</div></div>`;
+  if(rel<TRIBE_REL_MAX) return h+`<div class="hint">Todavía no puedes anexarla: primero cumple sus pedidos hasta tener relación ${TRIBE_REL_MAX}. Atacarla es entrar en guerra con ella.</div></div>`;
   if(near.length){
     const where=(res==='food'||res==='prod')?` (suma de ${near.length} zona${near.length>1?'s':''} tuya${near.length>1?'s':''} cerca)`:' (global)';
     h+=`<div class="${have>=price?'hint':'warn'}">Tienes ${Math.floor(have)}${where}.</div>`;
@@ -56,14 +61,14 @@ function buildingsHTML(z){
   z.b.forEach((b,i)=>{
     const d=BT[b.t]; const cap=b.t==='mar'?1:capLevel(G,ME,b.t); const opts=b.t==='mar'?[]:specOptions(G,ME,b.t);
     const up=ui.orders.some(o=>(o.t==='upgrade'||o.t==='demolish'||o.t==='bspec')&&o.zone===z.id&&o.bi===i);
-    h+=`<div class="bld"><svg class="bico" viewBox="-34 -64 68 80" aria-hidden="true">${bGlyph(b.t,b.l,false)}</svg><b>${d.n}</b>${b.dup?' (2.º)':''} nivel ${b.l}${b.s?` · ${SPEC_NAMES[b.s]}`:''}${b.t!=='mar'?` · ${b.wk||0}/${M.wk} trabajadores`:''}<div class="row">`;
+    h+=`<div class="bld"><svg class="bico" viewBox="-34 -64 68 80" aria-hidden="true">${bGlyph(b.t,b.l,false)}</svg><b>${b.t==='mar'&&b.w?WONDERS[b.w].n:d.n}</b>${b.dup?' (2.º)':''} ${b.t==='mar'&&b.w?'· '+esc(WONDERS[b.w].d):'nivel '+b.l}${b.s?` · ${SPEC_NAMES[b.s]}`:''}${b.t!=='mar'?` · ${b.wk||0}/${M.wk} trabajadores`:''}<div class="row">`;
     if(b.t!=='mar'&&b.l<Math.min(5,cap)&&!up&&!z.proj.some(p=>p.k==='u'&&p.bi===i)) h+=btnHTML('upgrade',`Mejorar a nivel ${b.l+1} (${stepCost(G,ME,z,b.t,b.dup)})`,`data-zone="${z.id}" data-bi="${i}"`);
     if(opts.length&&!up) h+=`<select data-f="bs_${z.id}_${i}"><option value="">Especialización…</option>${opts.map(k=>`<option value="${k}" ${b.s===k?'selected':''}>${SPEC_NAMES[k]}</option>`).join('')}</select>`+btnHTML('bspec','Aplicar',`data-zone="${z.id}" data-bi="${i}"`);
     if(b.t!=='mar'&&!up) h+=btnHTML('demolish','Destruir (recupera '+Math.floor((b.cost||20)*0.5)+')',`data-zone="${z.id}" data-bi="${i}"`);
     h+='</div></div>';
   });
   const pausedNow=(()=>{ const pd=ui.orders.filter(o=>o.t==='pausebuild'&&o.zone===z.id).pop(); return pd?pd.on:!!z.pauseBuild; })();
-  z.proj.forEach((p,pi)=>{ const nm=p.k==='b'?'Construyendo '+BT[p.bt].n:p.k==='w'?'Construyendo una Maravilla':'Mejorando '+BT[z.b[p.bi]?z.b[p.bi].t:'almacen'].n+' a nivel '+p.to; h+=`<div class="proj">${pi===0?`<button class="btn" style="float:right;padding:0 8px;min-width:0" data-act="pausebuild" data-zone="${z.id}" title="${pausedNow?'Reanudar las obras de esta zona':'Pausar las obras de esta zona: la producción se guarda en el almacén'}" aria-pressed="${pausedNow}">${pausedNow?'▶':'⏸'}</button>`:''}${nm}${pausedNow?' (en pausa)':''}: ${p.tot-p.left}/${p.tot}<div class="bar"><i style="width:${Math.round(100*(p.tot-p.left)/p.tot)}%"></i></div></div>`; });
+  z.proj.forEach((p,pi)=>{ const nm=p.k==='b'?'Construyendo '+BT[p.bt].n:p.k==='w'?'Construyendo '+(p.w?WONDERS[p.w].n:'una Maravilla'):'Mejorando '+BT[z.b[p.bi]?z.b[p.bi].t:'almacen'].n+' a nivel '+p.to; h+=`<div class="proj">${pi===0?`<button class="btn" style="float:right;padding:0 8px;min-width:0" data-act="pausebuild" data-zone="${z.id}" title="${pausedNow?'Reanudar las obras de esta zona':'Pausar las obras de esta zona: la producción se guarda en el almacén'}" aria-pressed="${pausedNow}">${pausedNow?'▶':'⏸'}</button>`:''}${nm}${pausedNow?' (en pausa)':''}: ${p.tot-p.left}/${p.tot}<div class="bar"><i style="width:${Math.round(100*(p.tot-p.left)/p.tot)}%"></i></div></div>`; });
   h+=buildCardsHTML(z);
   return h;
 }
@@ -72,8 +77,8 @@ function buildCardsHTML(z){
   const free=slotsOf(G,z)-z.b.length-z.proj.filter(p=>p.k!=='u').length;
   const queued=ui.orders.filter(o=>(o.t==='build'||o.t==='wonder')&&o.zone===z.id).length;
   let h=`<h4>Construir <span class="hint">(${Math.max(0,free-queued)} espacio${free-queued===1?'':'s'} libre${free-queued===1?'':'s'})</span></h4><div class="bgrid">`;
-  Object.keys(BT).forEach(k=>{
-    const d=BT[k], isW=k==='mar'; const have=sameCount(z,k)+ui.orders.filter(o=>o.zone===z.id&&((o.t==='build'&&o.bt===k)||(isW&&o.t==='wonder'))).length;
+  Object.keys(BT).filter(k=>k!=='mar').forEach(k=>{
+    const d=BT[k], isW=false; const have=sameCount(z,k)+ui.orders.filter(o=>o.zone===z.id&&((o.t==='build'&&o.bt===k)||(isW&&o.t==='wonder'))).length;
     const mx=maxSame(G,ME,k), dup=have>0&&!isW, lvl=isW?1:buildLevel(G,ME,k); const cost=isW?wonderCostOf(G,ME,z):stepCost(G,ME,z,k,dup)*lvl;
     const specs=isW?[]:specOptions(G,ME,k);
     let st='ok', why='';
@@ -85,6 +90,15 @@ function buildCardsHTML(z){
     const cnt=have?`<span class="bcnt">${have}</span>`:'';
     h+=`<button class="bcard ${st} ${picked?'picked':''}" ${act} aria-label="${esc(d.n)}${st==='ok'?', cuesta '+cost:'. '+esc(why)}"><span class="bname">${esc(d.n)}</span>${cnt}<svg viewBox="-34 -64 68 80" aria-hidden="true">${bGlyph(k,0,false)}</svg>${lvl>1&&st!=='lock'?`<span class="blvl">nivel ${lvl}</span>`:''}<span class="bcost">${st==='ok'?(dup?'2.º · ':'')+cost+' ⚒':st==='lock'?'🔒':st==='max'?'máximo':'sin espacio'}</span><span class="btip"><b>${esc(d.n)}</b>${esc(BEFF[k])}${st==='ok'?`<i>Se construye en <b>nivel ${lvl}</b> (el más alto que tienes). Cuesta ${cost} de producción${dup?' (segundo de la zona: +50 %)':''}.${specs.length?' Al tocarla eliges su especialización.':''}</i>`:`<i>${esc(why)}</i>`}</span></button>`;
   });
+  // maravillas: una tarjeta por cada una que ya puedes construir (tecnología de su rama) y siga disponible
+  Object.keys(WONDERS).filter(w=>techOwn(G,ME,WONDERS[w].tech)).forEach(w=>{
+    const W=WONDERS[w], built=wonderBuilt(G,w), mine=wonderRace(G,w).some(x=>x.f===ME)||ui.orders.some(o=>o.t==='wonder'&&o.w===w);
+    const cost=wonderCostOf(G,ME,z); let st='ok', why='';
+    if(built){ st='max'; why='Ya la construyó '+(isPl(built.owner)?PLN[built.owner].name:'alguien')+' en '+zname(built)+'.'; }
+    else if(mine){ st='max'; why='Ya la estás construyendo.'; }
+    else if(free-queued<=0){ st='full'; why='No queda espacio de edificio.'; }
+    const act=st==='ok'?`data-act="wonder" data-zone="${z.id}" data-w="${w}"`:'disabled';
+    h+=`<button class="bcard ${st}" ${act} aria-label="${esc(W.n)}${st==='ok'?', cuesta '+cost:'. '+esc(why)}"><span class="bname">${esc(W.n)}</span><svg viewBox="-34 -64 68 80" aria-hidden="true">${bGlyph('mar',0,false)}</svg><span class="bcost">${st==='ok'?cost+' ⚒':st==='max'?(built?'ya existe':'en obra'):'sin espacio'}</span><span class="btip"><b>${esc(W.n)}</b>Maravilla de ${esc(W.r)}: ${esc(W.d)} mientras controles su zona. Es única en la partida y se anuncia a todos al empezar: quien la termine primero se la queda.${st!=='ok'?'<i>'+esc(why)+'</i>':''}</span></button>`; });
   h+='</div>';
   if(ui.bpick&&ui.bpick.zone===z.id){ const k=ui.bpick.bt; const ops=specOptions(G,ME,k);
     h+=`<div class="bpick"><b>${esc(BT[k].n)} de nivel ${buildLevel(G,ME,k)}</b> · ¿con qué especialización nace?<div class="row">${btnHTML('build','Sin especializar',`data-zone="${z.id}" data-bt="${k}"`)}${ops.map(o=>btnHTML('build',esc(SPEC_NAMES[o]),`data-zone="${z.id}" data-bt="${k}" data-spec="${o}"`,'primary')).join('')}</div><div class="hint">Puedes cambiarla después desde el edificio.</div></div>`; }
@@ -176,6 +190,7 @@ function zoneOverview(z){
     let note='';
     if((t==='ing'||t==='pob')&&L&&L.building&&L.building[t]>0){ const pr=z.proj[0]; note=`${L.building[t]} construye${L.building[t]===1?'':'n'}${pr?': '+projName(z,pr)+' ('+Math.round(100*(pr.tot-pr.left)/pr.tot)+' %)':''}`; }
     if(t==='cie') note=G.F[ME].rq.length?`${pl.n} investiga${pl.n===1?'':'n'}${pl.sci-pl.n>0?`, ${pl.sci-pl.n} genera${pl.sci-pl.n===1?'':'n'} ciencia`:''}`:'generan ciencia (no hay nada en cola)';
+    { const ug=(z.units[ME]||[]).filter(u=>u.t===t), ng=ug.filter(u=>traitBorder(u)==='tg').length, ns=ug.filter(u=>traitBorder(u)==='ts').length; if(ng||ns) note=[note,(ng?'🥇 '+ng+' muy buenos':'')+(ng&&ns?' · ':'')+(ns?'🥈 '+ns+' buenos':'')].filter(Boolean).join(' · '); }
     const free=cnt[t]-where.reduce((a,w)=>a+parseInt(w),0); if(where.length&&free>0) where.push(`${free} ${t==='pob'?'en casa':'en el campo'}`);
     rows+=`<div class="wrow">${uIcon(t,30)}<div class="wtx"><b>${cnt[t]} ${(cnt[t]>1?UNP[t]:UN[t]).toLowerCase()}</b><small>${esc([where.join(' · '),note].filter(Boolean).join(' · ')||(t==='pob'?'en casa: un poco de comida y producción':'trabajando en el campo'))}</small></div><div class="wout">${outChips(out)}</div></div>`;
   });
@@ -195,7 +210,7 @@ function zoneOverview(z){
   if(fd&&(Object.keys(fd.from).length||fd.short)) h+=`<div class="${fd.short?'warn':'hint'}">Comida de la gente: ${fd.local} de aquí${Object.keys(fd.from).map(s=>`, ${fd.from[s]} desde ${esc(zname(G.zones[s]))}`).join('')}${fd.short?`. Faltaron ${fd.short}: alguien pasa hambre.`:'.'}</div>`;
   return h;
 }
-function projName(z,p){ return p.k==='b'?BT[p.bt].n:p.k==='w'?'Maravilla':'mejora de '+BT[z.b[p.bi]?z.b[p.bi].t:'almacen'].n; }
+function projName(z,p){ return p.k==='b'?BT[p.bt].n:p.k==='w'?(p.w?WONDERS[p.w].n:'Maravilla'):'mejora de '+BT[z.b[p.bi]?z.b[p.bi].t:'almacen'].n; }
 function growText(z){ const n=growETA(G,z); return n===undefined?'se calcula después del primer paso':n===null?'no crece (le falta comida)':n===1?'nace un poblador el próximo paso':'próximo poblador en '+n+' pasos'; }
 function subResumen(z){
   let h='';

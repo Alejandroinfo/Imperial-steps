@@ -40,10 +40,6 @@ function netAvailable(){ return (location.protocol === 'http:' || location.proto
 function netSave(){ try{ sessionStorage.setItem('pasos_sala', JSON.stringify({code:NET.code, name:NET.name})); }catch(e){} }
 function netLoad(){ try{ return JSON.parse(sessionStorage.getItem('pasos_sala') || 'null'); }catch(e){ return null; } }
 function netForget(){ try{ sessionStorage.removeItem('pasos_sala'); }catch(e){} }
-// Lo último que usaste (nombre y sala), guardado aunque cierres el navegador, para volver a la partida.
-function netRemember(){ try{ localStorage.setItem('pasos_ultima', JSON.stringify({code:NET.code, name:NET.name})); }catch(e){} }
-function netLast(){ try{ return JSON.parse(localStorage.getItem('pasos_ultima') || 'null'); }catch(e){ return null; } }
-function netLink(){ return location.origin + location.pathname + '?sala=' + NET.code; }
 
 // ---- Firebase: se carga solo cuando hace falta, así el juego contra bots no depende de internet ----
 let NET_DB = null;
@@ -105,22 +101,9 @@ async function netJoin(code, quiet){
     const sala = (await netRef().once('value')).val();
     if(!sala || !sala.creador){ NET.code = null; netForget(); netStatus('No existe una sala con ese código.'); return; }
     // ¿Ya tenía un asiento en esta sala? (por ejemplo, al recargar la página)
-    const seats = Object.values(sala.jugadores || {}).filter(Boolean);
-    const mine = seats.find(j => j.uid === NET.uid);
+    const mine = Object.values(sala.jugadores || {}).find(j => j && j.uid === NET.uid);
     if(mine){ NET.seat = mine.asiento; NET.host = mine.asiento === 0; return netEnter(); }
-    // ¿Vuelve alguien que cerró el navegador? Recupera su asiento si escribe el mismo nombre.
-    const same = n => String(n || '').trim().toLowerCase() === NET.name.trim().toLowerCase();
-    const back = seats.find(j => same(j.nombre));
-    if(back && back.conectado){ NET.code = null; netStatus('«' + back.nombre + '» ya está conectado en esta sala. Si eres otra persona, usa otro nombre.'); return; }
-    if(back){
-      const r = await netRef('jugadores/a' + back.asiento).transaction(cur => (cur && !cur.conectado && same(cur.nombre)) ? Object.assign({}, cur, {uid:NET.uid, conectado:true}) : undefined);
-      if(r.committed){
-        NET.seat = back.asiento; NET.host = back.asiento === 0; NET.name = back.nombre;
-        if(NET.host) await netRef('creador').set(NET.uid);   // el anfitrión vuelve a ser el que resuelve
-        return netEnter();
-      }
-    }
-    if(sala.config){ NET.code = null; netStatus('Esa partida ya empezó. Si eras parte de ella, escribe el mismo nombre con el que entraste.'); return; }
+    if(sala.config){ NET.code = null; netStatus('Esa partida ya empezó.'); return; }
     for(let n = 1; n < 4; n++){
       const me = {uid:NET.uid, nombre:NET.name, asiento:n, conectado:true};
       const r = await netRef('jugadores/a' + n).transaction(cur => cur === null ? me : undefined);
@@ -132,7 +115,7 @@ async function netJoin(code, quiet){
 
 // Ya con asiento: presencia, lista de jugadores y espera de la partida.
 function netEnter(){
-  netSave(); netRemember();
+  netSave();
   const meRef = netRef('jugadores/a' + NET.seat + '/conectado');
   const con = NET_DB.ref('.info/connected');
   const h = s => { if(s.val() === true){ meRef.onDisconnect().set(false); meRef.set(true); } };
@@ -249,16 +232,9 @@ function openOnline(){
     [...$('selThr').options].forEach(o => $('redThr').appendChild(o.cloneNode(true)));
     $('redMap').value = $('selMap').value; $('redThr').value = $('selThr').value;
   }
-  const saved = netLoad() || netLast(); if(saved && !$('redName').value) $('redName').value = saved.name || '';
-  const q = (new URLSearchParams(location.search).get('sala') || '').toUpperCase();
-  if(q) $('redCode').value = q; else if(!$('redCode').value && netLast()) $('redCode').value = netLast().code || '';
-  // Si llegó con el enlace de invitación, solo tiene que escribir su nombre.
-  $('redInvite').hidden = !q; $('redNew').hidden = !!q;
-  if(q) $('redInvite').innerHTML = 'Te invitaron a la sala <b>' + esc(q) + '</b>. Escribe tu nombre y entra.';
-  $('redJoin').textContent = q ? 'Entrar a la sala' : 'Unirme';
-  $('redJoin').classList.toggle('primary', !!q);
+  const saved = netLoad(); if(saved && !$('redName').value) $('redName').value = saved.name || '';
+  const q = new URLSearchParams(location.search).get('sala'); if(q && !$('redCode').value) $('redCode').value = q.toUpperCase();
   netShowLobby(); netStatus(''); $('dlgRed').showModal();
-  if(!$('redForm').hidden) setTimeout(() => { $('redName').focus(); $('redName').select(); }, 50);
 }
 
 function netShowLobby(){
@@ -266,7 +242,7 @@ function netShowLobby(){
   $('redForm').hidden = inRoom || !netAvailable(); $('redLobby').hidden = !inRoom;
   if(!inRoom) return;
   $('redCodeShow').textContent = NET.code;
-  const link = netLink();
+  const link = location.origin + location.pathname + '?sala=' + NET.code;
   $('redLink').textContent = link; $('redLink').href = link;
   $('redPlayers').innerHTML = NET.players.map(p => `<li><span class="dot" style="background:${PLN[p.asiento].col}"></span>${esc(p.nombre)}${p.asiento === 0 ? ' (anfitrión)' : ''}${p.asiento === NET.seat ? ' — tú' : ''}${p.conectado ? '' : ' · <i>desconectado</i>'}</li>`).join('');
   $('redHost').hidden = !NET.host || NET.on;
@@ -296,17 +272,6 @@ function netInit(){
                  humanos:NET.players.map(p => ({asiento:p.asiento, nombre:p.nombre}))};
     netRef('config').set(JSON.stringify(cfg)).catch(netErr);
   });
-  $('redCopy').addEventListener('click', async () => {
-    const link = netLink(); let ok = false;
-    try{ await navigator.clipboard.writeText(link); ok = true; }catch(e){
-      const r = document.createRange(); r.selectNodeContents($('redLink')); const s = getSelection(); s.removeAllRanges(); s.addRange(r);
-      try{ ok = document.execCommand('copy'); }catch(e2){}
-    }
-    $('redCopied').textContent = ok ? '¡Copiado! Pégalo en el chat de la familia.' : 'Selecciona el enlace y cópialo con Ctrl+C.';
-    $('redCopied').hidden = false; clearTimeout($('redCopied')._t); $('redCopied')._t = setTimeout(() => { $('redCopied').hidden = true; }, 4000);
-  });
-  $('redName').addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); ($('redNew').hidden || $('redCode').value.trim() ? $('redJoin') : $('redCreate')).click(); } });
-  $('redCode').addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); $('redJoin').click(); } });
   $('redClose').addEventListener('click', () => { $('dlgRed').close(); if(!G) openSetup(); });
   $('dlgRed').addEventListener('cancel', e => { if(!G){ e.preventDefault(); $('dlgRed').close(); openSetup(); } });
   if(!netAvailable()) return;

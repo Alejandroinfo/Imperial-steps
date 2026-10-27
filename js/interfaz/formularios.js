@@ -40,7 +40,7 @@ function queuedUnits(zid,t){ // unidades de ese tipo que ya tienen una orden de 
 // ---- Personas con rasgos: fichas, íconos y bordes ----
 function traitText(x){
   const I=TRAIT_INFO[x.k]; const pct=Math.round(TRAIT_STEP*x.l*100);
-  const ef=x.k==='apt'?(x.l>0?'come un '+pct+' % menos':'come un '+(-pct)+' % más'):((pct>0?'+':'')+pct+' %');
+  const ef=x.k==='apt'?(x.l>0?'come un '+pct+' % menos':'come un '+(-pct)+' % más'):x.k==='sal'?((x.l>0?'+':'')+x.l+' de vida'):x.k==='fue'?((x.l>0?'+':'')+x.l+(Math.abs(x.l)===1?' dado':' dados')):((pct>0?'+':'')+pct+' %');
   return I.n+' ('+TRAIT_LV[x.l]+', '+ef+'): afecta '+I.d;
 }
 const traitScore=u=>(u.tr||[]).reduce((a,x)=>a+x.l,0);
@@ -86,11 +86,12 @@ function ordText(o){
     case 'upgrade': return zname(Z[o.zone])+': mejorar '+BT[Z[o.zone].b[o.bi].t].n+' a nivel '+(Z[o.zone].b[o.bi].l+1);
     case 'bspec': return zname(Z[o.zone])+': especializar '+BT[Z[o.zone].b[o.bi].t].n+' → '+SPEC_NAMES[o.spec];
     case 'demolish': return zname(Z[o.zone])+': destruir '+BT[Z[o.zone].b[o.bi].t].n;
-    case 'wonder': return zname(Z[o.zone])+': construir una Maravilla';
+    case 'wonder': return zname(Z[o.zone])+': construir '+(WONDERS[o.w]?WONDERS[o.w].n:'una Maravilla');
     case 'send': return 'Enviar '+o.q+' de '+(o.res==='food'?'comida':'producción')+': '+zname(Z[o.from])+' → '+zname(Z[o.to]);
     case 'move': { const p=Object.keys(o.u).filter(t=>o.u[t]>0).map(t=>o.u[t]+' '+(o.u[t]>1?UNP[t]:UN[t]).toLowerCase()); return 'Mover '+p.join(', ')+': '+zname(Z[o.from])+' → '+zname(Z[o.to])+(o.via&&o.via.length?' → '+o.via.map(i=>zname(Z[i])).join(' → '):'')+' ('+(o.stance==='ataque'?'ataque':'paz')+')'; }
-    case 'encounter': { const e=G.F[ME].enc; return e?((o.choice==='si'?(e.k==='amenaza'?'Pagar a ':'Aceptar a '):'Rechazar a ')+e.who.toLowerCase()+' en '+zname(Z[e.zone])):'Encuentro'; }
+    case 'encounter': { const e=G.F[ME].enc; { const oi=['a','b','c'].indexOf(o.choice); if(e&&e.opts&&oi>=0&&e.opts[oi]) return (e.story?'Historia: ':'Aceptar ')+'«'+e.opts[oi].lbl+'»'+(e.story?'':' de '+e.who.toLowerCase())+' en '+zname(Z[e.zone]); } return e?((o.choice==='si'?(e.k==='amenaza'?'Pagar a ':'Aceptar a '):'Rechazar a ')+e.who.toLowerCase()+' en '+zname(Z[e.zone])):'Encuentro'; }
     case 'growmode': return zname(Z[o.zone])+': la comida que sobra va a '+(o.mode==='guardar'?'guardar':'crecer');
+    case 'bid': { const a=G.auction, it=a&&a.items[o.item]; return it?(o.amount?'Subasta: ofrecer '+o.amount+' de '+RN[a.cur]+' por '+AUCTION_CATS[it.cat]+' ('+AUCTION_TIERS[it.tier]+')':'Subasta: retirar la oferta por '+AUCTION_CATS[it.cat]):'Subasta'; }
     case 'pausebuild': return zname(Z[o.zone])+': '+(o.on?'pausar las obras (la producción se guarda)':'reanudar las obras');
     case 'autospec': return zname(Z[o.zone])+': los que nazcan serán '+(o.to?UNP[o.to].toLowerCase():'pobladores');
     case 'route': return o.q?('Envío automático: '+(o.res==='food'?'comida':'producción')+' '+zname(Z[o.from])+' → '+zname(Z[o.to])+' ('+(o.q==='sobrante'?'todo el sobrante':o.q+' por paso')+')'):('Quitar el envío automático '+zname(Z[o.from])+' → '+zname(Z[o.to]));

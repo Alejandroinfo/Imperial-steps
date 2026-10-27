@@ -3,7 +3,7 @@
 
 const JOBC = {pob:'#B8A58A',agr:'#8DB04A',ing:'#7C8791',cie:'#F4F1EA',com:'#8E4A8E'};
 /* fig(): personaje con base en (x,y), ~16 unidades de alto. col = color del jugador. quiet = sin animaciones (íconos) */
-function fig(t,x,y,col,s,quiet){
+function fig(t,x,y,col,s,quiet,ring){
   s=s||1; const I=INK, skin='#F2CDA3'; const an=c=>quiet?'':` class="${c}"`;
   let g=`<g transform="translate(${f1(x)},${f1(y)}) scale(${s})">`;
   if(t==='ari'){
@@ -15,6 +15,7 @@ function fig(t,x,y,col,s,quiet){
     return g+'</g>';
   }
   g+=`<ellipse cx="0" cy="1.4" rx="3.6" ry="1.2" fill="rgba(0,0,0,.28)"/>`;
+  if(ring) g+=`<ellipse cx="0" cy="-4.6" rx="5.6" ry="9.4" fill="none" stroke="${ring==='tg'?'#E2B93B':'#C3CAD1'}" stroke-width="${ring==='tg'?1.3:0.9}" opacity=".95"/>`;
   const mil=!!UT[t]&&!UT[t].civ;
   const bodyCol=mil?col:JOBC[t];
   // acceso trasero (sacos, arcos)
@@ -49,6 +50,7 @@ const FIG_MAX=6;
 function figRows(z,f,col){
   const us=z.units[f]||[]; const by={}; us.forEach(u=>{ const k=by[u.t]||(by[u.t]={n:0,w:0}); k.n++; if(u.w>0) k.w++; });
   const types=CIV.concat(MIL).filter(t=>by[t]); const anchor={}, used={};
+  const ppl={}; if(f===ME) CIV.forEach(t=>{ ppl[t]=us.filter(u=>u.t===t).sort((a,b)=>traitScore(b)-traitScore(a)); });   // aro dorado o plateado para los de buen rasgo
   if(z.owner===f){
     types.forEach(t=>{
       let k=-1; if(JOB_BLD[t]) k=z.b.findIndex(b=>b.t===JOB_BLD[t]);
@@ -63,7 +65,7 @@ function figRows(z,f,col){
   types.forEach(t=>{
     const k=by[t], [cx,cy]=anchor[t], big=(t==='ari'||t==='lan'); const n=Math.min(FIG_MAX,k.n);
     const per=big?2:3, sp=big?26:12;
-    for(let j=0;j<n;j++){ const r=Math.floor(j/per), c=j%per, inRow=Math.min(per,n-r*per); s+=fig(t,cx+(c-(inRow-1)/2)*sp,cy+r*13,col,big?1.5:1.8); }
+    for(let j=0;j<n;j++){ const r=Math.floor(j/per), c=j%per, inRow=Math.min(per,n-r*per); s+=fig(t,cx+(c-(inRow-1)/2)*sp,cy+r*13,col,big?1.5:1.8,false,(ppl[t]&&ppl[t][j])?traitBorder(ppl[t][j]):''); }
     if(k.n>FIG_MAX) s+=`<g transform="translate(${f1(cx+26)},${f1(cy-6)})"><rect x="-13" y="-9" width="26" height="17" rx="8.5" fill="#2A1B16" stroke="${col}" stroke-width="2"/><text class="zt" text-anchor="middle" y="4" font-size="11" font-weight="700" fill="#FBF8F2">+${k.n-FIG_MAX}</text></g>`;
     if(k.w) s+=`<g transform="translate(${f1(cx-26)},${f1(cy-6)})"><circle r="7" fill="#C8452F" stroke="#fff" stroke-width="1.6"/><path d="M-3,0 h6 M0,-3 v6" stroke="#fff" stroke-width="1.8"/><text class="zt" x="10" y="4" font-size="10" font-weight="700" fill="#fff" stroke="#2A1B16" stroke-width="2.5" paint-order="stroke">${k.w}</text></g>`;
   });

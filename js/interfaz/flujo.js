@@ -14,7 +14,7 @@ function startGame(cfg){
   if($('dlgEnd').open) $('dlgEnd').close();
   buildWorld(); buildTerritoryDOM(); setViewMode('terr',true);
   const mc=myCapital(); ui.sel=mc; ui.zsub='resumen';
-  beginStep(); render();
+  beginStep(); render(); musicPlay('plan');
   fitAll(0);
   setTimeout(()=>{ flyTo(sx(mc),sy(mc)+30,840,FXS.on?1500:0); },FXS.on?350:0);
   const sm=$('startMsg'); sm.innerHTML=`<b>Aquí empiezas</b><div>Tu capital es <b>${esc(zname(G.zones[mc]))}</b> (borde ${ME===0?'rojo':'de tu color'}). Arrastra el mapa para recorrerlo, usa la rueda para acercar o el minimapa para saltar.</div>`; sm.className='startmsg show'; clearTimeout(sm._t); sm._t=setTimeout(()=>{ sm.className='startmsg'; },7000);
@@ -62,7 +62,7 @@ function finishStep(){
   tele.orders.push(ui.orders.length);
   const before=[...Array(G.N).keys()].map(f=>victoryConds(G,f));
   const prev={gold:Math.floor(G.F[ME].gold),tech:Math.floor(G.F[ME].tech)};
-  resolveStep(G,orders); sfx('step');
+  resolveStep(G,orders); sfx('step'); if(!G.over) musicStinger('resolucion');
   recomputeMods(G);
   if(ui.sel!==null&&!G.zones[ui.sel]) ui.sel=null;
   netSendState();   // en línea, el anfitrión manda el paso resuelto a todos
@@ -71,7 +71,7 @@ function finishStep(){
 }
 function showEnd(){
   const w=G.winner, me=w.includes(ME);
-  sfxLater(me?'victory':'defeat',600,0); if(me) confetti();
+  sfxLater(me?'victory':'defeat',600,0); if(me) confetti(); musicStinger(me?'victoria':'derrota',true);
   $('endTitle').textContent=me?'¡Ganaste!':(w.length?PLN[w[0]].name+' ganó':'Fin de la partida');
   const avg=tele.ready.length?Math.round(tele.ready.reduce((a,b)=>a+b,0)/tele.ready.length/1000):0;
   const ord=tele.orders.length?(tele.orders.reduce((a,b)=>a+b,0)/tele.orders.length).toFixed(1):'0';

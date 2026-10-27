@@ -90,3 +90,66 @@ function ambientStart(){
 }
 function ambientStop(){ if(!SFX.ambNodes) return; try{ SFX.ambNodes.src.stop(); SFX.ambNodes.lfo.stop(); }catch(e){} SFX.ambNodes=null; clearTimeout(SFX.birdT); }
 function sfxSetAmbient(on){ SFX.amb=on; if(on&&SFX.ctx) ambientStart(); else ambientStop(); }
+
+/* ---------- música: archivos MP3 en la carpeta audio/ ----------
+   Se reproduce con elementos <audio> (así suena también al abrir el HTML con doble clic). Si faltan los
+   archivos, el juego sigue sin música. Tranquila al planificar (dos piezas que se turnan, con cruce de 2 s),
+   épica en el visor de batalla, y remates breves al resolver el paso y al terminar la partida.
+   Créditos y licencia: docs/audio.md */
+const MUS={on:true,vol:0.3,scene:null,act:[],duck:1,duckT:1,stg:0,pi:0,missing:{},t:0,timer:null};
+const MUS_FILES={menu:'audio/menu.mp3',plan_1:'audio/plan_1.mp3',plan_2:'audio/plan_2.mp3',combate:'audio/combate.mp3',
+  resolucion:'audio/resolucion.mp3',victoria:'audio/victoria.mp3',derrota:'audio/derrota.mp3'};
+const MUS_SCENES={menu:['menu'],plan:['plan_1','plan_2'],combate:['combate']};
+const MUS_XF=2000;   // ms de cruce entre pistas
+function musList(scene){ return (MUS_SCENES[scene]||[]).filter(n=>!MUS.missing[n]); }
+function musStart(name,fadeMs){
+  const a=new Audio(MUS_FILES[name]); a.volume=0; a.preload='auto';
+  const x={a,name,lv:0,to:1,fade:fadeMs,main:true,nx:0};
+  a.addEventListener('error',()=>{ MUS.missing[name]=1; x.to=0; x.lv=0; x.main=false; if(MUS.scene&&MUS.act.every(y=>!y.main)) musicPlay(MUS.scene,true); });
+  const p=a.play(); if(p&&p.catch) p.catch(()=>{});
+  MUS.act.push(x); if(!MUS.timer) MUS.timer=setInterval(musTick,80);
+}
+function musNext(x){
+  const list=musList(MUS.scene); if(!list.length) return;
+  const name=MUS.scene==='plan'?list[MUS.pi++%list.length]:x.name;
+  x.main=false; x.to=0; x.fade=MUS_XF; musStart(name,MUS_XF);
+}
+function musTick(){
+  const now=performance.now(), dt=Math.min(250,MUS.t?now-MUS.t:80); MUS.t=now;
+  MUS.duck+=(MUS.duckT-MUS.duck)*Math.min(1,dt/300);
+  MUS.act=MUS.act.filter(x=>{
+    const st=dt/Math.max(50,x.fade); x.lv+=(x.to>x.lv?1:-1)*Math.min(Math.abs(x.to-x.lv),st);
+    x.a.volume=Math.max(0,Math.min(1,x.lv*MUS.vol*MUS.duck*(MUS.on?1:0)));
+    if(x.to===0&&x.lv<=0.001){ x.a.pause(); return false; }
+    const d=x.a.duration; if(x.main&&!x.nx&&isFinite(d)&&d>0&&d-x.a.currentTime<MUS_XF/1000+0.1&&x.a.currentTime>1){ x.nx=1; musNext(x); }
+    return true;
+  });
+}
+function musicPlay(scene,force){
+  if(!force&&MUS.scene===scene) return; MUS.scene=scene; if(!MUS.on) return;
+  MUS.act.forEach(x=>{ x.main=false; x.to=0; x.fade=1500; });
+  const list=musList(scene); if(!list.length) return;
+  musStart(scene==='plan'?list[MUS.pi++%list.length]:list[0],1500);
+}
+// Remate corto (resolución, victoria, derrota): baja un momento la música de fondo para que se oiga.
+function musicStinger(name,stopScene){
+  if(!MUS.on||MUS.missing[name]) return;
+  const a=new Audio(MUS_FILES[name]); a.volume=Math.min(1,MUS.vol); MUS.stg++; MUS.duckT=0.25;
+  const fin=()=>{ MUS.stg=Math.max(0,MUS.stg-1); if(!MUS.stg) MUS.duckT=1; };
+  a.addEventListener('ended',fin); a.addEventListener('error',()=>{ MUS.missing[name]=1; fin(); });
+  const p=a.play(); if(p&&p.catch) p.catch(fin);
+  if(stopScene){ MUS.act.forEach(x=>{ x.main=false; x.to=0; x.fade=900; }); MUS.scene='fin'; }
+  if(!MUS.timer) MUS.timer=setInterval(musTick,80);
+}
+function musicSetVolume(v){ MUS.vol=v; }
+function musicSetOn(on){ MUS.on=on; if(!on){ MUS.act.forEach(x=>{ x.a.pause(); }); MUS.act=[]; } else if(MUS.scene&&MUS.scene!=='fin') musicPlay(MUS.scene,true); }
+// El navegador solo deja sonar tras un clic: en cada clic se comprueba que la escena actual suene.
+function musicKick(){
+  if(!MUS.on) return;
+  if(!MUS.scene) { musicPlay(typeof G!=='undefined'&&G&&!G.over?'plan':'menu'); return; }
+  if(MUS.scene!=='fin'&&!MUS.act.some(x=>!x.a.paused)&&MUS.act.length) musicPlay(MUS.scene,true);
+}
+document.addEventListener('visibilitychange',()=>{ MUS.act.forEach(x=>{ if(document.visibilityState==='hidden') x.a.pause(); else if(x.to>0){ const p=x.a.play(); if(p&&p.catch) p.catch(()=>{}); } }); });
+try{ const sv=JSON.parse(localStorage.getItem('pasos_musica')||'null'); if(sv){ MUS.on=sv.on!==false; if(typeof sv.vol==='number') MUS.vol=Math.max(0,Math.min(1,sv.vol)); } }catch(e){}
+function musicSave(){ try{ localStorage.setItem('pasos_musica',JSON.stringify({on:MUS.on,vol:MUS.vol})); }catch(e){} }
+

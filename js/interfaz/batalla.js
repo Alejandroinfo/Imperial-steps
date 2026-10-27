@@ -4,7 +4,7 @@
 
 const BV={b:null,k:0,timer:null};
 const GRP_N=(t,n)=>t==='civ'?(n===1?'civil':'civiles'):(n===1?UN[t]:UNP[t]).toLowerCase();
-function openBattle(i){ const b=(G.battles||[])[i]; if(!b) return; stopBattle(); BV.b=b; BV.k=0; $('dlgBattle').showModal(); renderBattle(); }
+function openBattle(i){ const b=(G.battles||[])[i]; if(!b) return; stopBattle(); BV.b=b; BV.k=0; musicPlay('combate'); $('dlgBattle').showModal(); renderBattle(); }
 function battleActs(b){ const out=[]; b.waves.forEach((w,wi)=>w.acts.forEach(a=>out.push(Object.assign({wave:wi,init:w.init},a)))); return out; }
 // estado de cada unidad después de aplicar las primeras k acciones
 function battleState(b,k){

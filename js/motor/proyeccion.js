@@ -16,7 +16,7 @@ function projectedOutput(g2,f){
   g2.M[f]=computeMods(g2,f);
   const plan=researchPlan(g2,f); Object.keys(plan).forEach(id=>{ g2.zones[id].resN=plan[id].n; g2.zones[id].resBonus=plan[id].bonus; });
   const F=g2.F[f], g0=F.gold, t0=F.tech; let food=0,prod=0,store=0;
-  g2.zones.forEach(z=>{ if(z.owner!==f) return; z.bplan=buildPlan(g2,z,f,false); const a=z.food,b=z.prod; produceZone(g2,z); food+=z.food-a; prod+=z.prod-b; store+=capStore(g2,z,'food')+capStore(g2,z,'prod'); });
+  g2.zones.forEach(z=>{ if(z.owner!==f) return; const a=z.food,b=z.prod; produceZone(g2,z); food+=z.food-a; prod+=z.prod-b; store+=capStore(g2,z,'food')+capStore(g2,z,'prod'); });
   globalProduce(g2,f);
   return {food,prod,gold:F.gold-g0,tech:F.tech-t0,store};
 }
@@ -29,7 +29,7 @@ function baseProjection(g,f){
   return PROJ_BASE;
 }
 // A quién beneficia cada modificador (para explicar por qué hoy no cambia nada)
-const MOD_WHO={agrFood:'agr',pobFood:'pob',pobProd:'pob',ingProd:'ing',comGold:'com',cieTech:'cie',conUse:'ing'};
+const MOD_WHO={agrFood:'agr',pobFood:'pob',pobProd:'pob',ingProd:'ing',comGold:'com',cieTech:'cie',conUse:'con'};
 /** @param {Partida} g */
 function techImpact(g,f,name){
   const t=TECH[name]; if(!t) return null;

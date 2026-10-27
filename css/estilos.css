@@ -351,4 +351,15 @@ i.tchip{display:inline-block;font-style:normal;padding:1px 7px}
 .infob{vertical-align:baseline}
 .infob{background:none;border:0;padding:0 2px;color:var(--muted);font:inherit;font-size:1.05em;line-height:1;cursor:help}
 .infob:hover,.infob:focus-visible{color:var(--ink)}
+/* vida en las zonas: partículas de lo que produce, chispas de obra y avisos de estado */
+@keyframes moteUp{0%{opacity:0;transform:translateY(0)}18%{opacity:.9}100%{opacity:0;transform:translateY(-105px)}}
+.mote{animation:moteUp 5.5s ease-in infinite}
+@keyframes spk{0%{opacity:0;transform:translate(0,0)}15%{opacity:1}100%{opacity:0;transform:translate(var(--dx,10px),-26px)}}
+.spk{animation:spk 1.15s ease-out infinite}
+@keyframes hungerPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
+.hunger{animation:hungerPulse 1s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+.noanim .mote,.noanim .spk{display:none}
 
+.relbar{margin:4px 0;font-size:12px}.relbar i{display:inline-block;width:14px;height:8px;border-radius:3px;margin-right:3px;background:#E3DACA;border:1px solid #B79A6A}.relbar i.on{background:#7CC47F;border-color:#4F8F52}
+.enc.eleccion{border-color:#7FB2E5}
+.alist{display:grid;gap:6px;margin:6px 0}.arow{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.04);border-radius:8px;padding:6px 8px}.arow .atx{flex:1}.arow .atx small{display:block;color:#7A6F60}.arow input{width:78px}

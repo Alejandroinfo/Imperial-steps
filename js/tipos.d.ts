@@ -29,8 +29,8 @@ interface Unidad {
   half?: number; mit?: number; cabhp?: number; brea?: number; cb?: number; dead?: number;
 }
 
-interface Edificio { t: TipoEdificio; l: number; s: string | null; wk: number; cost: number; dup?: number; }
-interface Proyecto { k: 'b' | 'u' | 'w'; bt?: TipoEdificio; bi?: number; to?: number; left: number; tot: number; dup?: number; lvl?: number; spec?: string | null; }
+interface Edificio { t: TipoEdificio; l: number; s: string | null; wk: number; cost: number; dup?: number; w?: string; }
+interface Proyecto { k: 'b' | 'u' | 'w'; w?: string; prev?: number; bt?: TipoEdificio; bi?: number; to?: number; left: number; tot: number; dup?: number; lvl?: number; spec?: string | null; }
 interface EnvioAuto { to: ZonaId; res: 'food' | 'prod'; q: number | 'sobrante'; }
 
 interface Zona {
@@ -46,8 +46,8 @@ interface Zona {
   res: string | null; tspec: Civil | null; tmult: number; tbase?: number; settled?: number;
   ev: { [k: string]: number };
   // economía de la zona
-  growMode?: 'crecer' | 'guardar'; pauseBuild?: boolean; autoSpec?: Civil | null; routes?: EnvioAuto[];
-  bplan?: {ing:number; pob:number; bonus:number; cap:number; work:number; stock:number; paused?:boolean; ids?:number[]} | null; resN?: number; resBonus?: number; rcap?: number; nres?: number;
+  growMode?: 'crecer' | 'guardar'; pauseBuild?: boolean; rel?: { [f: number]: number }; fh?: { [f: number]: number }; autoSpec?: Civil | null; routes?: EnvioAuto[];
+  bplan?: {ing:number; pob:number; bonus:number; cap:number; work:number; stock:number; pot?:number; paused?:boolean; ids?:number[]} | null; resN?: number; resBonus?: number; rcap?: number; nres?: number;
   f0?: number; p0?: number; feedOut?: number;
   feed?: { [f: number]: { gold?: number; need: number; local: number; from: { [z: number]: number }; short: number; line: ZonaId | null } };
   last?: { food: number; prod: number; gold: number; tech: number };
@@ -59,9 +59,9 @@ interface Zona {
 }
 
 interface Encuentro {
-  id: string; k: 'oferta' | 'apuesta'; who: string; txt: string; zone: ZonaId; step: number; str: number;
+  id: string; k: 'oferta' | 'apuesta' | 'eleccion' | 'historia'; story?: { id: string; ch: number }; opts?: { lbl: string; t?: string; cost: { res: Recurso; n: number } | null; gain: any }[]; who: string; txt: string; zone: ZonaId; step: number; str: number;
   cost: { res: Recurso; n: number } | null;
-  gain: { units?: { [t: string]: number }; res?: Recurso; n?: number; eq?: { [t: string]: number }; prog?: number; gamble?: { p: number; res: Recurso; n: number } } | null;
+  gain: { units?: { [t: string]: number }; res?: Recurso; n?: number; eq?: { [t: string]: number }; prog?: number; gamble?: { p: number; res: Recurso; n: number }; rel?: number; tpob?: { k: string; l: number }[]; saber?: number; bld?: TipoEdificio; tres?: { key: string } } | null;
   refuse: any;
 }
 
@@ -72,7 +72,7 @@ interface EstadoJugador {
   lastAvoid: number; notes: string[];
   rq: { name: string; left: number; tot: number }[]; rcap: number; rspent?: number;
   stance: { [otro: number]: Postura };
-  enc: Encuentro | null; encNext?: number; caravanUsed?: number;
+  enc: Encuentro | null; encNext?: number; caravanUsed?: number; story?: { id: string; ch: number; next: number; tags: string[]; done?: number }; tres?: { key: string; until: number }[];
 }
 
 interface Partida {
@@ -85,6 +85,8 @@ interface Partida {
   evq: { step: number; id: string }[]; evNow?: { step: number; id: string } | null;
   tributes: { zone: ZonaId; amount: number; due: number; paid: { [f: number]: number }; targets: Jugador[]; res: Recurso }[];
   battles?: any[]; logiMult: number; fever?: number; growHalfEv?: number;
+  wars: { tribe: ZonaId; f: Jugador; left: number }[];
+  auction: { step: number; cur: Recurso; items: { cat: string; tier: number; det: any }[]; bids: { [f: number]: { [i: number]: number } } } | null;
   tele: any; vic?: any; lay?: any;
 }
 
@@ -97,7 +99,7 @@ type Orden = { f?: Jugador } & (
   | { t: 'demob'; zone: ZonaId; u: Militar; to: Civil; n: number }
   | { t: 'train'; zone: ZonaId; u: Militar; n: number; from?: 'pob' | 'sol' }
   | { t: 'build'; zone: ZonaId; bt: TipoEdificio; spec?: string | null }
-  | { t: 'wonder'; zone: ZonaId }
+  | { t: 'wonder'; zone: ZonaId; w: string }
   | { t: 'upgrade'; zone: ZonaId; bi: number }
   | { t: 'bspec'; zone: ZonaId; bi: number; spec: string }
   | { t: 'demolish'; zone: ZonaId; bi: number }
@@ -110,6 +112,7 @@ type Orden = { f?: Jugador } & (
   | { t: 'ally'; target?: Jugador; off?: number }
   | { t: 'annex'; zone: ZonaId; from: ZonaId }
   | { t: 'move'; from: ZonaId; to: ZonaId; u: { [t: string]: number }; stance: 'paz' | 'ataque'; via?: ZonaId[] }
-  | { t: 'encounter'; choice: 'si' | 'no' }
+  | { t: 'encounter'; choice: 'si' | 'no' | 'a' | 'b' | 'c' }
+  | { t: 'bid'; item: number; amount: number }
 );
 type TipoOrden = Orden['t'];

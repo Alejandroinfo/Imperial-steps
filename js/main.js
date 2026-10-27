@@ -4,7 +4,7 @@
 document.addEventListener('click',e=>{
   const sm=e.target.closest&&e.target.closest('summary'); if(sm&&ui&&sm.parentElement.dataset&&sm.parentElement.dataset.d){ ui.det=ui.det||{}; ui.det[sm.parentElement.dataset.d]=!sm.parentElement.open; }
   const wl_=e.target.closest('[data-wiki]'); if(wl_){ e.preventDefault(); const id=wl_.dataset.wiki; if(!WIKI||!$('dlgWiki').open){ openWiki(id); } else { ui.wikiId=id; renderWiki(); } return; }
-  sfxInit();
+  sfxInit(); musicKick();
   if(e.target.closest('button,.bcard')&&!e.target.closest('#readyBtn')) sfx('click',40);
   if(SUPPRESS) return;
   const mb=e.target.closest('.mvb'); if(mb&&ui&&ui.sel!==null){ const zg0=mb.closest('g.zone'); openMove(ui.sel,Number(zg0.dataset.id)); render(); return; }
@@ -49,7 +49,7 @@ function openSetup(){
   $('setupWarn').hidden=!G||G.over; $('setupCancel').hidden=!G||G.over;
   if($('dlgMenu').open) $('dlgMenu').close();
   if($('dlgEnd').open) $('dlgEnd').close();
-  showMapShort(); $('dlgSetup').showModal();
+  showMapShort(); musicPlay('menu'); $('dlgSetup').showModal();
 }
 function showMapShort(){ const m=DATA.maps[Number($('selMap').value)]; $('mapShort').textContent=m?m.short+'.':''; }
 $('selMap').addEventListener('change',showMapShort);
@@ -70,6 +70,10 @@ $('chkEdge').addEventListener('change',e=>{ VIEW.edge=e.target.checked; });
 $('chkSound').addEventListener('change',e=>{ sfxInit(); sfxSetOn(e.target.checked); });
 $('rngVol').addEventListener('input',e=>{ sfxInit(); sfxSetVolume(Number(e.target.value)/100); sfx('coin',0); });
 $('chkAmb').addEventListener('change',e=>{ sfxInit(); sfxSetAmbient(e.target.checked); });
+$('chkMus').checked=MUS.on; $('rngMus').value=Math.round(MUS.vol*100);
+$('chkMus').addEventListener('change',e=>{ sfxInit(); musicSetOn(e.target.checked); musicSave(); });
+$('rngMus').addEventListener('input',e=>{ sfxInit(); musicSetVolume(Number(e.target.value)/100); musicKick(); musicSave(); });
+$('dlgBattle').addEventListener('close',()=>{ if(G&&!G.over&&MUS.scene==='combate') musicPlay('plan'); });
 $('chkAnim').addEventListener('change',e=>{ FXS.on=e.target.checked; document.body.classList.toggle('noanim',!e.target.checked); });
 if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches){ FXS.on=false; document.body.classList.add('noanim'); $('chkAnim').checked=false; }
 initTerrInput();

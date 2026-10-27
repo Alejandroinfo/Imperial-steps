@@ -21,8 +21,8 @@ function fightZone(g,z,facs,att,L){
     lst(z,f).forEach(u=>{
       const b=UT[u.t], mm=M.u[u.t]||{str:0,def:0,hp:0,atk:0,init:null};
       const T=z.terrain;
-      let hpMax=b.hp+mm.hp+(b.civ?M.civHp:0)+(u.cabhp?1:0)+((M.citadel&&def&&z.b.some(x=>x.t==='fort'&&x.l>=5))?1:0);
-      let str=b.civ?1:u.str+mm.str, atk=b.atk+mm.atk, d=b.def+mm.def, init=(mm.init!==null&&mm.init!==undefined)?mm.init:b.init;
+      let hpMax=Math.max(1,b.hp+mm.hp+(b.civ?M.civHp:0)+trInt(u,'sal'))+(u.cabhp?1:0)+((M.bastion&&def)?1:0);
+      let str=b.civ?Math.max(0,1+trInt(u,'fue')):Math.max(1,u.str+mm.str+trInt(u,'fue')), atk=b.atk+mm.atk, d=b.def+mm.def, init=(mm.init!==null&&mm.init!==undefined)?mm.init:b.init;
       const wounded=u.w>0;
       if(wounded) str=b.civ?0:Math.floor(str*M.moral);
       if(u.hg>0&&!b.civ) str=Math.max(1,Math.floor(str*HUNGRY_FIGHT));   // sin suministros se pelea mal
@@ -36,13 +36,14 @@ function fightZone(g,z,facs,att,L){
       if(u.t==='ber'&&!def&&M.berFury) str+=1;
       if(u.t==='sol'&&def&&M.lanceros) atk+=1;
       if(u.t==='cab'&&!def&&M.cabCharge&&!z.conflict) atk+=1;
-      if(def&&M.contra&&!z.conflict&&!b.civ) str+=1;
+      if(!def&&M.puerta&&!b.civ) str+=1;   // La Puerta de los Estandartes
       if(M.estandarte&&z.capital&&z.owner===f&&!b.civ) str+=1;
       if(M.vetwar&&(u.cb||0)>=3&&!b.civ) d+=1;
       if(u.t==='esc'&&def&&M.escTortuga) d+=M.escTortuga;
       if(u.t==='esc'&&u.mit) d+=1;
       if(b.siege&&u.brea) str+=1;
       if(u.t==='lan'){ const Lv=M.siege.lan; if(Lv>=2) str+=1; if(Lv>=3) atk+=1; }
+      if(def&&M.bastion) d+=4;   // El Bastión Eterno
       if(def&&isPl(z.owner)){
         let fd=fortDefOf(z);
         if(fd>0){ let anti=0; facs.forEach(e=>{ if(isEnemy(g,f,e)&&ramLvl[e]) anti=Math.max(anti,ramLvl[e]); }); fd=Math.max(0,fd-anti); }
@@ -113,16 +114,23 @@ function fightZone(g,z,facs,att,L){
 }
 /** @param {Partida} g */
 function tributeWave(g,arrivals,L){
-  g.tributes=g.tributes.filter(t=>{
-    if(t.due>g.step) return true;
-    const tz=g.zones[t.zone]; if(tz.owner!==TRIBE) return false;
-    const unpaid=t.targets.filter(f=>!t.paid[f]&&!g.F[f].out);
-    if(!unpaid.length){ L('La tribu de '+zname(tz)+' recibe su tributo y se calma.'); return false; }
-    const cand=tz.adj.map(a=>g.zones[a]).filter(a=>unpaid.includes(a.owner)).sort((a,b)=>(a.units[a.owner]||[]).length-(b.units[b.owner]||[]).length);
-    if(cand.length){
-      const tgt=cand[0], fighters=(tz.units[TRIBE]||[]).filter(u=>u.t==='sol'||u.t==='ber');   // la tribu puede haberse quedado sin gente
-      if(fighters.length){ fighters.forEach(u=>{ tz.units[TRIBE].splice(tz.units[TRIBE].indexOf(u),1); u.mv=1; }); arrivals.push({f:TRIBE,to:tgt.id,units:fighters,st:'ataque'}); L('La tribu de '+zname(tz)+' invade '+zname(tgt)+' por no recibir su tributo.'); }
-    }
-    return false;
+  g.tributes=g.tributes.filter(t=>t.due>=g.step);   // los pedidos vencidos caducan: rechazarlos no tiene castigo
+  g.wars=(g.wars||[]).filter(w=>{
+    const tz=g.zones[w.tribe]; if(tz.owner!==TRIBE){ L('La guerra con la tribu de '+zname(tz)+' terminó.'); return false; }
+    if(g.F[w.f].out) return false;
+    const cand=tz.adj.map(a=>g.zones[a]).filter(a=>a.owner===w.f).sort((a,b)=>(a.units[w.f]||[]).length-(b.units[w.f]||[]).length);
+    const us=(tz.units[TRIBE]||[]).filter(u=>!u.mv);
+    if(cand.length&&us.length){ us.forEach(u=>{ tz.units[TRIBE].splice(tz.units[TRIBE].indexOf(u),1); u.mv=1; }); arrivals.push({f:TRIBE,to:cand[0].id,units:us,st:'ataque'}); L('La tribu de '+zname(tz)+' ataca '+zname(cand[0])+' con todos los suyos.'); }
+    w.left--; if(w.left<=0){ L('La guerra con la tribu de '+zname(tz)+' terminó.'); return false; } return true;
   });
+}
+// Atacar a una tribu es entrar en guerra con ella: sus civiles se vuelven guerreros (berserkers) y durante unos pasos
+// atacan con todos los suyos a tus zonas más cercanas. La relación con esa tribu vuelve a 0.
+/** @param {Partida} g */
+function declareTribeWar(g,tz,f,L){
+  g.wars=g.wars||[]; const w=g.wars.find(x=>x.tribe===tz.id&&x.f===f); if(w){ w.left=TRIBE_WAR_STEPS; return; }
+  g.wars.push({tribe:tz.id,f,left:TRIBE_WAR_STEPS}); tz.rel=tz.rel||{}; tz.rel[f]=0;
+  (tz.units[TRIBE]||[]).forEach(u=>{ if(u.t!=='ber'){ u.t='ber'; u.hp=mhp(g,TRIBE,'ber',tz); u.str=2; u.w=0; } });
+  g.tributes=g.tributes.filter(t=>!(t.zone===tz.id&&t.targets.length===1&&t.targets[0]===f));
+  L('¡'+PLN[f].name+' ataca a la tribu de '+zname(tz)+'! Entran en guerra: todos los suyos se vuelven guerreros y atacarán durante '+TRIBE_WAR_STEPS+' pasos.');
 }

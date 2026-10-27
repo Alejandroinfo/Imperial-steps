@@ -15,8 +15,11 @@ function addFrontiers(v,N){
   let k=0;
   for(let a=0;a<N;a++) for(let b=a+1;b<N;b++){
     if(!v.e.some(([x,y])=>(n[x][0]===a&&n[y][0]===b)||(n[x][0]===b&&n[y][0]===a))) continue;   // solo vecinos directos
-    let best=9,pair=null; sec(a).forEach(([za,ia])=>sec(b).forEach(([zb,ib])=>{ const d=Math.hypot(za[4]-zb[4],za[5]-zb[5]); if(d<best){ best=d; pair=[ia,ib]; } }));
-    if(!pair) continue;
+    const excl=new Set();
+    for(let rep=0;rep<(N===2?2:1);rep++){   // los mapas de 2 jugadores llevan una segunda zona peligrosa
+    let best=9,pair=null; sec(a).forEach(([za,ia])=>sec(b).forEach(([zb,ib])=>{ if(excl.has(ia)||excl.has(ib)) return; const d=Math.hypot(za[4]-zb[4],za[5]-zb[5]); if(d<best){ best=d; pair=[ia,ib]; } }));
+    if(!pair) break;
+    excl.add(pair[0]); excl.add(pair[1]);
     const A=n[pair[0]], B=n[pair[1]]; const mx=(A[4]+B[4])/2, my=(A[5]+B[5])/2;
     // candidatas: tribus de los dos lados y la zona libre más cercana de cada imperio
     const cands=s=>sec(s).filter(([z])=>z[2]===1||z[2]===2).map(([z,i])=>i);
@@ -41,6 +44,7 @@ function addFrontiers(v,N){
     // el camino directo entre las dos tribus ahora pasa por la frontera (tribu → frontera → tribu)
     const di=e.findIndex(([x,y])=>(x===pair[0]&&y===pair[1])||(x===pair[1]&&y===pair[0]));
     if(di>=0){ e.splice(di,1); [pair[0],pair[1]].forEach(t=>{ if(!e.some(([x,y])=>(x===t&&y===id)||(x===id&&y===t))) e.push([t,id]); }); }
+    }
   }
   return {n,e};
 }
@@ -58,7 +62,7 @@ function newGame(mapIdx,N,seed,thrMode){
   const zones=v.n.map((n,i)=>({id:i,sector:n[0],k:n[1],role:['capital','tribu','vacia','frontera'][n[2]],terrain:n[3],x:n[4],y:n[5],adj:[],
     owner:null,size:3,food:0,prod:0,prog:0,grow:0,conflict:false,capital:false,units:{},att:{},b:[],proj:[],bplan:null,res:null,tspec:null,tmult:1,ev:{}}));
   v.e.forEach(([a,b])=>{ zones[a].adj.push(b); zones[b].adj.push(a); });
-  const g={nid:1,mapIdx,N,seed,rng,zones,map:v,hist:[],step:1,over:false,winner:[],thr:thrMode||'normal',F:[],M:[],log:[],evq:[],tributes:[],logiMult:1,evNow:null,tele:{ready:[],orders:[]}};
+  const g={auction:null,wars:[],nid:1,mapIdx,N,seed,rng,zones,map:v,hist:[],step:1,over:false,winner:[],thr:thrMode||'normal',F:[],M:[],log:[],evq:[],tributes:[],logiMult:1,evNow:null,tele:{ready:[],orders:[]}};
   const START=['Almacenes','Caminos','Hospitales','Cuarteles','Fortificaciones','Bibliotecas','Molinos','Talleres','Mercados'];
   for(let f=0;f<=TRIBE;f++){ const tc={}; if(f<N) START.forEach(n=>{ tc[n]=1; }); g.F.push({gold:f<N?10:0,tech:f<N?10:0,techs:tc,out:false,ghost:false,ally:null,req:null,lastAvoid:-99,notes:[],rq:[],rcap:0,stance:{},enc:null}); }
   recomputeMods(g);

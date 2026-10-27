@@ -121,7 +121,7 @@ Cada zona tiene un terreno. Algunos efectos dependen de si la unidad es **atacan
 | 11 | Frontera ancha | Dos pasos paralelos entre vecinos | 3 |
 | 12 | Rueda | Todo pasa por un centro compartido | 7 |
 
-- ✅ 🆕 **Fronteras (26/10/2026, decidido por Alejandro: mapas más conectados y que las tribus no sean el colchón entre imperios):** entre cada par de imperios vecinos se agrega una **zona de frontera** («tierra de nadie»). El camino que unía las dos tribus ahora pasa por ella, y además se une con la zona libre más cercana de cada imperio, así que los vecinos se tocan directamente. 💡 Se ubica con un criterio geométrico para que sus caminos no pasen por encima de otras zonas; en 25 de los 36 mapas no hay ningún cruce (los mapas originales tenían 30 de 36). Ver la regla en la sección 11. 🆕 Ahora se llaman **villas francas** (ver 13.3).
+- ✅ 🆕 **Fronteras (26/10/2026, decidido por Alejandro: mapas más conectados y que las tribus no sean el colchón entre imperios):** entre cada par de imperios vecinos se agrega una **zona de frontera** («tierra de nadie»). El camino que unía las dos tribus ahora pasa por ella, y además se une con la zona libre más cercana de cada imperio, así que los vecinos se tocan directamente. 💡 Se ubica con un criterio geométrico para que sus caminos no pasen por encima de otras zonas; en 25 de los 36 mapas no hay ningún cruce (los mapas originales tenían 30 de 36). Ver la regla en la sección 11. 🆕 Ahora se llaman **zonas peligrosas** (ver 13.3).
 - 💡 Para la primera partida de mesa, probar un mapa de ritmo medio (por ejemplo 1, 4 o 10) con 3 jugadores, y comparar después con uno rápido (8) y uno lento (7).
 - ❓ Especialización y tamaño de población de cada tribu en cada mapa.
 
@@ -173,8 +173,8 @@ Cada zona tiene un terreno. Algunos efectos dependen de si la unidad es **atacan
 - 💡 **Probabilidades** por rasgo: muy malo 8 %, malo 32 %, bueno 43 %, muy bueno 17 % (promedio de unos +7 %). **Efecto**: ±25 % por nivel (±50 % en los extremos). Estimaciones mías; hay que jugarlas y simularlas.
 - 💡 Los rasgos **no cambian** y viajan con la persona al cambiar de oficio, ser capturada o licenciada. Las tribus también tienen gente con rasgos, y se conservan al anexarlas o conquistarlas. Los bots eligen a los de mejor rasgo para cada oficio.
 - 💡 Apetito: las fracciones se suman por zona y se redondean hacia arriba.
-- ❓ **Fase C (sin hacer):** ❤ Salud (vida) y ⚔ Fuerza (dados) para el combate; son valores enteros (vida 3, fuerza 2) y hay que decidir y simular cuánto valen (💡 ±1 y ±2).
-- ❓ Mostrar los rasgos también en el mapa y en el resumen de la zona, no solo en Población.
+- ✅ **Fase C (27/10/2026, decidido por Alejandro: se mantienen como enteros):** ❤ **Salud** (+1 / +2 o −1 / −2 de vida) y ⚔ **Fuerza** (+1 / +2 o −1 / −2 dados) para el combate. 💡 La vida nunca baja de 1 y un militar nunca pelea con menos de 1 dado. Los rasgos son ahora 7 (🌾 ⚒ 🪙 🔬 🍽 ❤ ⚔): con 2 por persona, unos 3 de cada 10 tienen algo que importa para un oficio concreto. Falta simular el efecto en batallas.
+- ✅ Los rasgos también se ven en el mapa (aro dorado o plateado alrededor de la figura) y en el resumen de la zona (🥇 muy buenos · 🥈 buenos por oficio), además de Población.
 
 ## 6. Recursos
 
@@ -411,7 +411,7 @@ Detalles:
   - Ambos atacan → pelean sin ventaja.
 - ✅ La zona queda **en tensión**. Si hay conflicto en cualquier lugar del mapa entre esos dos jugadores, **todas las zonas en tensión** que tengan entre ellos pasan a conflicto. Los beneficios de la zona los sigue teniendo quien la controlaba.
 - ✅ **Zona en conflicto:** si alguien ataca y al terminar la ronda de combate quedan tropas de ambos sin retirarse, sigue en conflicto el siguiente paso.
-- ✅ 🆕 **Dilema del prisionero en la frontera (26/10/2026, decidido por Alejandro; 🆕 27/10/2026 pasa a las villas francas y cuentan solo las tropas, ver 13.3):** la frontera **nunca tiene dueño**; cualquiera puede entrar con civiles o tropas. Quien tiene gente ahí no produce y come de su zona más cercana, pero gana oro: 💡 **+3 por paso a cada uno** mientras todos los presentes estén en paz, o **+4** si está solo. Si alguien ataca, ese paso nadie gana, y el atacante tiene sorpresa si el otro estaba en Paz. Cooperar conviene a los dos; traicionar conviene a uno.
+- ✅ 🆕 **Dilema del prisionero en la frontera (26/10/2026, decidido por Alejandro; 🆕 27/10/2026 pasa a las zonas peligrosas y cuentan solo las tropas, ver 13.3):** la frontera **nunca tiene dueño**; cualquiera puede entrar con civiles o tropas. Quien tiene gente ahí no produce y come de su zona más cercana, pero gana oro: 💡 **+3 por paso a cada uno** mientras todos los presentes estén en paz, o **+4** si está solo. Si alguien ataca, ese paso nadie gana, y el atacante tiene sorpresa si el otro estaba en Paz. Cooperar conviene a los dos; traicionar conviene a uno.
 - ✅ 🆕 **Postura entre jugadores (26/10/2026, decidido por Alejandro):** cada jugador tiene una postura **hacia cada rival**: **Paz** (por defecto) o **Alerta**. Con Alerta, sus tropas atacan a las de ese jugador **en cualquier zona donde coincidan**, con sorpresa si el otro está en Paz. Se elige en Imperio → Relaciones o en la pestaña Militar. Reemplaza la «postura de zona».
 
 ---
@@ -445,7 +445,7 @@ Detalles:
 - 🆕 **Cambios del 27/10/2026 (decididos por Alejandro), que reemplazan parte de lo anterior; detalle en 13.3:**
   - ✅ **Ya no se puede anexar una tribu desde el inicio.** Primero hay que **ganarse su confianza** cumpliendo sus pedidos; recién con la relación al máximo se puede anexar pagando recursos.
   - ✅ **El tributo deja de ser una amenaza:** pasa a ser un pedido más, sin invasión si nadie paga.
-  - ✅ **Si atacas a una tribu, entras en guerra con ella:** ataca con **todas sus unidades** a tus zonas más cercanas hasta que la conquistes.
+  - ✅ **Si atacas a una tribu, entras en guerra con ella (27/10/2026, detallado por Alejandro):** **sus civiles se vuelven guerreros** (berserkers) y atacan con todos los suyos a tus zonas más cercanas. Dura **5 rondas o hasta que la conquistes**. Tu relación con ella vuelve a 0. ✅ Hecho en la v0.17.
   - ✅ **Los militares de las tribus no consumen comida.**
 
 ---
@@ -508,35 +508,41 @@ Detalles:
   - **Apuestas** (pagas y puede salir mal): mapa del tesoro, alquimista.
 - ✅ Los bots también reciben encuentros y los deciden con una regla simple.
 
-### 13.3 Villas francas, subastas, tribus amigas e historias (🆕 27/10/2026, decididas por Alejandro)
+### 13.3 Zonas peligrosas, subastas, tribus amigas e historias (🆕 27/10/2026, decididas por Alejandro)
 
-**Villas francas (antes «zonas de frontera»)**
+**Zonas peligrosas (antes «zonas de frontera»)**
 - ✅ Nadie puede adquirirlas. Los locales se gobiernan solos y **pagan a quien los protege**: tener **tropas** ahí da un flujo de recursos.
-- 💡 Nombre «villa franca» (franca = libre, sin señor). Solo cuentan los **militares**, ya no cualquier persona. Se mantiene el dilema del prisionero: +4 de oro por paso a quien protege solo, +3 a cada uno si son varios en paz, y nada si hay pelea.
+- ✅ **Nombre «zona peligrosa»** (decidido por Alejandro el 27/10/2026; antes «frontera», y por un rato «villa franca»): se entiende mejor que es un lugar de riesgo que paga a quien lo aguanta. Solo cuentan los **militares**; los civiles no cobran nada. Se mantiene el dilema del prisionero. Bono base (la comida sigue costando oro): **+8** de oro por paso a quien protege solo, **+6** a cada uno si son varios en paz y nada si hay pelea. 💡 valores a afinar jugando.
+- ✅ 🆕 **El bono crece (decidido por Alejandro):** sube un **10 % por cada paso seguido** con tropas ahí, hasta **+100 %** (el doble, a los 10 pasos). Vale tanto si compartes la zona como si estás solo, y la racha es de cada jugador. **Si pierdes la presencia** (te sacan o se mueven tus tropas), **vuelves a 0**. Durante una pelea ese paso no se cobra, pero la racha se mantiene mientras sigas ahí. En el juego: `z.fh` guarda los pasos seguidos de cada jugador.
 - ✅ Están en los **puntos medios entre donde empiezan los jugadores**, con **un promedio de una por jugador**, buscando simetría sin que sea obligatoria.
-- 💡 Hoy salen 1 (2 jugadores), 3 (3 jugadores) y 4 (4 jugadores) en los 12 mapas: falta **una segunda en los mapas de 2 jugadores**.
+- ✅ 🆕 **Segunda villa en los mapas de 2 jugadores (v0.17):** ahora salen 2 (2 jugadores), 3 (3) y 4 (4) en los 12 mapas. La segunda se pone entre el segundo par de zonas más cercano de los dos imperios.
 
 **Subasta a sobre cerrado**
 - ✅ **Cada 20 pasos** hay una subasta abierta a **todos** los jugadores. Se sabe **en qué moneda** hay que pagar, pero no exactamente qué se ofrece.
 - ✅ Se ofrecen **tantos objetos como jugadores**, y **cada objeto se subasta por separado**: ofreces lo que quieras por cada uno, en secreto.
 - ✅ Gana la oferta más alta y **a los demás se les devuelve lo que ofrecieron**. **Si hay empate arriba, todos los empatados se lo llevan.**
-- 💡 Se anuncia **2 pasos antes**, con la moneda, para que todos puedan juntar. La moneda es oro o ciencia (globales); si fuera comida o producción, se paga desde la capital.
-- ❓ Qué se ofrece (tropas, tecnologías, personas, equipo, objetos únicos) y cuánta pista se da antes.
+- ✅ 🆕 Se anuncia **2 pasos antes** (en el juego, al empezar el paso 18 para la del paso 20), con la **moneda**: oro, ciencia, o **comida o producción de todo el imperio**. 🆕 **Pago con comida o producción (decidido por Alejandro):** se descuenta de las zonas que tienen ese recurso en su almacén, **en igual porcentaje de cada una**. Se resuelve al final del paso de la subasta; las ofertas se pueden cambiar hasta entonces. Si ofreces más de lo que tienes, se conservan tus ofertas más altas que puedas pagar. Quien no gana no paga nada.
+- ✅ 🆕 **Qué se ofrece (decidido por Alejandro, 27/10/2026):** 5 categorías, y de cada objeto se conoce su **categoría y su nivel (bronce, plata u oro)**, pero **no sus detalles** (cuántos soldados, qué tecnología…). Nivel al azar: 50 % bronce, 35 % plata, 15 % oro.
+  - **Pelotón:** tropas con su equipo (bronce 2 soldados; plata 2 soldados y 2 arqueros; oro además 2 escuderos y 1 caballero).
+  - **Poblador extraordinario:** una persona con 2 rasgos de oficio buenos (bronce +1 y +1; plata +2 y +1; oro +2 y +2).
+  - **Saber:** una tecnología sin pagar su costo, de nivel hasta 2, 3 o 4 según el nivel del objeto.
+  - **Cargamento:** 30, 55 o 90 de **comida o producción**. 🆕 La comida entra **directo al crecimiento de tu capital**, no solo al almacén; la producción va al almacén y el resto, directo a una obra.
+  - **Recurso temporal:** el beneficio de un recurso estratégico global (hierbas o madera, hierro o sal, ruinas) durante **40 pasos** (decidido por Alejandro; yo había propuesto 15).
 
 **Encuentros de elegir entre dos**
-- ✅ Una categoría nueva dentro de los encuentros: llegan **dos ofertas** y eliges **una o ninguna**. Da costo de oportunidad sin castigar a nadie.
+- ✅ Una categoría nueva dentro de los encuentros (🆕 v0.17: uno de cada tres, con 6 parejas de partida: mercenarios o arqueros, escuela o sabio, granos o hierro, juglares o parteras, artesanos o mercaderes, herrero o armero; los montos crecen con la partida):
 
 **Pedidos de las tribus vecinas y relación**
 - ✅ Una **tribu neutral que toca tus zonas** te hace pedidos. **Cumplirlos mejora la relación**, hasta que puedes **anexarla pagando recursos**.
 - ✅ **Frecuencia fija y conocida, no al azar**, con pedidos sacados de una lista, igual para todos los vecinos.
-- 💡 Un pedido **cada 5 pasos**, en el mismo paso para todos, según el oficio de la tribu (la agrícola pide comida, la de producción pide herramientas…).
-- 💡 Relación de **0 a 3** (desconfianza, trato, amistad, alianza); en el nivel 3 se puede anexar. Rechazar un pedido no tiene castigo, solo no avanzas. Si dos jugadores la anexan en el mismo paso, se aplica el empate de siempre (nadie la anexa y el precio se duplica).
+- ✅ 🆕 Un pedido **cada 5 pasos**, en el mismo paso para todos los vecinos, según el oficio de la tribu (💡 la lista: agrícola pide comida 6, comida 10 y oro 6; de producción, producción 6, 10 y oro 6; comercial, oro 6, 10 y comida 8; científica, ciencia 6, 10 y oro 6; las cantidades crecen con la partida). Rechazar no tiene castigo: el pedido caduca.
+- ✅ 🆕 Relación de **0 a 3** (desconfianza, trato, amistad, alianza) por jugador y por tribu: cada pedido cumplido suma 1; en el nivel 3 se puede anexar (💡 al mismo precio de siempre: 16 + 3 por civil + 5 por guerrero). Atacarla la deja en 0.
 - ✅ Conquistarla sigue siendo posible, pero **atacarla es entrar en guerra** con ella (ver sección 12).
 
 **Historias de 4 capítulos**
-- ✅ Encuentros encadenados: lo que eliges en cada capítulo cambia el siguiente, y la historia vuelve a lo largo de la partida.
-- 💡 Una historia por jugador y por partida, con un capítulo cada 8 pasos más o menos y un final distinto según el camino. Para empezar, 3 historias para elegir al azar.
-- ❓ Los argumentos de las historias y sus recompensas.
+- ✅ Encuentros encadenados: lo que eliges en cada capítulo cambia el siguiente, y la historia vuelve a lo largo de la partida. 🆕 **Hechas en la v0.20 (aprobadas por Alejandro el 27/10/2026):** tres historias, «La caravana perdida», «El maestro del valle» y «El heredero sin trono», con todos sus capítulos en `docs/historias.md`.
+- ✅ 🆕 Una historia por jugador y por partida (al azar entre las 3), con el primer capítulo hacia el paso 10 y los siguientes cada 8 pasos. Cada capítulo es un encuentro con 2 o 3 opciones y siempre un «dejarlo pasar» sin costo ni castigo; si una opción no te alcanza cuenta como dejarlo pasar. El capítulo siguiente depende de la marca de camino de la última opción, y el final (capítulo 4), de la marca que más tomaste (si empatan, la última). Ganancias nuevas de los capítulos: relación con la tribu vecina, poblador extraordinario, una tecnología gratis, un edificio ya construido y un recurso estratégico por 40 pasos.
+- ✅ 🆕 Argumentos y recompensas: ver `docs/historias.md`. ❓ Escribir más historias si estas gustan, y afinar jugando los costos y las recompensas.
 
 ---
 
@@ -691,12 +697,15 @@ Es la misma idea que los científicos automáticos (sección 14.0), aplicada a l
 - ✅ 🆕 **12 maravillas, una por rama, únicas en toda la partida (decidido por Alejandro).**
 - ✅ 🆕 **La vertebral de nivel 5 desbloquea la maravilla (decidido por Alejandro):** se paga como siempre (ciencia: 100), pero **por sí sola no da su efecto**: desbloquea la construcción de la maravilla de esa rama. **El efecto lo da la maravilla** mientras la controles; si te conquistan la zona, el efecto pasa al conquistador (ya decidido en 16.3).
 - ✅ 🆕 **Solo se puede investigar esa tecnología si su maravilla todavía no se ha construido** (por nadie).
-- ✅ 🆕 **Si pierdes la carrera (decidido por Alejandro):** si otro jugador termina la maravilla antes que tú, tu obra se cancela y pierdes la tecnología que la desbloqueaba, y **recuperas la mitad de la ciencia y la mitad de la producción** que habías puesto (por ejemplo, 50 de los 100 de ciencia). Si la tecnología aún estaba en la cola, se cancela y recuperas la mitad de la ciencia ya gastada.
-- 💡 🆕 La obra se **anuncia a todos al empezar**, para que la carrera se vea.
-- 💡 🆕 **Empate:** si dos jugadores terminan la misma maravilla en el mismo paso, **nadie la logra** y a cada uno le cuesta el doble lo que le falte (el mismo empate que las tribus).
-- 💡 🆕 Las maravillas **no se pueden demoler** (sí conquistar), para que nadie reabra la carrera por capricho.
+- ✅ 🆕 **Si pierdes la carrera (decidido por Alejandro; corregido el 27/10/2026):** si otro jugador termina la maravilla antes que tú, tu obra se cancela y **recuperas la mitad de la producción** que habías puesto (hasta donde quepa en tus almacenes). ~~Pierdes la tecnología y recuperas la mitad de la ciencia.~~ **La tecnología de nivel 5 no se pierde ni devuelve ciencia**, porque cuenta para la victoria tecnológica. Si la tecnología aún estaba en la cola, se cancela y recuperas la mitad de la ciencia ya gastada (todavía no la tenías, y ya no se puede investigar).
+- ✅ 🆕 La obra se **anuncia a todos al empezar** (en el juego: aviso «¡Carrera!» y la lista de las 12 en la pestaña Imperio, con el avance de quien la construye).
+- ✅ 🆕 **Empate (27/10/2026, decidido por Alejandro):** si dos jugadores llegan al 100 % de la misma maravilla en el mismo paso, **la logra quien podía destinar más producción a terminarla en ese paso** (sin contar producción traída de zonas ajenas más allá de lo que ya está en sus órdenes). Quien pierde sufre lo de siempre en la carrera (pierde la obra y recupera la mitad de la producción, pero conserva la tecnología). 💡 Si empatan exactamente, nadie la logra: se deshace el último paso de obra y a cada uno le falta el doble.
+- ✅ 🆕 Las maravillas **no se pueden demoler** (sí conquistar), para que nadie reabra la carrera por capricho.
 - 💡 🆕 Defensa solo tiene una tecnología de nivel 5 (la vertebral): quien construye esa maravilla cierra la rama a los demás. Es un detalle estratégico, no un error.
 - 💡 🆕 *Canteras reales* (maravillas a 400) y *Guardianes de la maravilla* (+2 de defensa), de Urbanismo, siguen valiendo y pesan más ahora.
+
+- ✅ 🆕 **Nadie pierde una tecnología ya investigada (decidido por Alejandro):** quien la tenía, con la obra empezada o sin empezar, la conserva (sin efecto, porque el efecto lo da la maravilla). Consecuencia: la primera maravilla de una rama cierra esa tecnología a quienes aún no la tienen.
+- 💡 🆕 **Detalles de la v0.16:** (1) *Red de caminos II*, *Hospital imperial* y *Ciudadela* daban su efecto como **nivel 5 del edificio** (Camino, Hospital, Fortificación); ahora esos edificios llegan solo hasta el **nivel 4** y el nivel 5 viene con su maravilla. (2) Lo recuperado de la producción se guarda en tus almacenes **hasta donde quepa** (10 por tamaño de zona, más Almacén); el resto se pierde. (3) La Calzada sin Fin vale para los envíos que pasan por la zona de la maravilla. (4) Los bots empiezan una maravilla si tienen la tecnología, un espacio libre y 60 de producción. (5) Los efectos de las tecnologías *Granjas modelo*, *Maquinaria*, *Gran compañía*, *Corte imperial*, *Arsenal*, *Veteranos*, *Ciudadela*, *Contraataque* y *Enciclopedia* pasaron a sus maravillas.
 
 - ✅ 🆕 **Nombres y efectos de las 12 (27/10/2026, decidido por Alejandro):**
 
@@ -717,9 +726,9 @@ Es la misma idea que los científicos automáticos (sección 14.0), aplicada a l
 
 - 💡 🆕 Se revisó que ningún nombre choque con una tecnología del catálogo.
 - 💡 🆕 Alternativas que se descartaron: +1 espacio de edificio por zona para Urbanismo (empujaba demasiado la victoria de Desarrollo) y botín completo para Guerra.
-- ❓ 🆕 **Excel:** cambiar el texto de las vertebrales de nivel 5 de las 12 ramas a «Desbloquea [maravilla]», y el efecto de *Enciclopedia*, *Maravillas* y *Contraataque* por los nuevos.
-- ❓ 🆕 **Victoria tecnológica:** ¿una maravilla controlada cuenta como «nivel 5» para la condición de Tecnología? 💡 Yo diría que sí, porque da el efecto, pero un mismo logro alimentaría dos condiciones.
-- ❓ 🆕 **Ritmo:** con la capital a +2, ¿cuántos pasos tarda una maravilla típica y cuántos las 3 de la condición de victoria? Simular antes de dar los números por buenos.
+- ✅ 🆕 **Excel:** los textos de las 12 vertebrales de nivel 5 ya dicen «Desbloquea [maravilla]» (`Tecnologias_v0.2.xlsx`, 27/10/2026).
+- ✅ 🆕 **Victoria tecnológica (decidido por Alejandro):** una maravilla controlada **no** cuenta como «nivel 5» para esa condición; solo cuentan las tecnologías que tienes. Cuenta, en cambio, para la condición de las 3 maravillas.
+- 🆕 **Ritmo (medido el 27/10/2026, simulación de una zona productiva):** una maravilla de 500 tarda **77 pasos con 4 ingenieros, 43 con 6, 32 con 8 y 23–25 con 12** (zona de tamaño 12 con Producción nivel 3). Con los bots nadie llega a la vertebral de nivel 5 en 150 pasos (46 de 48 partidas terminan antes por otras victorias), así que las maravillas son cosa de partidas muy largas o de humanos concentrados. ❓ Revisar si el costo de 500 o la condición de 3 maravillas son demasiado lejanos.
 
 ---
 
@@ -883,13 +892,13 @@ Es la misma idea que los científicos automáticos (sección 14.0), aplicada a l
 36. ❓ 🆕 **Fronteras:** confirmar los bonos (+3 / +4) jugando, y revisar los 11 mapas donde un camino todavía pasa por encima de otra zona (sobre todo Espiral y Dientes de sierra).
 37. ✅ 🆕 **Maravillas:** no se podían construir (la orden no se atendía); corregido al agregar la revisión de tipos.
 35. ❓ 🆕 **Multijugador para el primer playtest** por videollamada, cada uno en su computadora. ✅ 🆕 **Con Firebase Realtime Database (27/10/2026, decidido por Alejandro: más estable que PeerJS y nadie tiene que dejar su compu prendida como servidor).** Salas con código de 4 letras; el anfitrión resuelve cada paso y escribe el estado completo; cualquiera puede recargar y volver a su asiento. Hecho sobre la v0.13 (ya en `main`) y probado con dos navegadores y un Firebase falso (ver `docs/multijugador.md`). ❓ Falta la primera partida con el Firebase real. La versión anterior con servidor propio (rama `red/multijugador-salas`, sobre la v0.4) queda descartada.
-38. ❓ 🆕 **Maravillas únicas (15.3):** ✅ nombres y efectos ya decididos; falta pasarlos al Excel, decidir si cuentan como «nivel 5» para la victoria tecnológica, y confirmar las propuestas 💡 (empate, no demoler, anuncio de la obra).
+38. ✅ 🆕 **Maravillas únicas (15.3):** programadas en la v0.16. Decididos: empate (más producción destinable), la maravilla no cuenta como nivel 5, y nadie pierde la tecnología ya investigada. Pendiente ❓ el ritmo (ver 15.3) y confirmar jugando los 💡.
 39. ✅ 🆕 **Ingenieros automáticos (15.2):** ya están en el juego (v0.14) y los pobladores también construyen solos. Quedan ❓ confirmar jugando el costo real de construir, las cifras 💡 de *Gremios de ingenieros* y *Grandes obras*, (los textos nuevos de esas cinco tecnologías ya están en `Tecnologias_v0.2.xlsx`).
 40. ✅ 🆕 **Botín (sección 15):** toda la comida y la producción guardadas, más los civiles capturados, al ganar el control por conquista o anexión. Ya funciona así en el juego.
-41. ❓ 🆕 **Villas francas (13.3):** segunda villa en los mapas de 2 jugadores, y confirmar que solo cuenten las tropas.
-42. ❓ 🆕 **Subasta (13.3):** qué se ofrece, cuánta pista se da y con cuánta anticipación se anuncia.
-43. ❓ 🆕 **Tribus amigas (13.3 y 12):** lista de pedidos por oficio, niveles de relación y precio de anexión con la relación al máximo.
-44. ❓ 🆕 **Historias (13.3):** argumentos, capítulos y recompensas.
+41. ✅ 🆕 **Zonas peligrosas (13.3):** hechas (solo tropas, segunda en mapas de 2, bono +8/+6 que crece 10 % por paso hasta +100 % mientras mantengas la presencia). ❓ Afinar el bono jugando: con la racha completa se duplica, y mover comida cuesta oro y una tropa come 2.
+42. ✅ 🆕 **Subasta (13.3):** hecha en la v0.18 (catálogo de 5, niveles bronce/plata/oro, pago con 4 monedas, anuncio 2 pasos antes). ❓ Afinar jugando los montos de cada nivel y si 20 pasos entre subastas es buen ritmo.
+43. ✅ 🆕 **Tribus amigas (13.3 y 12):** hechas en la v0.17 (pedidos por oficio, relación 0 a 3, precio de anexión igual, guerra de 5 rondas). ❓ Confirmar jugando que cumplir 3 pedidos (unos 15 pasos) no resulte demasiado lento.
+44. ✅ 🆕 **Historias (13.3):** hechas en la v0.20 (3 historias × 4 capítulos, finales según el camino). ❓ Probarlas jugando: ¿se sienten con peso las decisiones? ¿Hace falta una cuarta historia?
 45. ❓ 🆕 **Rasgos de las personas (5.4):** ✅ fases A y B hechas. Falta la fase C (Salud y Fuerza en combate), confirmar jugando las probabilidades y el ±25 %, y mostrar los rasgos en el mapa y el resumen de la zona.
 
 ---
@@ -980,9 +989,10 @@ Es la misma idea que los científicos automáticos (sección 14.0), aplicada a l
 
 ### 23.5 Reglas decididas que el prototipo todavía no tiene (🆕 27/10/2026)
 
-- **Maravillas únicas** ligadas a las ramas (15.3).
+- ~~**Maravillas únicas** ligadas a las ramas (15.3).~~ ✅ Hechas en la v0.16.
 - ~~**Botín** al conquistar (sección 15).~~ Ya funciona: las reservas y los civiles capturados pasan al nuevo dueño.
-- **Villas francas** (nombre nuevo, solo tropas, segunda villa en mapas de 2), **subastas**, **encuentros de elegir entre dos**, **pedidos de las tribus y anexión por relación**, **guerra con las tribus** e **historias** (13.3 y 12).
+- ~~**Subastas**~~ ✅ hechas en la v0.18.
+- ~~**Zonas peligrosas**, **encuentros de elegir entre dos**, **pedidos de las tribus y anexión por relación** y **guerra con las tribus**~~ ✅ hechos en la v0.17. Todo lo de 13.3 ya está en el juego (v0.20).
 - ~~**Ingenieros automáticos** y fusión de constructores en ingenieros (15.2).~~ ✅ **Hecho en v0.14 (27/10/2026):** 5 oficios, obras automáticas, la zona Industrial se fusiona con la de Producción y los números nuevos están en `js/config/efectos_tecnologias.js`.
 - Al pasarlo al código hay que mover también los números a `js/config/`. (Las tecnologías de 15.2 ya se retocaron.)
 
@@ -997,3 +1007,36 @@ Es la misma idea que los científicos automáticos (sección 14.0), aplicada a l
 - **La comida que se mueve de otra zona cuesta oro** (8). Con 48 partidas de bots las muertes por hambre no empeoran (425 contra 457 antes), pero conviene confirmarlo jugando.
 - **Pruebas:** 4 casos nuevos (pausa, acumulación con pausa, cobro de oro, hambre sin oro) y 3 del reparto mitad y mitad.
 - **Rasgos de las personas (fases A y B, 5.4):** identificador y 2 rasgos por civil, producción, ciencia, oro y comida por persona, elegir a quién especializar (tocar o arrastrar), fichas con íconos y bordes en Población. 11 casos de prueba nuevos.
+
+### 23.7 Sonido y vida en las zonas (🆕 27/10/2026)
+
+- **Música** (decidido por Alejandro: opción B): 6 pistas de Suno (plan gratis, uso personal no comercial) recomprimidas, normalizadas y recortadas en `audio/`, en el repositorio y con crédito a Suno; ver `docs/audio.md` y su advertencia de licencia. Menú, 2 piezas de planificación que se turnan con cruce de 2 s, combate en el visor de batalla, y remates al resolver el paso y al terminar la partida. Volumen propio (30 % por defecto), se pausa si la pestaña no se ve, el juego funciona igual sin los archivos. Falta `derrota.mp3`.
+- **Vida en las zonas:** partículas del color de lo que produce la zona, chispas en las obras activas, ⏸ cuando están en pausa, aviso de hambre en la placa, y aros de rasgos en las figuras.
+- ✅ **Comida cara a propósito:** que mover comida de otra zona cueste oro empuja a producir comida en zonas cercanas o a abaratar la logística (Caminos, tecnologías).
+- **Salud y Fuerza** (fase C de los rasgos): 2 casos de prueba nuevos.
+
+### 23.8 Maravillas únicas (🆕 27/10/2026, v0.16)
+
+- 12 maravillas, una por rama, con nombre, efecto propio y un solo ejemplar en toda la partida. La vertebral de nivel 5 solo las desbloquea; el efecto va con la zona (si te la conquistan, pasa al conquistador).
+- Carrera: aviso a todos al empezar, lista de las 12 en Imperio con el avance, quien termina primero se la queda, los demás pierden la obra y recuperan la mitad de la producción, conservando la tecnología. Empate por producción destinable.
+- 14 casos de prueba nuevos (carrera, reembolsos, empate, efectos, topes de nivel 4).
+
+### 23.9 Zonas peligrosas, elegir entre dos y tribus (🆕 27/10/2026, v0.17)
+
+- **Zonas peligrosas** (antes villas francas): solo cuentan las tropas, bono +8 / +6 que crece un 10 % por paso hasta el doble mientras mantengas la presencia, y los mapas de 2 jugadores tienen 2. Los bots mandan soldados (ya no civiles).
+- **Elegir entre dos:** 6 parejas, uno de cada tres encuentros; los bots eligen una opción que puedan pagar.
+- **Tribus:** pedidos cada 5 pasos, relación 0 a 3, anexar solo con 3, y guerra (5 rondas) si las atacas. Los pedidos vencidos caducan sin castigo (ya no hay invasión por tributo).
+- **Pruebas:** 10 casos nuevos.
+
+### 23.10 Subasta (🆕 27/10/2026, v0.18)
+
+- Cada 20 pasos (paso 20, 40…), anunciada 2 pasos antes. Moneda al azar entre oro, ciencia, comida y producción; objetos de las 5 categorías con nivel visible. Panel en la pestaña Imperio, orden «Ofrecer», aviso al anunciarla y al ganar, y los bots ofertan.
+- En 36 partidas de bots hubo 144 subastas sin errores y las 5 categorías salieron con frecuencias parecidas.
+- 10 casos de prueba nuevos.
+
+### 23.11 Historias (🆕 27/10/2026, v0.20)
+
+- Tres historias de 4 capítulos con camino y final según lo que elijas; salen por el mismo sitio que los encuentros (con 2 o 3 opciones y «dejarlo pasar»), y en la pestaña Imperio se ve en qué capítulo vas.
+- Con bots: en 24 partidas de 70 pasos hubo 285 capítulos y 70 de 72 historias terminadas, sin errores.
+- 9 casos de prueba nuevos.
+

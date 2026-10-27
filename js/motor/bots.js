@@ -45,6 +45,9 @@ function botOrders(g,f){
     cands.sort((a,b)=>(up(a.n)-up(b.n))||(b.v-a.v)||(BOT_BR[style].indexOf(a.r)-BOT_BR[style].indexOf(b.r))||(a.l-b.l));
     if(cands.length){ const pick=cands[rng()<0.7?0:Math.floor(rng()*Math.min(3,cands.length))]; o.push({t:'research',f,name:pick.n}); }
   }
+  // subasta: ofrecen una parte de lo que tienen, más por los objetos de mejor nivel
+  { const a=g.auction; if(a&&!(a.bids[f]&&Object.keys(a.bids[f]).length)&&g.step>=a.step-1){ const funds=auctionFunds(g,f,a.cur); const w=a.items.map(it=>[0.08,0.16,0.3][it.tier]*(0.6+rng()*0.8)); const sw=w.reduce((x,y)=>x+y,0);
+      a.items.forEach((it,i)=>{ const amt=Math.floor(funds*0.6*w[i]/sw*(rng()<0.7?1:0)); if(amt>0) o.push({t:'bid',f,item:i,amount:amt}); }); } }
   // tributos pendientes
   g.tributes.forEach(t=>{ if(t.targets.includes(f)&&!t.paid[f]){ const z=zonesOf(g,f).find(a=>(t.res==='food'?a.food:t.res==='prod'?a.prod:t.res==='gold'?F.gold:F.tech)>=t.amount+2&&g.zones[t.zone].adj.includes(a.id)); if(z) o.push({t:'tribute',f,tribe:t.zone,from:z.id}); } });
   const mine=zonesOf(g,f);
@@ -69,6 +72,8 @@ function botOrders(g,f){
       for(const bt of goal){ if(techOwn(g,f,BT[bt].unlock)&&!z.b.some(b=>b.t===bt)&&!z.proj.some(p=>p.bt===bt)){ o.push({t:'build',f,zone:z.id,bt}); break; } }
     }
     z.b.forEach((b,i)=>{ if(b.t!=='mar'&&b.l<capLevel(g,f,b.t)&&z.prod>=15&&rng()<0.3) o.push({t:'upgrade',f,zone:z.id,bi:i}); if(!b.s&&rng()<0.3){ const op=specOptions(g,f,b.t); if(op.length) o.push({t:'bspec',f,zone:z.id,bi:i,spec:op[Math.floor(rng()*op.length)]}); } });
+    // maravillas: si tiene la tecnología, un espacio libre y producción de sobra, empieza una que siga libre
+    if(freeSlots>0&&z.prod>=60){ const w=Object.keys(WONDERS).find(k=>techOwn(g,f,WONDERS[k].tech)&&!wonderBuilt(g,k)&&!wonderRace(g,k).some(x=>x.f===f)); if(w) o.push({t:'wonder',f,zone:z.id,w}); }
     // militares
     const mil=us.filter(u=>!UT[u.t].civ);
     const eat=us.reduce((a,u)=>a+(UT[u.t].civ?1:2),0), net=(z.last?z.last.food:0)-eat;
@@ -83,17 +88,14 @@ function botOrders(g,f){
       o.push({t:'train',f,zone:z.id,u:opts[Math.floor(rng()*opts.length)],n:1});
     }
     // anexar tribus
-    z.adj.forEach(a=>{ const t=g.zones[a]; if(t.owner===TRIBE){ const price=annexPrice(g,f,t), res=TSPEC_RES[t.tspec]; const have=annexHave(g,f,t); if(have>=price+4&&rng()<0.6&&!o.some(x=>x.t==='annex'&&x.zone===t.id)) o.push({t:'annex',f,zone:t.id,from:z.id}); } });
+    z.adj.forEach(a=>{ const t=g.zones[a]; if(t.owner===TRIBE){ const price=annexPrice(g,f,t), res=TSPEC_RES[t.tspec]; const have=annexHave(g,f,t); if(((t.rel||{})[f]||0)>=TRIBE_REL_MAX&&have>=price+4&&rng()<0.6&&!o.some(x=>x.t==='annex'&&x.zone===t.id)) o.push({t:'annex',f,zone:t.id,from:z.id}); } });
     // expansión
     // a quién mandar a expandirse: un poblador si hay; si no, alguien de un oficio que sobre
     const mover=pob>=1?'pob':(['com','agr','ing'].find(t=>(cnt[t]||0)>=2)||null);
-    const frAdj=g.zones.find(t=>t.role==='frontera'&&t.adj.includes(z.id)&&t.owner===null&&!(t.units[f]||[]).length);
-    if(mover&&frAdj&&(!z.capital||civ.length>=4)&&rng()<0.6) o.push({t:'move',f,from:z.id,to:frAdj.id,u:{[mover]:1},stance:'paz'});
     if(mover&&civ.length>=4&&(pob>=3||!z.capital||civ.length>=5)&&rng()<(style==='eco'?0.5:0.4)){
-      const emp=z.adj.map(a=>g.zones[a]).filter(t=>t.owner===null&&(!presentF(t).length||(t.role==='frontera'&&!(t.units[f]||[]).length&&!t.conflict)));
-      const fr=emp.filter(t=>t.role==='frontera');
-      if(emp.length){ const t=fr.length&&rng()<0.7?fr[0]:emp[Math.floor(rng()*emp.length)]; o.push({t:'move',f,from:z.id,to:t.id,u:{[mover]:1},stance:'paz'}); }
-      else { // sin vecina libre: avanzar un paso hacia la frontera más cercana que aún no tenga gente suya
+      const emp=z.adj.map(a=>g.zones[a]).filter(t=>t.owner===null&&t.role!=='frontera'&&!presentF(t).length);   // las zonas peligrosas son para las tropas
+      if(emp.length){ const t=emp[Math.floor(rng()*emp.length)]; o.push({t:'move',f,from:z.id,to:t.id,u:{[mover]:1},stance:'paz'}); }
+      else if(false){ // sin vecina libre: avanzar un paso hacia la frontera más cercana que aún no tenga gente suya
         const hop=civPathNext(g,f,z.id,t=>t.role==='frontera'&&!(t.units[f]||[]).length&&t.owner!==null?false:(t.role==='frontera'&&!(t.units[f]||[]).length));
         if(hop!==null&&rng()<0.6) o.push({t:'move',f,from:z.id,to:hop,u:{[mover]:1},stance:'paz'}); }
     }
@@ -102,7 +104,7 @@ function botOrders(g,f){
     const need=style==='war'?3:5;
     const front=z.adj.map(a=>g.zones[a]).find(t=>t.role==='frontera'&&presentF(t).some(x=>x!==f&&isPl(x))&&!(t.units[f]||[]).some(u=>!UT[u.t].civ));
     const frEmpty=z.adj.map(a=>g.zones[a]).find(t=>t.role==='frontera'&&!(t.units[f]||[]).length&&(t.owner===null||t.owner===f));
-    if(style==='war'&&frEmpty&&army.length>=1&&rng()<0.5) o.push({t:'move',f,from:z.id,to:frEmpty.id,u:{[army[0].t]:1},stance:'paz'});
+    if(frEmpty&&army.length>=1&&rng()<0.5) o.push({t:'move',f,from:z.id,to:frEmpty.id,u:{[army[0].t]:1},stance:'paz'});
     if(style==='war'&&front&&army.length>=2&&rng()<0.4){
       /** @type {{[t:string]:number}} */
       const send={}; army.slice(0,Math.ceil(army.length/2)).forEach(u=>{ send[u.t]=(send[u.t]||0)+1; }); o.push({t:'move',f,from:z.id,to:front.id,u:send,stance:'paz'}); }

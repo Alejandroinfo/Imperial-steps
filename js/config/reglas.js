@@ -36,7 +36,7 @@ const UT = {
 // Rasgos de las personas: cada civil nace con 2 rasgos distintos, de nivel -2 (muy malo), -1 (malo), +1 (bueno) o +2 (muy bueno).
 // Lo más común es bueno o malo; los extremos son raros y en promedio hay más positivos que negativos.
 // Cada nivel cambia un TRAIT_STEP (25 %) el rendimiento en lo que afecta el rasgo.
-const TRAIT_KINDS = ['agr','ing','com','cie','apt'];
+const TRAIT_KINDS = ['agr','ing','com','cie','apt','sal','fue'];
 const TRAIT_ODDS = [[-2,0.08],[-1,0.32],[1,0.43],[2,0.17]];
 const TRAIT_STEP = 0.25;
 const TRAIT_INFO = {
@@ -44,7 +44,9 @@ const TRAIT_INFO = {
   ing:{ic:'⚒',n:'Ingeniería',d:'la producción que genera y lo que puede usar al construir (como ingeniero o poblador)'},
   com:{ic:'🪙',n:'Comercio',d:'el oro que genera como comerciante'},
   cie:{ic:'🔬',n:'Ciencia',d:'la ciencia que genera y lo que usa al investigar, como científico'},
-  apt:{ic:'🍽',n:'Apetito',d:'cuánta comida consume (positivo: come menos)'}
+  apt:{ic:'🍽',n:'Apetito',d:'cuánta comida consume (positivo: come menos)'},
+  sal:{ic:'❤',n:'Salud',d:'los puntos de vida en combate (siempre números enteros)'},
+  fue:{ic:'⚔',n:'Fuerza',d:'los dados de combate (siempre números enteros)'}
 };
 const TRAIT_LV = {'-2':'muy malo','-1':'malo','1':'bueno','2':'muy bueno'};
 // Entrenar: un civil pasa a soldado (2) y, si la tropa usa equipo, se fabrica su arma.
@@ -68,13 +70,34 @@ const GROW_MODE_DEFAULT = 'crecer';
 // quien está solo ahí gana FRONTIER_ALONE (pero para lograrlo suele haber que pelear).
 // La frontera nunca tiene dueño: cualquiera puede entrar con civiles; quien está ahí no produce,
 // come de su zona más cercana y gana el oro de la frontera.
-const FRONTIER_SHARED = 3, FRONTIER_ALONE = 4;
+// Zonas peligrosas (antes «fronteras»): solo cuentan las tropas. Con el costo de mover comida, un bono mayor compensa tenerlas ahí.
+const FRONTIER_SHARED = 6, FRONTIER_ALONE = 8;
+// El bono crece +10 % por cada paso seguido con tropas ahí, hasta +100 %; si pierdes la presencia, vuelve a 0.
+const FRONTIER_GROW = 0.1, FRONTIER_GROW_MAX = 1;
 const FRONTIER_TERRAINS = ['pra','lla','rio','col','bos','mon'];
 // Cadena de suministros: las tropas fuera de tu territorio solo comen si hay un camino seguro
 // (sin pasar por zonas de un enemigo) de como máximo SUPPLY_RANGE zonas hasta una zona tuya con comida.
 // Sin suministro pasan hambre, y con hambre pelean con la mitad de los dados.
 const SUPPLY_RANGE = 2;            // zonas de alcance (la tecnología «Suministros de campaña» suma 1)
 const HUNGRY_FIGHT = 0.5;          // multiplicador de fuerza de una tropa hambrienta
+// Tribus (13.3 y 12): cada TRIBE_REQ_EVERY pasos piden algo a quien las toca; cumplirlo sube la relación (0 a 3) y con 3 se puede anexar.
+// Si las atacas entran en guerra: sus civiles se vuelven guerreros y te atacan durante TRIBE_WAR_STEPS pasos o hasta que las conquistes.
+const TRIBE_REQ_EVERY = 5, TRIBE_REL_MAX = 3, TRIBE_WAR_STEPS = 5;
+const TRIBE_REQS = {agr:[['food',6],['food',10],['gold',6]], ing:[['prod',6],['prod',10],['gold',6]], com:[['gold',6],['gold',10],['food',8]], cie:[['tech',6],['tech',10],['gold',6]]};
+const TRIBE_REL_N = ['desconfianza','trato','amistad','alianza'];
+// Historias de 4 capítulos (13.3): una por jugador y por partida; el primer capítulo llega hacia el paso 10 y los demás cada 8 pasos.
+const STORY_FIRST = 10, STORY_GAP = 8;
+// Subasta a sobre cerrado (13.3): cada AUCTION_EVERY pasos, anunciada AUCTION_NOTICE pasos antes. Se sabe la moneda, la categoría y el nivel
+// (bronce, plata u oro) de cada objeto, pero no los detalles. Se paga con oro, ciencia, o comida y producción de todo el imperio.
+const AUCTION_EVERY = 20, AUCTION_NOTICE = 2, AUCTION_RES_STEPS = 40;
+const AUCTION_CURRENCIES = ['gold','tech','food','prod'];
+const AUCTION_CATS = {pel:'Pelotón', pob:'Poblador extraordinario', sab:'Saber', car:'Cargamento', rec:'Recurso temporal'};
+const AUCTION_TIERS = ['bronce','plata','oro'], AUCTION_TIER_ICON = ['🥉','🥈','🥇'], AUCTION_TIER_ODDS = [0.5,0.35,0.15];
+const AUCTION_PEL = [{sol:2},{sol:2,arq:2},{sol:2,arq:2,esc:2,cab:1}];     // tropas con su equipo
+const AUCTION_POB = [[1,1],[2,1],[2,2]];                                    // niveles de los 2 rasgos del poblador extraordinario
+const AUCTION_SAB = [2,3,4];                                                // nivel máximo de la tecnología regalada
+const AUCTION_CAR = [30,55,90];                                             // cantidad del cargamento (comida o producción)
+const AUCTION_REC = [['hierbas','madera'],['hierro','sal'],['ruinas']];     // recurso estratégico global temporal
 // Etapa de fundación: hasta este paso, crecer cuesta la mitad, para que el inicio no sea tan lento.
 const FOUNDING_STEPS = 12;
 // Bono de la capital: comida, producción, oro y ciencia por paso.
@@ -99,6 +122,26 @@ const BT = {
   biblio:{n:'Biblioteca',unlock:'Bibliotecas',sr:'Biblioteca',col:'#5B7FA6',l:'B'},
   mar:{n:'Maravilla',unlock:'Maravillas',sr:'Maravilla',col:'#E9C46A',l:'★'}
 };
+// Las 12 maravillas (15.3): una por rama, únicas en toda la partida. La vertebral de nivel 5 de la rama solo
+// desbloquea su construcción; el efecto lo da la maravilla mientras controles su zona.
+const WONDERS = {
+  agr:{n:'La Huerta Infinita',tech:'Granjas modelo',r:'Agricultura',d:'+1 de comida por agricultor'},
+  ing:{n:'La Gran Fragua',tech:'Maquinaria',r:'Producción',d:'+1 de producción por ingeniero'},
+  com:{n:'La Lonja Dorada',tech:'Gran compañía',r:'Comercio',d:'+1 de oro por comerciante'},
+  cie:{n:'La Torre de los Sabios',tech:'Enciclopedia',r:'Saber',d:'cada científico genera o usa 3 en vez de 2'},
+  log:{n:'La Calzada sin Fin',tech:'Red de caminos II',r:'Logística',d:'mover comida y producción por su zona es gratis'},
+  urb:{n:'La Plaza Mayor',tech:'Maravillas',r:'Urbanismo',d:'tus obras cuestan un 25 % menos (no las maravillas)'},
+  san:{n:'Las Termas de la Salud',tech:'Hospital imperial',r:'Sanidad y población',d:'todas tus unidades tienen 2 de vida más'},
+  dip:{n:'El Palacio de los Pactos',tech:'Corte imperial',r:'Diplomacia e imperio',d:'+1 de cada recurso por cada 5 zonas'},
+  arm:{n:'La Sala de los Mil Filos',tech:'Arsenal',r:'Armas y unidades',d:'las armas cuestan la mitad de producción'},
+  cua:{n:'El Patio de Armas',tech:'Veteranos',r:'Cuartel y entrenamiento',d:'la fuerza máxima de las tropas sube de 4 a 5'},
+  def:{n:'El Bastión Eterno',tech:'Ciudadela',r:'Defensa',d:'tus defensores tienen +4 de defensa y +1 de vida'},
+  gue:{n:'La Puerta de los Estandartes',tech:'Contraataque',r:'Guerra y conquista',d:'tus atacantes tienen +1 de fuerza'}
+};
+const WONDER_TECH = {}; Object.keys(WONDERS).forEach(k=>{ WONDER_TECH[WONDERS[k].tech]=k; });
+// Si la maravilla de la rama ya existe, la vertebral de nivel 5 no se puede investigar (quien ya la tenía la conserva).
+// Quien pierde la carrera recupera esta fracción de la producción puesta en la obra.
+const WONDER_REFUND = 0.5;
 // especializaciones de edificio: tecnología -> {bt,key,v}
 const SPECS = {
   // almacén: v = capacidad extra por tamaño de la zona; intereses: 1 de oro por cada v almacenadas

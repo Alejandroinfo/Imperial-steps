@@ -24,7 +24,7 @@ function act(a,d){
     case 'battle': openBattle(Number(d.b)); return;
     case 'bvgo': { stopBattle(); const k=Number(d.k); if(k===BV.k+1) battleSound(k); BV.k=k; renderBattle(); return; }
     case 'bvplay': playBattle(); return;
-    case 'wonder': addOrder({t:'wonder',zone:Number(d.zone)}); break;
+    case 'wonder': addOrder({t:'wonder',zone:Number(d.zone),w:d.w}); break;
     case 'upgrade': addOrder({t:'upgrade',zone:Number(d.zone),bi:Number(d.bi)}); break;
     case 'bspec': { const v=fv('bs_'+d.zone+'_'+d.bi,''); if(v) addOrder({t:'bspec',zone:Number(d.zone),bi:Number(d.bi),spec:v}); break; }
     case 'demolish': addOrder({t:'demolish',zone:Number(d.zone),bi:Number(d.bi)}); break;
@@ -35,6 +35,7 @@ function act(a,d){
     case 'encounter': ui.orders=ui.orders.filter(o=>o.t!=='encounter'); addOrder({t:'encounter',choice:d.v}); break;
     case 'growmode': ui.orders=ui.orders.filter(o=>!(o.t==='growmode'&&o.zone===z.id)); if(d.v!==(z.growMode||GROW_MODE_DEFAULT)) addOrder({t:'growmode',zone:z.id,mode:d.v}); break;
     case 'pausebuild': { const zz=G.zones[Number(d.zone)]; if(!zz||zz.owner!==ME) break; const pd=ui.orders.filter(o=>o.t==='pausebuild'&&o.zone===zz.id).pop(); const cur=pd?pd.on:!!zz.pauseBuild; ui.orders=ui.orders.filter(o=>!(o.t==='pausebuild'&&o.zone===zz.id)); if(!cur!==!!zz.pauseBuild) addOrder({t:'pausebuild',zone:zz.id,on:!cur}); break; }
+    case 'bid': { const i=Number(d.i); const el=document.querySelector('[data-f="bid_'+i+'"]'); const amt=Math.max(0,Math.floor(Number(el?el.value:0)||0)); ui.orders=ui.orders.filter(o=>!(o.t==='bid'&&o.item===i)); addOrder({t:'bid',item:i,amount:amt}); break; }
     case 'autospec': ui.orders=ui.orders.filter(o=>!(o.t==='autospec'&&o.zone===z.id)); if(d.v!==(z.autoSpec||'pob')) addOrder({t:'autospec',zone:z.id,to:d.v==='pob'?null:d.v}); break;
     case 'route': { const from=d.from!==undefined?Number(d.from):z.id;
       if(d.q==='0'){ addOrder({t:'route',from,to:Number(d.to),res:d.res,q:0}); break; }

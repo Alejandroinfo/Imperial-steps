@@ -220,6 +220,13 @@ function zoneContent(z,i){
     z.b.forEach((b,k)=>{ const p=SLOT_POS[k%SLOT_POS.length]; d+=`<g transform="translate(${p[0]},${p[1]}) scale(1.35)">${bGlyph(b.t,b.l,true)}</g>`; });
     z.proj.forEach((p,k)=>{ const sl=SLOT_POS[(z.b.length+k)%SLOT_POS.length]; const pc=Math.round(100*(p.tot-p.left)/p.tot); const nm=p.k==='b'?p.bt:p.k==='w'?'mar':(z.b[p.bi]?z.b[p.bi].t:'almacen'); d+=`<g transform="translate(${sl[0]},${sl[1]})"><g opacity=".38" transform="scale(1.35)">${bGlyph(nm,0,false)}</g><rect x="-28" y="-62" width="56" height="9" rx="4" fill="#2A1B16" stroke="#fff" stroke-width="1"/><rect x="-26" y="-60" width="${(52*pc/100).toFixed(1)}" height="5" rx="2.5" fill="#7CE0A0"/><text class="zt" x="0" y="-67" text-anchor="middle" font-size="12" font-weight="700" fill="#2A1B16" stroke="#fff" stroke-width="3" paint-order="stroke">${p.k==='u'?'mejora':'obra'} ${pc}%</text></g>`; });
   }
+  if(isPl(owner)&&z.proj.length){ const sl=SLOT_POS[z.b.length%SLOT_POS.length];
+    if(z.pauseBuild) d+=`<g transform="translate(${sl[0]+36},${sl[1]-58})"><circle r="12" fill="#2A1B16" stroke="#7FB2E5" stroke-width="2.5"/><path d="M-3.8,-5.5 V5.5 M3.8,-5.5 V5.5" stroke="#7FB2E5" stroke-width="3.2" stroke-linecap="round"/></g>`;
+    else if(z.bplan&&z.bplan.cap>0){ d+=`<g transform="translate(${sl[0]},${sl[1]-34})">`; for(let k=0;k<5;k++) d+=`<circle class="spk" r="2.1" fill="${k%2?'#FFD36B':'#FFB04D'}" style="--dx:${(k-2)*9}px;animation-delay:${(k*0.23).toFixed(2)}s"/>`; d+=`</g>`; } }
+  if(isPl(owner)&&z.last&&owner===ME){   // lo que produce la zona sube como partículas de su color
+    const AC={food:'#B7DE7A',prod:'#D9B48A',gold:'#F2D06B',tech:'#8EC3F0'}; let k=0;
+    ['food','prod','gold','tech'].forEach(r=>{ const n=Math.min(4,Math.ceil((z.last[r]||0)/3)); for(let j=0;j<n;j++,k++){ const x=-96+((k*53)%192), y=34+((k*29)%46);
+      d+=`<circle class="mote" cx="${x}" cy="${y}" r="${r==='gold'?3:2.4}" fill="${AC[r]}" stroke="rgba(42,27,22,.5)" stroke-width=".6" style="animation-delay:${((k*0.67)%5.5).toFixed(2)}s;animation-duration:${(4.6+(k%3)*0.7).toFixed(1)}s"/>`; } }); }
   const fs=Object.keys(z.units).map(Number).filter(f=>z.units[f].length>0).sort((a,b)=>(a===owner?-1:0)-(b===owner?-1:0));
   if(fs.length) d+=figRows(z,fs[0],PLN[fs[0]].col);
   fs.slice(1,3).forEach((f,r)=>{ const k=unitCounts(z,f), col=PLN[f].col; const y=186+r*26;
@@ -255,6 +262,9 @@ function nameplate(z,i){
       +`<text class="zt" x="${f1(L+w-12)}" y="42" text-anchor="end" font-size="11.5" font-weight="700" fill="${eta===null?'#F0A06B':'#9DC764'}">${eta===undefined?'👶 —':eta===null?'👶 no crece':'👶 en '+eta+(eta===1?' paso':' pasos')}</text>`
       +`<rect x="${f1(L+10)}" y="${H-35}" width="${f1(w-20)}" height="4" rx="2" fill="rgba(255,255,255,.18)"/><rect x="${f1(L+10)}" y="${H-35}" width="${((w-20)*prog).toFixed(1)}" height="4" rx="2" fill="#9DC764"/>`;
   }
+  if(own){ const hung=(z.feed&&z.feed[ME]&&z.feed[ME].short>0)||(z.units[ME]||[]).some(u=>u.hg>0); let bx=L+w-10;
+    if(hung){ s+=`<g class="hunger" transform="translate(${f1(bx)},-27)"><circle r="11" fill="#C8452F" stroke="#fff" stroke-width="2"/><text class="zt" text-anchor="middle" y="4.5" font-size="13" font-weight="800" fill="#fff">!</text><title>Hay gente con hambre</title></g>`; bx-=26; }
+    if(z.pauseBuild&&z.proj.length) s+=`<g transform="translate(${f1(bx)},-27)"><circle r="11" fill="#2A1B16" stroke="#7FB2E5" stroke-width="2.2"/><path d="M-3.4,-5 V5 M3.4,-5 V5" stroke="#7FB2E5" stroke-width="3" stroke-linecap="round"/><title>Obras en pausa: la producción se guarda</title></g>`; }
   const tr=(G.tributes||[]).find(t=>t.zone===z.id&&!t.paid[ME]&&t.targets.includes(ME));
   const en=G.F[ME].enc; if(en&&en.zone===z.id&&!tr) s+=`<g transform="translate(0,-44)"><rect x="-86" y="-14" width="172" height="26" rx="13" fill="${en.k==='amenaza'?'#C8452F':'#C9A24A'}" stroke="#fff" stroke-width="2.5" class="blink"/><text class="zt" x="0" y="4" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">${en.k==='amenaza'?'⚠':'📜'} Encuentro: decide en el panel</text></g>`;
   if(tr) s+=`<g transform="translate(0,-44)"><rect x="-92" y="-14" width="184" height="26" rx="13" fill="#C8452F" stroke="#fff" stroke-width="2.5" class="blink"/><text class="zt" x="0" y="4" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">⚠ Exige ${tr.amount} de ${TSPEC_N[tr.res]}</text></g>`;

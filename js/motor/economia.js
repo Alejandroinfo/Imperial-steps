@@ -15,7 +15,8 @@ function growCost(g,f,z){
 // con la misma eficiencia, la mitad produce para que la otra mitad construya. Sin obra o en pausa, todos producen.
 /** @param {Partida} g */
 function buildPlan(g,z,f,pull){
-  const plan={ing:0,pob:0,bonus:0,cap:0,work:0,stock:0,paused:!!z.pauseBuild,ids:[]};
+  const plan={ing:0,pob:0,bonus:0,cap:0,work:0,stock:0,pot:0,paused:!!z.pauseBuild,ids:[]};
+  const stock0=Math.floor(z.prod);
   if(!isPl(f)||!z.proj.length) return plan;
   const M=g.M[f]; const dbl=M.terrDouble?2:1; const hill=z.terrain==='col'?dbl*(1+M.tx.col):0, mon=z.terrain==='mon'?dbl*(1+(M.tx.mon||0)):0; const ev=z.ev||{};
   const work=z.proj.reduce((a,p)=>a+p.left,0); plan.work=work;
@@ -27,6 +28,8 @@ function buildPlan(g,z,f,pull){
     :{id:u.id,k:'pob',use:(1+hill)*m,prod:Math.max(0,1+M.pobProd+mon+(ev.prodPob||0))*m}; });
   const sp=zoneSpec(g,z,f); const zb=sp.spec==='ing'?[0,4,8,12][sp.lvl]+M.zProdLvl*sp.lvl:0;
   const fixed=z.capital?CAPITAL_BONUS+M.capExtra:0;   // producción segura de la zona aunque nadie construya
+  // lo máximo que esta zona podría destinar a una obra en este paso (sin producción traída de otras zonas): para desempatar maravillas
+  plan.pot=stock0+fixed+(info.length?zb:0)+info.reduce((a,u)=>a+u.prod,0);
   const target=Math.min(work,info.reduce((a,u)=>a+u.use,0)+(info.length?zb:0));
   const solve=()=>{
     const stock=Math.floor(z.prod); const r={ing:0,pob:0,bonus:0,cap:0,stock,ids:[]};
@@ -80,7 +83,7 @@ function produceZone(g,z){
   if(sp.spec==='com') gold+=zb+(lv===3?M.ruta:0);
   if(sp.spec==='cie'&&nres===0) tech+=zb;
   if(food-f0||prod-p0||gold-g0||tech-t0) by.zone={spec:sp.spec,lvl:lv,food:food-f0,prod:prod-p0,gold:gold-g0,tech:tech-t0};
-  let rc=0; researchers.forEach(u=>{ rc+=RESEARCH_PER_SCI*trMul(u,'cie'); }); z.rcap=Math.floor(rc)+(nres>0?(z.resBonus||0):0); z.nres=nres;
+  let rc=0; researchers.forEach(u=>{ rc+=(RESEARCH_PER_SCI+M.sciUse)*trMul(u,'cie'); }); z.rcap=Math.floor(rc)+(nres>0?(z.resBonus||0):0); z.nres=nres;
   if(z.capital){ const c=CAPITAL_BONUS+M.capExtra; food+=c; prod+=c; gold+=c; tech+=c; by.cap=c; }
   // edificios
   let pool=act.slice();
@@ -132,11 +135,45 @@ function researchPlan(g,f){
   const F=g.F[f], plan={}; let budget=F.rq.length?Math.min(Math.floor(F.tech),F.rq.reduce((a,p)=>a+p.left,0)):0;
   zonesOf(g,f).forEach(z=>{
     const sci=(z.units[f]||[]).filter(u=>u.t==='cie'&&u.w===0&&!u.busy&&!u.mv).length;
-    const n=Math.min(sci,Math.floor(budget/RESEARCH_PER_SCI)); budget-=n*RESEARCH_PER_SCI;
+    const per=RESEARCH_PER_SCI+g.M[f].sciUse; const n=Math.min(sci,Math.floor(budget/per)); budget-=n*per;
     let bonus=0; if(n>0){ const sp=zoneSpec(g,z,f); if(sp.spec==='cie'){ bonus=Math.min([0,4,8,12][sp.lvl],budget); budget-=bonus; } }
     plan[z.id]={sci,n,bonus};
   });
   return plan;
+}
+// Una o varias maravillas llegaron al 100 % en este paso. Si son varias de la misma, gana quien podía destinar más
+// producción a terminarla (sin contar producción traída de zonas ajenas); si empatan exactamente, nadie la logra:
+// se deshace el último paso de obra y lo que falta se duplica. Los demás pierden la carrera.
+/** @param {Partida} g */
+function resolveWonder(g,w,list,L){
+  let win=list[0];
+  if(list.length>1){
+    const ord=list.slice().sort((a,b)=>(b.z.bplan?b.z.bplan.pot:0)-(a.z.bplan?a.z.bplan.pot:0));
+    if((ord[0].z.bplan?ord[0].z.bplan.pot:0)===(ord[1].z.bplan?ord[1].z.bplan.pot:0)){
+      list.forEach(x=>{ x.z.prod+=x.p.prev-x.p.left; x.p.left=x.p.prev*2; });
+      L('Empate en '+WONDERS[w].n+': nadie la logra. Se deshace el último paso y a cada uno le falta el doble.'); return;
+    }
+    win=ord[0];
+  }
+  const z=win.z, p=win.p, f=win.f;
+  z.proj.splice(z.proj.indexOf(p),1);
+  z.b.push({t:'mar',l:1,s:null,wk:0,cost:p.tot,w});
+  L(PLN[f].name+' termina '+WONDERS[w].n+' en '+zname(z)+'. Nadie más podrá construirla.'); g.fx.push({k:'built',zone:z.id,f,bt:'mar',w});
+  cancelWonderRace(g,w,f,L);
+}
+// Quien perdió la carrera pierde la obra y recupera la mitad de la producción puesta. La tecnología de nivel 5 NO se pierde
+// (cuenta para la victoria tecnológica) y no se devuelve ciencia por ella; solo se cancela si todavía estaba en la cola.
+/** @param {Partida} g */
+function cancelWonderRace(g,w,winF,L){
+  const tech=WONDERS[w].tech;
+  const giveProd=(f,z0,n)=>{ const zs=[z0].concat(g.zones.filter(a=>a.owner===f&&a.id!==z0.id)); for(const a of zs){ if(n<=0) break; const room=Math.max(0,capStore(g,a,'prod')-a.prod); const t=Math.min(room,n); a.prod+=t; n-=t; } };
+  g.zones.forEach(z=>{ if(!isPl(z.owner)||z.owner===winF) return; const f=z.owner;
+    const mine=z.proj.filter(p=>p.k==='w'&&p.w===w); if(!mine.length) return;
+    mine.forEach(p=>{ giveProd(f,z,Math.floor((p.tot-p.left)*WONDER_REFUND)); });
+    z.proj=z.proj.filter(p=>!(p.k==='w'&&p.w===w));
+    L(PLN[f].name+' pierde la carrera por '+WONDERS[w].n+': recupera la mitad de la producción invertida y conserva la tecnología.'); });
+  for(let f=0;f<g.N;f++){ if(f===winF) continue; const F=g.F[f];
+    const q=F.rq.find(p=>p.name===tech); if(q){ F.tech+=Math.floor((q.tot-q.left)*WONDER_REFUND); F.rq=F.rq.filter(p=>p!==q); } }   // aún no la tenía: ya no se puede investigar
 }
 /** @param {Partida} g */
 function economy(g,L){
@@ -157,20 +194,22 @@ function economy(g,L){
     }
   }
   // construcción
+  const wdone={};   // maravillas que llegan al 100 % en este paso (se resuelven juntas, por si hay empate)
   Z.forEach(z=>{
     const f=z.owner; if(!isPl(f)||!z.proj.length||!z.bplan) return; let cap=z.bplan.cap;
     for(const p of z.proj.slice()){
       if(cap<=0) break; const need=Math.min(cap,p.left);
       const spend=Math.min(need,Math.floor(z.prod)); if(spend<=0) continue;
-      z.prod-=spend; p.left-=spend; cap-=spend;
+      p.prev=p.left; z.prod-=spend; p.left-=spend; cap-=spend;
       if(p.left<=0){
+        if(p.k==='w'){ (wdone[p.w]=wdone[p.w]||[]).push({z,p,f}); continue; }
         z.proj.splice(z.proj.indexOf(p),1);
         if(p.k==='b'){ z.b.push({t:p.bt,l:p.lvl||1,s:p.spec||null,wk:0,cost:p.tot,dup:p.dup||0}); L(zname(z)+': se termina un '+BT[p.bt].n+((p.lvl||1)>1?' de nivel '+p.lvl:'')+(p.spec?' ('+SPEC_NAMES[p.spec]+')':'')+'.'); g.fx.push({k:'built',zone:z.id,f,bt:p.bt}); }
-        else if(p.k==='w'){ z.b.push({t:'mar',l:1,s:null,wk:0,cost:p.tot}); L(PLN[f].name+' termina una Maravilla en '+zname(z)+'.'); g.fx.push({k:'built',zone:z.id,f,bt:'mar'}); }
         else if(p.k==='u'&&z.b[p.bi]){ z.b[p.bi].l=p.to; z.b[p.bi].cost=(z.b[p.bi].cost||0)+p.tot; L(zname(z)+': el '+BT[z.b[p.bi].t].n+' sube a nivel '+p.to+'.'); g.fx.push({k:'upg',zone:z.id,f,bt:z.b[p.bi].t,l:p.to}); }
       }
     }
   });
+  Object.keys(wdone).forEach(w=>resolveWonder(g,w,wdone[w],L));
   // consumo y hambre (cada jugador alimenta a toda su gente), después crecimiento
   for(let f=0;f<g.N;f++) feedPlayer(g,f,L);
   Z.forEach(z=>{ if(isPl(z.owner)) runRoutes(g,z,L); });
@@ -198,16 +237,19 @@ function runRoutes(g,z,L){
     if(q>0) doSend(g,{f,from:z.id,to:r.to,res:key,q,auto:1},()=>{});
   });
 }
-// Frontera: mientras todos los presentes estén en paz, cada uno gana FRONTIER_SHARED de oro;
+// Zona peligrosa (antes frontera): mientras todos los que tienen tropas ahí estén en paz, cada uno gana FRONTIER_SHARED de oro;
 // quien está solo gana FRONTIER_ALONE. Si hay conflicto en la zona, nadie gana nada ese paso.
 /** @param {Partida} g */
 function frontierIncome(g,L){
   g.zones.forEach(z=>{
-    if(z.role!=='frontera') return; z.frontGain={};
-    const here=presentF(z).filter(f=>isPl(f));
-    if(!here.length||z.conflict) return;
-    const n=here.length>=2?FRONTIER_SHARED:FRONTIER_ALONE;
-    here.forEach(f=>{ g.F[f].gold+=n; z.frontGain[f]=n; });
+    if(z.role!=='frontera') return; z.frontGain={}; z.fh=z.fh||{};
+    const here=presentF(z).filter(f=>isPl(f)&&(z.units[f]||[]).some(u=>!UT[u.t].civ));   // solo cuentan las tropas
+    Object.keys(z.fh).forEach(k=>{ if(!here.includes(Number(k))) delete z.fh[k]; });   // quien pierde la presencia empieza de 0
+    if(!here.length) return;
+    const base=here.length>=2?FRONTIER_SHARED:FRONTIER_ALONE;
+    here.forEach(f=>{ const s=z.fh[f]||0;   // pasos seguidos con presencia (compartida o sola)
+      if(!z.conflict){ const n=Math.round(base*(1+Math.min(FRONTIER_GROW_MAX,FRONTIER_GROW*s))); g.F[f].gold+=n; z.frontGain[f]=n; }
+      z.fh[f]=s+1; });
   });
 }
 /** @param {Partida} g */

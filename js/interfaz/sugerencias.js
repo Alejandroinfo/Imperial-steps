@@ -16,6 +16,8 @@ function suggestions(){
   if(!G||G.over) return [];
   const out=[], F=G.F[ME], mz=zonesOf(G,ME);
   if(F.out&&!F.ghost) return [];
+  // Subasta próxima
+  if(G.auction&&G.step<=G.auction.step&&!(G.auction.bids[ME]&&Object.keys(G.auction.bids[ME]).length)&&!queued('bid')) out.push({k:'tip',t:`Subasta en ${G.auction.step-G.step||'0'} paso(s): se paga con ${RN[G.auction.cur]}. Mira los objetos y haz tus ofertas en Imperio.`,go:{tab:'imperio'}});
   // Avisos
   { const short=hungerRisk(); if(short){ const cap=mz.find(z=>z.capital)||mz[0]; out.push({k:'warn',t:`Tu gente podría pasar hambre: entre todas tus zonas faltan unos ${short} de comida. Haz agricultores o reduce tropas.`,go:{zone:cap?cap.id:mz[0].id,sub:'poblacion'}}); } }
   (G.tributes||[]).forEach(tr=>{ if(tr.targets.includes(ME)&&!tr.paid[ME]&&!queued('tribute',o=>o.tribe===tr.zone)) out.push({k:'warn',t:`La tribu de ${zname(G.zones[tr.zone])} exige ${tr.amount} de ${TSPEC_N[tr.res]}; si nadie paga, invade.`,go:{zone:tr.zone,sub:'resumen'}}); });
@@ -34,10 +36,10 @@ function suggestions(){
     const free=z.adj.map(i=>G.zones[i]).find(a=>a.owner===null&&!presentF(a).length&&!queued('move',o=>o.to===a.id));
     if(free){ out.push({k:'tip',t:`Puedes poblar ${zname(free)}: mueve pobladores desde ${zname(z)}.`,go:{move:[z.id,free.id]}}); break; }
   }
-  // Ocupar una frontera vecina
-  for(const z of mz){ const fr=z.adj.map(i=>G.zones[i]).find(a=>a.role==='frontera'&&!(a.units[ME]||[]).length&&!a.conflict);
-    if(fr&&CIV.some(t=>availQ(z.id,t)>0)&&(z.units[ME]||[]).length>=3&&!queued('move',o=>o.to===fr.id)){ const rivals=presentF(fr).filter(f=>isPl(f)&&f!==ME);
-      out.push({k:'tip',t:rivals.length?`En ${zname(fr)} está ${PLN[rivals[0]].name}: si entras en paz, ganan 🪙 +${FRONTIER_SHARED} cada uno.`:`${zname(fr)} está vacía: manda a alguien y gana 🪙 +${FRONTIER_ALONE} por paso.`,go:{move:[z.id,fr.id]}}); break; } }
+  // Poner tropas en una zona peligrosa vecina
+  for(const z of mz){ const fr=z.adj.map(i=>G.zones[i]).find(a=>a.role==='frontera'&&!(a.units[ME]||[]).some(u=>!UT[u.t].civ)&&!a.conflict);
+    if(fr&&MIL.some(t=>availQ(z.id,t)>0)&&!queued('move',o=>o.to===fr.id)){ const rivals=presentF(fr).filter(f=>isPl(f)&&f!==ME);
+      out.push({k:'tip',t:rivals.length?`En ${zname(fr)} está ${PLN[rivals[0]].name}: si entras en paz, ganan 🪙 +${FRONTIER_SHARED} cada uno.`:`${zname(fr)} está sin tropas: manda un soldado y gana 🪙 +${FRONTIER_ALONE} por paso.`,go:{move:[z.id,fr.id]}}); break; } }
   // Espacio para construir
   if(!queued('build')){ const z=mz.find(z=>slotsOf(G,z)>z.b.length+z.proj.filter(p=>p.k!=='u').length&&z.prod>=10); if(z) out.push({k:'tip',t:`Hay espacio para un edificio en ${zname(z)}.`,go:{zone:z.id,sub:'edificios'}}); }
   return out;
@@ -54,12 +56,18 @@ function encGainText(gn){
   return '';
 }
 function encGainIcons(gn){
-  if(gn.units) return unitsIcons(gn.units);
-  if(gn.res) return rq(gn.res,gn.n,true);
-  if(gn.eq) return Object.keys(gn.eq).map(t=>`<span class="uchip" title="${EQUIP_N[t][1]} guardados">${uIcon(t,20)}<b>🛠×${gn.eq[t]}</b></span>`).join('');
-  if(gn.prog) return `<span class="rq" title="crecimiento">👶 +${gn.prog}</span>`;
-  if(gn.gamble) return `<span class="rq">🎲 ${Math.round(gn.gamble.p*100)} %: ${RI[gn.gamble.res]} +${gn.gamble.n}</span>`;
-  return '';
+  let h='';
+  if(gn.units) h+=unitsIcons(gn.units);
+  if(gn.res) h+=rq(gn.res,gn.n,true);
+  if(gn.eq) h+=Object.keys(gn.eq).map(t=>`<span class="uchip" title="${EQUIP_N[t][1]} guardados">${uIcon(t,20)}<b>🛠×${gn.eq[t]}</b></span>`).join('');
+  if(gn.prog) h+=`<span class="rq" title="crecimiento">👶 +${gn.prog}</span>`;
+  if(gn.gamble) h+=`<span class="rq">🎲 ${Math.round(gn.gamble.p*100)} %: ${RI[gn.gamble.res]} +${gn.gamble.n}</span>`;
+  if(gn.rel) h+=`<span class="rq" title="relación con la tribu vecina">🤝 +${gn.rel}</span>`;
+  if(gn.tpob) h+=`<span class="rq" title="${esc(gn.tpob.map(x=>TRAIT_INFO[x.k].n+' '+(x.l>0?'+':'')+x.l).join(' y '))}">🌟 poblador extraordinario</span>`;
+  if(gn.saber) h+=`<span class="rq" title="una tecnología gratis de nivel hasta ${gn.saber}">📜 saber</span>`;
+  if(gn.bld) h+=`<span class="rq" title="un edificio ya construido">🏠 ${esc(BT[gn.bld].n)}</span>`;
+  if(gn.tres) h+=`<span class="rq" title="durante ${AUCTION_RES_STEPS} pasos">💎 ${esc(RES[gn.tres.key].n)}</span>`;
+  return h;
 }
 function encRefuseText(r){
   if(!r) return 'no pasa nada';
@@ -71,7 +79,9 @@ function encRefuseText(r){
 function encBarHTML(){
   if(!G||G.over) return ''; const enc=G.F[ME].enc; if(!enc) return '';
   const z=G.zones[enc.zone]; const can=encHave(G,ME,enc); const ch=(ui.orders.find(o=>o.t==='encounter')||{}).choice;
-  const icon=enc.k==='amenaza'?'⚠':enc.k==='apuesta'?'🎲':'📜';
+  const icon=enc.k==='amenaza'?'⚠':enc.k==='apuesta'?'🎲':enc.k==='eleccion'?'⚖':enc.k==='historia'?'📖':'📜';
+  if(enc.opts){ const btns=enc.opts.map((o,i)=>{ const v=['a','b','c'][i], can=encHave(G,ME,{cost:o.cost,zone:enc.zone}); return `<button class="btn ${ch===v?'primary':''}" data-act="encounter" data-v="${v}" ${can?'':'disabled'}>${esc(o.lbl)} · ${o.cost?rq(o.cost.res,o.cost.n):'sin costo'} → ${encGainIcons(o.gain)}${can?'':' (no te alcanza)'}</button>`; }).join('');
+    const hist=enc.k==='historia'; return `<div class="enc ${enc.k}"><div class="ench">${icon} <b>${hist?'Historia':'Encuentro'} en ${esc(zname(z))}</b> <a href="#" data-act="gozone" data-id="${z.id}" class="wlink">ver</a></div><div class="enct">${hist?`<b>${esc(enc.who)}</b><br>${esc(enc.txt)}.`:`${esc(enc.who)} ${esc(enc.txt)}.`}</div><div class="row">${btns}<button class="btn ${ch==='no'?'primary':''}" data-act="encounter" data-v="no">${hist?'Dejarlo pasar':'Ninguno'}</button></div><div class="hint">${ch?'Se resuelve al presionar ¡Listo!':(hist?'La historia sigue aunque la dejes pasar; sin consecuencias.':'Eliges uno o ninguno; sin consecuencias.')}</div></div>`; }
   return `<div class="enc ${enc.k}"><div class="ench">${icon} <b>Encuentro en ${esc(zname(z))}</b> <a href="#" data-act="gozone" data-id="${z.id}" class="wlink">ver</a></div>
     <div class="enct">${esc(enc.who)} ${esc(enc.txt)}.</div>
     <div class="encd">${enc.cost?`<span>Piden ${rq(enc.cost.res,enc.cost.n)}</span>`:''}${enc.gain?`<span>→ Dan ${encGainIcons(enc.gain)}</span>`:''}${enc.refuse?`<span class="neg">Si no: <b>${esc(encRefuseText(enc.refuse))}</b></span>`:''}</div>

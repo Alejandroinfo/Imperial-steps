@@ -41,6 +41,8 @@ function rollTraits(g){
 }
 // Multiplicador de rendimiento de una persona en lo que afecta ese rasgo (1 = sin rasgo).
 function trMul(u,k){ const t=(u.tr||[]).find(x=>x.k===k); return t?1+TRAIT_STEP*t.l:1; }
+// Salud y fuerza son enteros: +1 / +2 (o −1 / −2) de vida o de dados.
+function trInt(u,k){ const t=(u.tr||[]).find(x=>x.k===k); return t?t.l:0; }
 // El apetito es al revés: un rasgo bueno hace comer menos.
 function aptMul(u){ const t=(u.tr||[]).find(x=>x.k==='apt'); return t?1-TRAIT_STEP*t.l:1; }
 /** @param {Partida} g */
@@ -56,13 +58,13 @@ function zonesOf(g,f){ return g.zones.filter(z=>z.owner===f); }
 /** @param {Partida} g */
 function totalPop(g,f){ let n=0; g.zones.forEach(z=>{ n+=(z.units[f]||[]).length; }); return n; }
 /** @param {Partida} g */
-function hasRes(g,f,key){ return g.zones.some(z=>z.owner===f&&z.res===key); }
+function hasRes(g,f,key){ return g.zones.some(z=>z.owner===f&&z.res===key)||(isPl(f)&&((g.F[f].tres||[]).some(r=>r.key===key&&r.until>g.step))); }   // o un recurso temporal ganado en la subasta
 /** @param {Partida} g */
 function slotsOf(g,z){ return Math.floor(z.size/3)+(isPl(z.owner)?g.M[z.owner].slotBonus:0); }
 /** @param {Partida} g */
 function capLevel(g,f,bt){
-  if(bt==='fort'){ let m=0; ['Fortificaciones','Fortificación II','Fortificación III','Torres de vigilancia','Ciudadela'].forEach((n,i)=>{ if(techOwn(g,f,n)) m=Math.max(m,[1,2,3,4,5][i]); }); return m; }
-  let m=0; for(const n in g.F[f].techs){ const t=TECH[n]; if(t.sr===BT[bt].sr&&t.l>m) m=t.l; } return m;
+  if(bt==='fort'){ let m=0; ['Fortificaciones','Fortificación II','Fortificación III','Torres de vigilancia'].forEach((n,i)=>{ if(techOwn(g,f,n)) m=Math.max(m,[1,2,3,4,5][i]); }); return m; }
+  let m=0; for(const n in g.F[f].techs){ if(WONDER_TECH[n]) continue; const t=TECH[n]; if(t.sr===BT[bt].sr&&t.l>m) m=t.l; } return m;   // las vertebrales de nivel 5 ya no dan nivel 5 de edificio: lo da la maravilla
 }
 /** @param {Partida} g */
 function specVal(g,f,bt,key){
@@ -72,6 +74,12 @@ function specVal(g,f,bt,key){
 function specOptions(g,f,bt){
   const o=new Set(); for(const n in g.F[f].techs){ const s=SPECS[n]; if(s&&s.bt===bt) o.add(s.key); } return [...o];
 }
+// ---- maravillas (15.3) ----
+/** @param {Partida} g */
+function wonderBuilt(g,w){ for(const z of g.zones){ if(z.b.some(b=>b.t==='mar'&&b.w===w)) return z; } return null; }
+// quién las está construyendo ahora: [{f, zone, pct}]
+/** @param {Partida} g */
+function wonderRace(g,w){ const out=[]; g.zones.forEach(z=>{ if(!isPl(z.owner)) return; z.proj.forEach(p=>{ if(p.k==='w'&&p.w===w) out.push({f:z.owner,zone:z.id,pct:Math.round(100*(p.tot-p.left)/p.tot)}); }); }); return out; }
 function sameCount(z,bt){ return z.b.filter(b=>b.t===bt).length+z.proj.filter(p=>p.k==='b'&&p.bt===bt).length; }
 /** @param {Partida} g */
 function buildLevel(g,f,bt){ return Math.max(1,Math.min(5,capLevel(g,f,bt))); }
@@ -117,13 +125,14 @@ function ownPath(g,f,from,to,maxLen){
 }
 /** @param {Partida} g */
 function shipFactor(g,path){
-  let c=0; path.forEach(id=>{ const z=g.zones[id]; const b=z.b.filter(x=>x.t==='camino').sort((a,b)=>b.l-a.l)[0]; let fac=1; if(b) fac=[1,0.5,0.5,1/3,1/3,0][Math.min(5,b.l)]; c+=fac; });
+  let c=0; path.forEach(id=>{ const z=g.zones[id]; const b=z.b.filter(x=>x.t==='camino').sort((a,b)=>b.l-a.l)[0]; let fac=1; if(b) fac=[1,0.5,0.5,1/3,1/3,0][Math.min(5,b.l)]; if(z.b.some(x=>x.t==='mar'&&x.w==='log')) fac=0; c+=fac; });
   return c*(g.logiMult||1);
 }
 /** @param {Partida} g */
 function computeMods(g,f){
   const M=newMods(); if(!g.F[f]) return M;
   for(const n in g.F[f].techs){ const fx=FX[n]; if(fx) fx(M); }
+  g.zones.forEach(z=>{ if(z.owner===f) z.b.forEach(b=>{ if(b.t==='mar'&&b.w&&WFX[b.w]) WFX[b.w](M); }); });   // las maravillas que controlas
   return M;
 }
 /** @param {Partida} g */
@@ -131,7 +140,7 @@ function recomputeMods(g){ for(let f=0;f<=TRIBE;f++) g.M[f]=computeMods(g,f); }
 
 /* ---- investigación ---- */
 function techCost(g,f,name){
-  const t=TECH[name]; let c=20*t.l; if(t.l<=2&&techOwn(g,f,'Enciclopedia')) c=Math.ceil(c/2); return c;
+  const t=TECH[name]; return 20*t.l;
 }
 /** @param {Partida} g */
 function ownedAtLevel(g,f,l){ let n=0; for(const k in g.F[f].techs) if(TECH[k].l===l) n++; return n; }
@@ -139,6 +148,7 @@ function ownedAtLevel(g,f,l){ let n=0; for(const k in g.F[f].techs) if(TECH[k].l
 function researchBlock(g,f,name){
   const t=TECH[name]; const F=g.F[f]; if(!t) return 'No existe';
   if(F.techs[name]) return 'Ya la tienes';
+  if(WONDER_TECH[name]&&wonderBuilt(g,WONDER_TECH[name])) return 'Su maravilla ya fue construida';
   if((F.rq||[]).some(p=>p.name===name)) return 'Ya se está investigando';
   const miss=t.pre.filter(p=>!F.techs[p]); if(miss.length) return 'Falta: '+miss.join(', ');
   if(t.l>=2){ const have=ownedAtLevel(g,f,t.l-1); if(have<MINC[t.l]) return 'Necesitas '+MINC[t.l]+' tecnologías de nivel '+(t.l-1)+' (tienes '+have+')'; }

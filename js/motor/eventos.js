@@ -56,11 +56,21 @@ function tribalEvent(g,e,L){
       const t=free[Math.floor(g.rng()*free.length)]; const us=lst(z,TRIBE); const half=Math.floor(us.length/2);
       t.owner=TRIBE; t.tspec=z.tspec; t.tmult=1; t.units[TRIBE]=us.splice(0,half); L('Una tribu funda una nueva tribu en '+zname(t)+'.');
     }
-  } else if(e.id==='tributo'){
-    const near=g.zones.filter(a=>isPl(a.owner)&&z.adj.includes(a.id)); const pls=[...new Set(near.map(a=>a.owner))];
-    if(pls.length){ g.tributes.push({zone:z.id,amount:6,due:g.step+1,paid:{},targets:pls,res:TSPEC_RES[z.tspec]}); L('La tribu de '+zname(z)+' exige '+6+' de '+TSPEC_N[TSPEC_RES[z.tspec]]+' a sus vecinos antes del próximo paso.'); }
-  }
+  } else if(e.id==='tributo'){ makeTribeRequest(g,z,L); }
 }
+// Pedidos de las tribus: cada TRIBE_REQ_EVERY pasos, el mismo en el mismo paso para todos sus vecinos, según su oficio.
+// Cumplirlo sube la relación; rechazarlo no tiene castigo (el pedido caduca).
+/** @param {Partida} g */
+function makeTribeRequest(g,z,L){
+  const near=g.zones.filter(a=>isPl(a.owner)&&z.adj.includes(a.id));
+  const pls=[...new Set(near.map(a=>a.owner))].filter(f=>!(g.wars||[]).some(w=>w.tribe===z.id&&w.f===f));
+  if(!pls.length||g.tributes.some(t=>t.zone===z.id)) return;
+  const list=TRIBE_REQS[z.tspec]||TRIBE_REQS.agr, k=Math.floor(g.step/TRIBE_REQ_EVERY)%list.length, res=list[k][0], amount=Math.round(list[k][1]*(1+g.step/60));
+  g.tributes.push({zone:z.id,amount,due:g.step+TRIBE_REQ_EVERY-1,paid:{},targets:pls,res});
+  L('La tribu de '+zname(z)+' pide '+amount+' de '+TSPEC_N[res]+'. Cumplirlo mejora tu relación con ella.');
+}
+/** @param {Partida} g */
+function tribeRequests(g,L){ if(g.step%TRIBE_REQ_EVERY!==0) return; g.zones.forEach(z=>{ if(z.owner===TRIBE&&(z.units[TRIBE]||[]).length) makeTribeRequest(g,z,L); }); }
 /** @param {Partida} g */
 function upcomingEvents(g,f){
   const M=g.M[f]||newMods();

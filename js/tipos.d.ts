@@ -24,6 +24,8 @@ interface Unidad {
   mv: number;        // 1 si se movió este paso (no produce)
   hg: number;        // pasos con hambre
   need?: number;     // comida que necesita este paso
+  id?: number;       // identificador de la persona (para elegirla)
+  tr?: { k: string; l: number }[];   // rasgos: k = agr|ing|com|cie|apt, l = -2, -1, 1 o 2
   half?: number; mit?: number; cabhp?: number; brea?: number; cb?: number; dead?: number;
 }
 
@@ -44,10 +46,10 @@ interface Zona {
   res: string | null; tspec: Civil | null; tmult: number; tbase?: number; settled?: number;
   ev: { [k: string]: number };
   // economía de la zona
-  growMode?: 'crecer' | 'guardar'; autoSpec?: Civil | null; routes?: EnvioAuto[];
-  bplan?: {ing:number; pob:number; bonus:number; cap:number; work:number; stock:number} | null; resN?: number; resBonus?: number; rcap?: number; nres?: number;
+  growMode?: 'crecer' | 'guardar'; pauseBuild?: boolean; autoSpec?: Civil | null; routes?: EnvioAuto[];
+  bplan?: {ing:number; pob:number; bonus:number; cap:number; work:number; stock:number; paused?:boolean; ids?:number[]} | null; resN?: number; resBonus?: number; rcap?: number; nres?: number;
   f0?: number; p0?: number; feedOut?: number;
-  feed?: { [f: number]: { need: number; local: number; from: { [z: number]: number }; short: number; line: ZonaId | null } };
+  feed?: { [f: number]: { gold?: number; need: number; local: number; from: { [z: number]: number }; short: number; line: ZonaId | null } };
   last?: { food: number; prod: number; gold: number; tech: number };
   lastBy?: any; sp?: { spec: string; lvl: number; n: number };
   // equipo militar guardado y recursos estratégicos
@@ -74,7 +76,7 @@ interface EstadoJugador {
 }
 
 interface Partida {
-  mapIdx: number; N: number; seed: number; rng: () => number;
+  nid: number; mapIdx: number; N: number; seed: number; rng: () => number;
   zones: Zona[]; map: { n: any[]; e: [ZonaId, ZonaId][] };
   step: number; over: boolean; winner: Jugador[]; thr: string;
   F: EstadoJugador[]; M: any[];
@@ -91,7 +93,7 @@ type Orden = { f?: Jugador } & (
   | { t: 'research'; name: string }
   | { t: 'cancelres'; name: string }
   | { t: 'stance'; target: Jugador; stance: Postura }
-  | { t: 'spec'; zone: ZonaId; from: Civil; to: Civil; n: number }
+  | { t: 'spec'; zone: ZonaId; from: Civil; to: Civil; n: number; ids?: number[] }
   | { t: 'demob'; zone: ZonaId; u: Militar; to: Civil; n: number }
   | { t: 'train'; zone: ZonaId; u: Militar; n: number; from?: 'pob' | 'sol' }
   | { t: 'build'; zone: ZonaId; bt: TipoEdificio; spec?: string | null }
@@ -102,6 +104,7 @@ type Orden = { f?: Jugador } & (
   | { t: 'send'; from: ZonaId; to: ZonaId; res: 'food' | 'prod'; q: number; auto?: number }
   | { t: 'route'; from: ZonaId; to: ZonaId; res: 'food' | 'prod'; q: number | 'sobrante' }
   | { t: 'growmode'; zone: ZonaId; mode: 'crecer' | 'guardar' }
+  | { t: 'pausebuild'; zone: ZonaId; on: boolean }
   | { t: 'autospec'; zone: ZonaId; to: Civil | null }
   | { t: 'tribute'; tribe: ZonaId; from: ZonaId }
   | { t: 'ally'; target?: Jugador; off?: number }

@@ -87,14 +87,13 @@ function routeZones(a,b){ // camino más corto por el grafo
 }
 
 /* ---------- emblemas de especialización ---------- */
-const SPECC={front:'#C9A24A',agr:'#6FA83A',ing:'#C97A3A',con:'#8A8378',cie:'#4A7FC0',com:'#E0A21B',bas:'#B79A6A',tri:'#8A5A3A',free:'#9AA39C'};
-const SPECL={agr:'Agrícola',ing:'Producción',con:'Industrial',cie:'Tecnología',com:'Comercial',bas:'Básica',tri:'Tribu',free:'Libre'};
+const SPECC={front:'#C9A24A',agr:'#6FA83A',ing:'#C97A3A',cie:'#4A7FC0',com:'#E0A21B',bas:'#B79A6A',tri:'#8A5A3A',free:'#9AA39C'};
+const SPECL={agr:'Agrícola',ing:'Producción',cie:'Tecnología',com:'Comercial',bas:'Básica',tri:'Tribu',free:'Libre'};
 function emblem(sp,r){
   const c=SPECC[sp]||SPECC.free; let g='';
   switch(sp){
     case 'agr': g='<path d="M-9,11 L-9,-6 M0,13 L0,-10 M9,11 L9,-6" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round"/><ellipse cx="-9" cy="-9" rx="3" ry="5" fill="#fff"/><ellipse cx="0" cy="-13" rx="3" ry="5" fill="#fff"/><ellipse cx="9" cy="-9" rx="3" ry="5" fill="#fff"/>'; break;
     case 'ing': g='<circle r="7" fill="none" stroke="#fff" stroke-width="4.5"/><circle r="12" fill="none" stroke="#fff" stroke-width="4" stroke-dasharray="4.6 4.6"/>'; break;
-    case 'con': g='<rect x="-13" y="-10" width="12" height="7" fill="#fff"/><rect x="1" y="-10" width="12" height="7" fill="#fff"/><rect x="-6" y="-1" width="12" height="7" fill="#fff"/><rect x="-13" y="8" width="12" height="6" fill="#fff"/><rect x="1" y="8" width="12" height="6" fill="#fff"/>'; break;
     case 'cie': g='<path d="M-4,-13 h8 v8 l9,17 h-26 l9,-17 z" fill="#fff"/><circle cx="-1" cy="7" r="2.4" fill="#4A7FC0"/><circle cx="4" cy="3" r="1.8" fill="#4A7FC0"/>'; break;
     case 'com': g='<circle r="12" fill="#fff"/><text y="6" text-anchor="middle" font-size="17" font-weight="700" fill="#B07A10" class="zt">$</text>'; break;
     case 'tri': g='<polygon points="-13,12 0,-13 13,12" fill="#fff"/><polygon points="-4,12 0,2 4,12" fill="#8A5A3A"/>'; break;

@@ -2,7 +2,7 @@
 
 **Para qué sirve este documento:** permite retomar el proyecto en una conversación nueva (o con otra persona) sin tener que volver a explicar nada. Está escrito para leerse de arriba abajo en 10 minutos.
 
-**Última actualización:** 27 de octubre de 2026 (reglas de maravillas únicas, botín e ingenieros automáticos; multijugador con Firebase)
+**Última actualización:** 27 de octubre de 2026 (v0.14: ingenieros automáticos en el juego; reglas de maravillas únicas y de 13.3 aún sin programar; multijugador con Firebase)
 **Autor del diseño:** Alejandro.
 
 ⚠ **Quién escribe:** en este proyecto escribe siempre **Alejandro**, autor único del diseño y del código. Las preferencias de la cuenta de Claude están a nombre de otra persona (Pao); no la confundas con él, no le atribuyas ideas, decisiones ni partidas de prueba, y háblale a Alejandro en masculino.
@@ -99,7 +99,7 @@
 - Trabajadores: 2 por defecto, 3 con *Andamios*, 4 con *Grúas*. El efecto se aplica **por trabajador**.
 - 🆕 **Ingenieros automáticos:** si la zona tiene una obra en cola, sus ingenieros construyen solos (cada uno usa 2 de la producción guardada); el resto produce. Sin obra, todos producen. Se acabó la capacidad de obra y la zona industrial (se fusiona con la de Producción), igual que los científicos automáticos.
 - **Maravilla:** 500 de producción, sin trabajadores, ocupa un espacio; si pierdes la zona, el conquistador se la queda. 🆕 **Hay 12, una por rama, únicas en la partida.** La vertebral de nivel 5 de la rama solo la desbloquea (se paga como siempre) y solo se puede investigar si esa maravilla aún no existe; **el efecto de esa tecnología lo da la maravilla** mientras la controles (nombres y efectos en Reglas 15.3: por ejemplo, La Gran Fragua, La Torre de los Sabios y La Puerta de los Estandartes). Si pierdes la carrera, recuperas la mitad de la ciencia y la mitad de la producción puestas.
-- 🆕 **Botín:** al conquistar una zona, el atacante se lleva la mitad de la producción que tuviera guardada.
+- 🆕 **Botín:** al ganar el control de una zona (conquista o anexión) te quedas con toda la comida y la producción guardadas, y con los civiles capturados. Ya funciona así en el juego.
 
 ### Tribus, eventos, victoria y fantasmas
 - 🆕 **Fronteras:** entre imperios vecinos hay una tierra de nadie sin dueño; quienes estén ahí ganan 🪙 +3 por paso cada uno mientras haya paz (+4 si hay uno solo). Es el dilema del prisionero del juego.
@@ -150,7 +150,8 @@
 1b. **Jugarlo con la familia.** 🆕 Ya se trabajó lo que se sentía mal al jugar sola (opciones de partida, tecnologías, zona, mapa, edificios, combate). Falta probarlo con más personas.
 2. 🆕 **Ritmo y balance después de los cambios de hoy:** con la capital a +2 y el equipo más caro, casi nadie gana antes del paso 60 en las simulaciones (pendientes 26 y 28). Revisar los umbrales del modo prueba.
 3. 🆕 **Confirmar las propuestas 💡 de hoy:** reparto del sobrante de comida (pendiente 29), costo del segundo edificio (30) y valores del equipo (31). 🆕 Y las nuevas: maravillas únicas (38), ingenieros automáticos (39) y botín (40).
-3b. 🆕 **Pasar al juego** las reglas de maravillas, botín e ingenieros automáticos (Reglas 23.5) y simular el ritmo con la capital a +2.
+3b. 🆕 **Pasar al juego** las reglas decididas (Reglas 23.5), en este orden: ✅ ingenieros automáticos (v0.14, 27/10/2026) → maravillas únicas (15.3) → lo de 13.3 y 12 (villas francas, elegir entre dos, pedidos de tribus, subasta, historias). Falta simular el ritmo con la capital a +2.
+3d. 🆕 **Diseño nuevo de tensión (27/10/2026, decidido por Alejandro; Reglas 13.3 y 12):** villas francas (antes fronteras; solo cuentan las tropas), subasta a sobre cerrado cada 20 pasos, encuentros de elegir entre dos, tribus que piden cosas y se anexan solo con la relación al máximo, guerra si atacas a una tribu, e historias de 4 capítulos. Falta pasarlo al juego (pendientes 41 a 44).
 3c. 🆕 **Multijugador con Firebase (decidido por Alejandro):** hecho sobre la v0.13 y ya en `main` (guía en `docs/multijugador.md`), probado con dos navegadores y un Firebase falso. Falta: configurar Firebase (unos 10 minutos), publicar el juego y jugar la primera partida real.
 4. **19 de 203 tecnologías no tienen efecto simulado** (lista en la sección 23.2 de las reglas).
 5. **Pasar el motor a Python** con pytest y tablas de configuración; después, el simulador de balance. 🆕 La separación por capas ya lo deja preparado.
@@ -252,7 +253,15 @@ Al cerrar cada sesión:
 | 🆕 La vertebral de nivel 5 solo desbloquea la maravilla y solo se investiga si la maravilla no existe | Llegar tarde cuesta algo y la carrera se siente |
 | 🆕 Perder la carrera devuelve la mitad de la ciencia y de la producción | Castiga sin arruinar |
 | 🆕 Nombres y efectos de las 12 maravillas (Saber, Urbanismo y Guerra con efecto nuevo) | Las vertebrales de esas tres ramas eran flojas al final o no tenían efecto propio |
-| 🆕 Botín: el conquistador se lleva la mitad de la producción guardada | Da premio a la guerra y riesgo a acumular (pendientes 26 y 28) |
+| 🆕 Los pobladores también construyen solos si hay obra (1 de la producción guardada); si no, producen | Misma idea que los ingenieros; evita una apertura en la que nadie puede construir |
+| 🆕 Rasgos de las personas: 2 por civil, de muy malo a muy bueno, por oficio; el jugador elige a quién especializar | Da identidad a cada poblador sin que el juego decida por ti; a veces importa más la comida o el oro que un +25 % en ciencia |
+| 🆕 Reparto entre producir y construir por balance de lo guardado (mitad y mitad con igual eficiencia) | Se acerca a cómo piensa el jugador: entradas y salidas, no órdenes de asignar |
+| 🆕 Pausa de obras por zona y «pausar crecimiento» | Poder acumular producción o comida sin que se gasten solas |
+| 🆕 Mover comida de otra zona cuesta oro | La logística importa; antes la comida circulaba gratis por todo el imperio |
+| 🆕 *Gremios de ingenieros* y *Grandes obras* dan descuentos de obra | Sus efectos (zona industrial) quedaron repetidos con *Ingeniería básica y avanzada*; siguen siendo vertebrales de Urbanismo |
+| 🆕 Botín: el conquistador se queda con todo lo guardado y con los civiles capturados | Da premio a la guerra y riesgo a acumular (pendientes 26 y 28) |
+| 🆕 Tribus que se ganan con pedidos (no se anexan desde el inicio) y guerra si las atacas | Comprar tribus era demasiado fácil; ahora hay relación y riesgo |
+| 🆕 Subasta a sobre cerrado cada 20 pasos, abierta a todos | Pone a competir a todos los jugadores a la vez, con información incompleta |
 | 🆕 Ingenieros automáticos y constructor fusionado con ingeniero | Dos números para una sola acción complicaban construir; es la misma solución de los científicos |
 | 🆕 README y guía de colaboración en inglés, con capturas y enlace para jugar | Que un reclutador entienda el proyecto y lo pruebe en un minuto |
 | 🆕 Prioridad de crecer o guardar por zona, envíos automáticos y oficio al nacer | Menos micromanagement y más control sobre el ritmo de cada zona |

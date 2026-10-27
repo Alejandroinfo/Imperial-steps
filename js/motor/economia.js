@@ -8,33 +8,52 @@ function growCost(g,f,z){
   if(g.step<=FOUNDING_STEPS) c=Math.ceil(c/2);   // etapa de fundación: los primeros pasos son más rápidos
   return Math.max(1,c);
 }
-// Obras automáticas (igual que los científicos): si la zona tiene obras en cola, sus ingenieros y pobladores libres
-// construyen solos, cada uno usando de la producción guardada (ingeniero 2 + Cuadrillas/Línea; poblador 1);
-// los que no alcancen producen. Se decide antes de producir, con la producción guardada al inicio del paso
-// (más lo que se pueda traer de zonas cercanas pagando oro). Sin obra en cola, todos producen.
+// Obras automáticas: si la zona tiene obras en cola (y no están en pausa), sus ingenieros y pobladores libres
+// construyen solos, usando producción (ingeniero 2 + Cuadrillas/Línea; poblador 1). Se reparte así:
+// se parte de la producción guardada y se ve si lo que se gastaría supera lo que hay (guardado + lo que producen
+// los demás). Si la cuenta queda en negativo, se pone a producir a quien mejor produce hasta cerrar la brecha;
+// con la misma eficiencia, la mitad produce para que la otra mitad construya. Sin obra o en pausa, todos producen.
 /** @param {Partida} g */
 function buildPlan(g,z,f,pull){
-  const plan={ing:0,pob:0,bonus:0,cap:0,work:0,stock:0};
+  const plan={ing:0,pob:0,bonus:0,cap:0,work:0,stock:0,paused:!!z.pauseBuild,ids:[]};
   if(!isPl(f)||!z.proj.length) return plan;
-  const M=g.M[f]; const dbl=M.terrDouble?2:1; const hill=z.terrain==='col'?dbl*(1+M.tx.col):0;
-  const free=t=>(z.units[f]||[]).filter(u=>u.t===t&&u.w===0&&!u.busy&&!u.mv).length;
-  const nIng=free('ing'), nPob=free('pob'), useIng=2+M.conUse+hill, usePob=1+hill;
-  const sp=zoneSpec(g,z,f); const zb=sp.spec==='ing'?[0,4,8,12][sp.lvl]+M.zProdLvl*sp.lvl:0;
+  const M=g.M[f]; const dbl=M.terrDouble?2:1; const hill=z.terrain==='col'?dbl*(1+M.tx.col):0, mon=z.terrain==='mon'?dbl*(1+(M.tx.mon||0)):0; const ev=z.ev||{};
   const work=z.proj.reduce((a,p)=>a+p.left,0); plan.work=work;
-  const maxCap=Math.min(work,nIng*useIng+nPob*usePob+(nIng+nPob>0?zb:0));
-  if(pull&&z.prod<maxCap) pullRes(g,f,z,'prod',maxCap-z.prod,M.pullDist);
-  let budget=Math.floor(z.prod), left=work; plan.stock=budget;
-  const take=(n,use,key)=>{ for(let i=0;i<n&&left>0;i++){ const c=Math.min(use,left); if(budget<c) break; budget-=c; left-=c; plan.cap+=c; plan[key]++; } };
-  take(nIng,useIng,'ing'); take(nPob,usePob,'pob');
-  if(plan.ing+plan.pob>0&&zb>0&&left>0){ const b=Math.min(zb,budget,left); plan.bonus=b; plan.cap+=b; }
-  return plan;
+  if(z.pauseBuild) return plan;
+  const cand=(z.units[f]||[]).filter(u=>(u.t==='ing'||u.t==='pob')&&u.w===0&&!u.busy&&!u.mv);
+  // lo que cada persona gastaría construyendo y lo que produciría si no construye (con sus rasgos de ingeniería)
+  const info=cand.map(u=>{ const m=trMul(u,'ing'); return u.t==='ing'
+    ?{id:u.id,k:'ing',use:(2+M.conUse+hill)*m,prod:Math.max(0,2+M.ingProd+mon+(ev.prodIng||0))*m}
+    :{id:u.id,k:'pob',use:(1+hill)*m,prod:Math.max(0,1+M.pobProd+mon+(ev.prodPob||0))*m}; });
+  const sp=zoneSpec(g,z,f); const zb=sp.spec==='ing'?[0,4,8,12][sp.lvl]+M.zProdLvl*sp.lvl:0;
+  const fixed=z.capital?CAPITAL_BONUS+M.capExtra:0;   // producción segura de la zona aunque nadie construya
+  const target=Math.min(work,info.reduce((a,u)=>a+u.use,0)+(info.length?zb:0));
+  const solve=()=>{
+    const stock=Math.floor(z.prod); const r={ing:0,pob:0,bonus:0,cap:0,stock,ids:[]};
+    // los mejores para construir primero, hasta cubrir el trabajo; el resto produce
+    const all=info.slice().sort((a,b)=>(b.use/Math.max(0.1,b.prod))-(a.use/Math.max(0.1,a.prod)));
+    let B=[], P=[], cov=0;
+    all.forEach(u=>{ if(cov<work){ B.push(u); cov+=u.use; } else P.push(u); });
+    const spendOf=()=>Math.min(work,B.reduce((a,u)=>a+u.use,0)+(B.length&&zb?zb:0));
+    const availOf=()=>stock+fixed+P.reduce((a,u)=>a+u.prod,0);
+    while(B.length&&spendOf()>availOf()){
+      // la brecha es negativa: pasa a producir quien mejor produce (más producción por lo que gastaría)
+      let bi=0; B.forEach((u,i)=>{ if(u.prod/Math.max(0.1,u.use)>B[bi].prod/Math.max(0.1,B[bi].use)) bi=i; });
+      P.push(B.splice(bi,1)[0]);
+    }
+    if(B.length){ r.ing=B.filter(u=>u.k==='ing').length; r.pob=B.length-r.ing; r.ids=B.map(u=>u.id); const base=B.reduce((a,u)=>a+u.use,0); r.cap=Math.floor(Math.min(spendOf(),availOf())); r.bonus=Math.round(Math.max(0,Math.min(zb,r.cap-Math.floor(base)))); }
+    return r;
+  };
+  let r=solve();
+  if(pull&&r.cap<target){ const got=pullRes(g,f,z,'prod',Math.ceil(target-r.cap),M.pullDist); if(got>0) r=solve(); }
+  return Object.assign(plan,r);
 }
 /** @param {Partida} g */
 function produceZone(g,z){
   const f=z.owner; if(!isPl(f)) return; const M=g.M[f], F=g.F[f]; const us=z.units[f]||[];
   const sciAll=us.filter(u=>u.t==='cie'&&u.w===0&&!u.busy&&!u.mv); const nres=Math.min(z.resN||0,sciAll.length); const researchers=new Set(sciAll.slice(0,nres));  // z.resN lo fija researchPlan
-  const bp=z.bplan||{ing:0,pob:0,bonus:0,cap:0}; const builders=new Set(), pobBuilders=new Set(); let bi=bp.ing, bpob=bp.pob;   // los pobladores que construyen siguen dando comida; los ingenieros que construyen no producen
-  us.forEach(u=>{ if(u.w!==0||u.busy||u.mv) return; if(u.t==='ing'&&bi>0){ builders.add(u); bi--; } else if(u.t==='pob'&&bpob>0){ pobBuilders.add(u); bpob--; } });
+  const bp=z.bplan||{ing:0,pob:0,bonus:0,cap:0,ids:[]}; const builders=new Set(), pobBuilders=new Set(); const bids=new Set(bp.ids||[]);   // los pobladores que construyen siguen dando comida; los ingenieros que construyen no producen
+  us.forEach(u=>{ if(!bids.has(u.id)) return; if(u.t==='ing') builders.add(u); else if(u.t==='pob') pobBuilders.add(u); });
   const act=us.filter(u=>UT[u.t].civ&&u.w===0&&!u.busy&&!u.mv&&!researchers.has(u)&&!builders.has(u));
   const T=z.terrain, dbl=M.terrDouble?2:1, tx=M.tx[T]||0, ev=z.ev||{};
   let food=0,prod=0,gold=0,tech=0;
@@ -46,11 +65,11 @@ function produceZone(g,z){
   act.forEach(u=>{
     const h=u.half?0.5:1; const J=job(u.t); J.n++; let df=0,dp=0,dg=0,dt=0;
     switch(u.t){
-      case 'pob': df=h*Math.max(0,1+M.pobFood+(T==='pra'?dbl*(1+tx):0)+(ev.foodPob||0)); dp=pobBuilders.has(u)?0:h*Math.max(0,1+M.pobProd+(T==='mon'?dbl*(1+tx):0)+(ev.prodPob||0)); break;
-      case 'agr': df=h*Math.max(0,2+M.agrFood+(T==='pra'?dbl*(1+tx):0)+(ev.foodAgr||0)); break;
-      case 'ing': dp=h*Math.max(0,2+M.ingProd+(T==='mon'?dbl*(1+tx):0)+(ev.prodIng||0)); break;
-      case 'cie': dt=h*Math.max(0,2+M.cieTech+(T==='lla'?dbl*(1+tx):0)+(ev.techCie||0)); break;
-      case 'com': dg=h*Math.max(0,2+M.comGold+((T==='bos'||T==='rio')?dbl*(1+tx):0)+(ev.goldCom||0)); break;
+      case 'pob': df=h*Math.max(0,1+M.pobFood+(T==='pra'?dbl*(1+tx):0)+(ev.foodPob||0))*trMul(u,'agr'); dp=pobBuilders.has(u)?0:h*Math.max(0,1+M.pobProd+(T==='mon'?dbl*(1+tx):0)+(ev.prodPob||0))*trMul(u,'ing'); break;
+      case 'agr': df=h*Math.max(0,2+M.agrFood+(T==='pra'?dbl*(1+tx):0)+(ev.foodAgr||0))*trMul(u,'agr'); break;
+      case 'ing': dp=h*Math.max(0,2+M.ingProd+(T==='mon'?dbl*(1+tx):0)+(ev.prodIng||0))*trMul(u,'ing'); break;
+      case 'cie': dt=h*Math.max(0,2+M.cieTech+(T==='lla'?dbl*(1+tx):0)+(ev.techCie||0))*trMul(u,'cie'); break;
+      case 'com': dg=h*Math.max(0,2+M.comGold+((T==='bos'||T==='rio')?dbl*(1+tx):0)+(ev.goldCom||0))*trMul(u,'com'); break;
     }
     food+=df; prod+=dp; gold+=dg; tech+=dt; J.food+=df; J.prod+=dp; J.gold+=dg; J.tech+=dt;
   });
@@ -61,7 +80,7 @@ function produceZone(g,z){
   if(sp.spec==='com') gold+=zb+(lv===3?M.ruta:0);
   if(sp.spec==='cie'&&nres===0) tech+=zb;
   if(food-f0||prod-p0||gold-g0||tech-t0) by.zone={spec:sp.spec,lvl:lv,food:food-f0,prod:prod-p0,gold:gold-g0,tech:tech-t0};
-  z.rcap=nres*RESEARCH_PER_SCI+(nres>0?(z.resBonus||0):0); z.nres=nres;
+  let rc=0; researchers.forEach(u=>{ rc+=RESEARCH_PER_SCI*trMul(u,'cie'); }); z.rcap=Math.floor(rc)+(nres>0?(z.resBonus||0):0); z.nres=nres;
   if(z.capital){ const c=CAPITAL_BONUS+M.capExtra; food+=c; prod+=c; gold+=c; tech+=c; by.cap=c; }
   // edificios
   let pool=act.slice();
@@ -194,16 +213,17 @@ function frontierIncome(g,L){
 /** @param {Partida} g */
 function unitNeed(g,z,f,u,freeSlots){
   const M=g.M[f], ex=(z.ev&&z.ev.cons)||0;
-  if(UT[u.t].civ) return 1+ex;
-  if(z.owner===f){ if(freeSlots.n>0&&!UT[u.t].siege){ freeSlots.n--; return 0; } return (M.garrison?1:2)+ex; }
-  return (M.supplies?1:2)+ex;
+  const am=aptMul(u);   // rasgo de apetito: bueno come menos
+  if(UT[u.t].civ) return 1*am+ex;
+  if(z.owner===f){ if(freeSlots.n>0&&!UT[u.t].siege){ freeSlots.n--; return 0; } return (M.garrison?1:2)*am+ex; }
+  return (M.supplies?1:2)*am+ex;
 }
 // Zonas propias desde las que la gente de `from` puede recibir comida, de la más cercana a la más lejana.
 // Dentro del propio territorio (o en una frontera) la red llega lejos: la comida circula por tus caminos.
 // Fuera, hace falta una línea de suministro corta y segura: como máximo SUPPLY_RANGE zonas y sin pasar
 // por zonas de un enemigo. Si no hay ninguna, las tropas quedan aisladas y pasan hambre.
 /** @param {Partida} g */
-function supplySources(g,f,from){
+function supplySourcesD(g,f,from){
   const z0=g.zones[from]; const propio=z0.owner===f||z0.role==='frontera';
   const limite=propio?99:SUPPLY_RANGE+(g.M[f].supplies?1:0);
   const paso=z=>z.owner===f||z.role==='frontera'||z.owner===null||allied(g,f,z.owner);
@@ -213,8 +233,10 @@ function supplySources(g,f,from){
     if(dist[a]>=limite) continue;
     for(const b of g.zones[a].adj) if(!(b in dist)&&paso(g.zones[b])){ dist[b]=dist[a]+1; q.push(b); }
   }
-  return out.sort((x,y)=>x[1]-y[1]).map(x=>x[0]);
+  return out.sort((x,y)=>x[1]-y[1]);
 }
+/** @param {Partida} g */
+function supplySources(g,f,from){ return supplySourcesD(g,f,from).map(x=>x[0]); }
 // Cada jugador alimenta a toda su gente: cada zona come primero de lo suyo y lo que falta sale,
 // sin costo, de la zona propia más cercana que tenga comida, y luego de la siguiente.
 /** @param {Partida} g */
@@ -222,15 +244,23 @@ function feedPlayer(g,f,L){
   const zs=g.zones.filter(z=>(z.units[f]||[]).length); const deficit={};
   zs.forEach(z=>{
     const us=z.units[f]; const free={n:z.owner===f?z.b.filter(b=>b.t==='cuartel').reduce((a,b)=>a+(b.wk||0),0):0};
-    let need=0; us.forEach(u=>{ u.need=unitNeed(g,z,f,u,free); need+=u.need; });
+    let need=0; us.forEach(u=>{ u.need=unitNeed(g,z,f,u,free); need+=u.need; }); need=Math.ceil(need-1e-9);   // los rasgos de apetito dan fracciones: se redondea hacia arriba por zona
     z.feed=z.feed||{}; z.feed[f]={need,local:0,from:{},short:0,line:null};
     if(z.owner===f){ const pay=Math.min(z.food,need); z.food-=pay; need-=pay; z.feed[f].local=pay; }
     if(need>0) deficit[z.id]=need;
   });
   Object.keys(deficit).map(Number).forEach(id=>{
     let need=deficit[id];
-    const src0=supplySources(g,f,id); g.zones[id].feed[f].line=src0.length?src0[0]:null;
-    for(const s of src0){ if(need<=0) break; const src=g.zones[s]; const t=Math.min(src.food,need); if(t>0){ src.food-=t; need-=t; g.zones[id].feed[f].from[s]=t; src.feedOut=(src.feedOut||0)+t; } }
+    const src0=supplySourcesD(g,f,id); g.zones[id].feed[f].line=src0.length?src0[0][0]:null; g.zones[id].feed[f].gold=0;
+    for(const [s,dist] of src0){ if(need<=0) break; const src=g.zones[s]; let t=Math.min(src.food,need); if(t<=0) continue;
+      // mover comida de otra zona cuesta oro de logística, como un envío (distancia, Caminos y caravanas)
+      const Mf=g.M[f], Ff=g.F[f]; const path=ownPath(g,f,s,id,99);
+      let fac=path?shipFactor(g,path):dist*(g.logiMult||1); if(Mf.freeFoodAdj&&path&&path.length===1) fac=0;
+      let cost=0;
+      if(fac>0){ const fr=Math.max(0,Mf.caravan-(Ff.caravanUsed||0)); cost=Math.ceil(Math.max(0,t-fr)*fac);
+        if(cost>Ff.gold){ t=Math.min(t,Math.floor(Ff.gold/fac)+fr); cost=Math.ceil(Math.max(0,t-fr)*fac); }
+        if(t<=0) continue; Ff.gold-=cost; Ff.caravanUsed=(Ff.caravanUsed||0)+Math.min(fr,t); if(Mf.logiRefund&&cost>0) Ff.gold+=Math.floor(cost*Mf.logiRefund); }
+      src.food-=t; need-=t; g.zones[id].feed[f].from[s]=t; g.zones[id].feed[f].gold+=cost; src.feedOut=(src.feedOut||0)+t; }
     deficit[id]=need; g.zones[id].feed[f].short=need;
   });
   zs.forEach(z=>{

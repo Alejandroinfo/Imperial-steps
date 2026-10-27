@@ -34,6 +34,7 @@ function act(a,d){
     case 'tutstop': tutStop(); render(); return;
     case 'encounter': ui.orders=ui.orders.filter(o=>o.t!=='encounter'); addOrder({t:'encounter',choice:d.v}); break;
     case 'growmode': ui.orders=ui.orders.filter(o=>!(o.t==='growmode'&&o.zone===z.id)); if(d.v!==(z.growMode||GROW_MODE_DEFAULT)) addOrder({t:'growmode',zone:z.id,mode:d.v}); break;
+    case 'pausebuild': { const zz=G.zones[Number(d.zone)]; if(!zz||zz.owner!==ME) break; const pd=ui.orders.filter(o=>o.t==='pausebuild'&&o.zone===zz.id).pop(); const cur=pd?pd.on:!!zz.pauseBuild; ui.orders=ui.orders.filter(o=>!(o.t==='pausebuild'&&o.zone===zz.id)); if(!cur!==!!zz.pauseBuild) addOrder({t:'pausebuild',zone:zz.id,on:!cur}); break; }
     case 'autospec': ui.orders=ui.orders.filter(o=>!(o.t==='autospec'&&o.zone===z.id)); if(d.v!==(z.autoSpec||'pob')) addOrder({t:'autospec',zone:z.id,to:d.v==='pob'?null:d.v}); break;
     case 'route': { const from=d.from!==undefined?Number(d.from):z.id;
       if(d.q==='0'){ addOrder({t:'route',from,to:Number(d.to),res:d.res,q:0}); break; }
@@ -57,8 +58,12 @@ function act(a,d){
     case 'zsub': ui.zsub=d.s; break;
     case 'hf': ui.hf=d.v; break;
     case 'batch': ui.batch=d.b==='todos'?'todos':Number(d.b); break;
-    case 'pick': ui.pick=(ui.pick===d.t)?null:d.t; break;
-    case 'dropst': if(ui.pick&&ui.sel!==null){ dropOnStation(ui.sel,ui.pick,d.st); return; } break;
+    case 'pick': { const id=Number(d.id); if(!ui.pickIds||ui.pick!==d.t) ui.pickIds=[]; ui.pick=d.t;
+      if(ui.pickIds.includes(id)) ui.pickIds=ui.pickIds.filter(x=>x!==id);
+      else { const list=availListQ(z.id,d.t); const b=ui.batch==='todos'?list.length:(Number(ui.batch)||1); const k=Math.max(0,list.findIndex(u=>u.id===id));
+        ui.pickIds=ui.pickIds.concat(list.slice(k,k+b).map(u=>u.id).filter(x=>!ui.pickIds.includes(x))); }
+      if(!ui.pickIds.length) ui.pick=null; break; }
+    case 'dropst': if(ui.pick&&ui.sel!==null){ dropOnStation(ui.sel,ui.pick,d.st,ui.pickIds); return; } break;
     case 'tfbranch': ui.tf.br=d.b; break;
     case 'tview': ui.tf.view=d.v; break;
     case 'sug': goSuggestion(Number(d.i)); break;

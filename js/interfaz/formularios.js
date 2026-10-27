@@ -37,6 +37,24 @@ function queuedUnits(zid,t){ // unidades de ese tipo que ya tienen una orden de 
   let n=queuedMove(zid,t); ui.orders.forEach(o=>{ if(o.zone===zid&&o.t==='spec'&&o.from===t) n+=o.n; if(o.zone===zid&&o.t==='train'&&o.from===t) n+=o.n; if(o.zone===zid&&o.t==='demob'&&o.u===t) n+=o.n; });
   return n;
 }
+// ---- Personas con rasgos: fichas, íconos y bordes ----
+function traitText(x){
+  const I=TRAIT_INFO[x.k]; const pct=Math.round(TRAIT_STEP*x.l*100);
+  const ef=x.k==='apt'?(x.l>0?'come un '+pct+' % menos':'come un '+(-pct)+' % más'):((pct>0?'+':'')+pct+' %');
+  return I.n+' ('+TRAIT_LV[x.l]+', '+ef+'): afecta '+I.d;
+}
+const traitScore=u=>(u.tr||[]).reduce((a,x)=>a+x.l,0);
+// borde dorado si tiene un rasgo muy bueno, plateado si solo bueno
+function traitBorder(u){ const m=Math.max(-9,...(u.tr||[]).map(x=>x.l)); return m>=2?'tg':m===1?'ts':''; }
+function traitChips(u){ return (u.tr||[]).map(x=>`<i class="tc ${x.l>0?'p':'n'}${Math.abs(x.l)}" title="${esc(traitText(x))}">${TRAIT_INFO[x.k].ic}</i>`).join(''); }
+// Personas libres de un oficio (menos las ya elegidas para una orden), las mejores primero.
+function availListQ(zid,t){
+  const z=G.zones[zid]; const used=new Set(); let idq=0;
+  ui.orders.forEach(o=>{ if(o.t==='spec'&&o.zone===zid&&o.from===t&&o.ids){ o.ids.forEach(i=>used.add(i)); idq+=o.n; } });
+  const l=(z.units[ME]||[]).filter(u=>u.t===t&&u.w===0&&!u.busy&&!used.has(u.id));
+  const other=Math.max(0,queuedUnits(zid,t)-idq);
+  return l.slice(0,Math.max(0,l.length-other)).sort((a,b)=>traitScore(b)-traitScore(a));
+}
 function availQ(zid,t){ const z=G.zones[zid]; return Math.max(0,availUnits(G,z,ME,t)-queuedUnits(zid,t)); }
 // Oro que cuesta mover estas unidades esa cantidad de zonas (los civiles se mueven gratis).
 function moveGold(u,hops){
@@ -73,6 +91,7 @@ function ordText(o){
     case 'move': { const p=Object.keys(o.u).filter(t=>o.u[t]>0).map(t=>o.u[t]+' '+(o.u[t]>1?UNP[t]:UN[t]).toLowerCase()); return 'Mover '+p.join(', ')+': '+zname(Z[o.from])+' → '+zname(Z[o.to])+(o.via&&o.via.length?' → '+o.via.map(i=>zname(Z[i])).join(' → '):'')+' ('+(o.stance==='ataque'?'ataque':'paz')+')'; }
     case 'encounter': { const e=G.F[ME].enc; return e?((o.choice==='si'?(e.k==='amenaza'?'Pagar a ':'Aceptar a '):'Rechazar a ')+e.who.toLowerCase()+' en '+zname(Z[e.zone])):'Encuentro'; }
     case 'growmode': return zname(Z[o.zone])+': la comida que sobra va a '+(o.mode==='guardar'?'guardar':'crecer');
+    case 'pausebuild': return zname(Z[o.zone])+': '+(o.on?'pausar las obras (la producción se guarda)':'reanudar las obras');
     case 'autospec': return zname(Z[o.zone])+': los que nazcan serán '+(o.to?UNP[o.to].toLowerCase():'pobladores');
     case 'route': return o.q?('Envío automático: '+(o.res==='food'?'comida':'producción')+' '+zname(Z[o.from])+' → '+zname(Z[o.to])+' ('+(o.q==='sobrante'?'todo el sobrante':o.q+' por paso')+')'):('Quitar el envío automático '+zname(Z[o.from])+' → '+zname(Z[o.to]));
     case 'annex': return 'Anexar la tribu de '+zname(Z[o.zone])+' (paga desde '+zname(Z[o.from])+')';

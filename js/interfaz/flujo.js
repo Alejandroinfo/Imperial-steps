@@ -28,7 +28,7 @@ function setViewMode(v,quiet){
 function beginStep(){
   recomputeMods(G); const now=Date.now();
   ui.ready=[]; for(let f=0;f<G.N;f++) ui.ready.push(false);
-  ui.stepStart=now; ui.orders=[]; ui.mv=null; ui.sugI=0;
+  ui.stepStart=now; ui.orders=[]; ui.pick=null; ui.pickIds=[]; ui.mv=null; ui.sugI=0;
   const enc=G.F[ME].enc; if(enc&&ui.encSeen!==enc.step){ ui.encSeen=enc.step; sfxLater(enc.k==='amenaza'?'warn':'encounter',2200,0); }
   for(let f=0;f<G.N;f++) if(isBotSeat(f)) ui.botAt[f]=now+700+Math.floor(Math.random()*3000);
   if(typeof tutOnStep==='function') tutOnStep();

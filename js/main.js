@@ -22,12 +22,12 @@ document.addEventListener('change',e=>{
   else if(e.target.type==='checkbox'){ if(k==='tf_avail') ui.tf.avail=e.target.checked; if(k==='tf_spine') ui.tf.spine=e.target.checked; if(k==='tf_impl') ui.tf.impl=e.target.checked; renderPanel(); }
 });
 /* arrastrar y soltar para especializar */
-let DRAGT=null;
-document.addEventListener('dragstart',e=>{ const t=e.target.closest&&e.target.closest('.token[draggable]'); if(!t) return; DRAGT=t.dataset.t; e.dataTransfer.setData('text/plain',DRAGT); e.dataTransfer.effectAllowed='move'; t.classList.add('dragging'); });
+let DRAGT=null, DRAGID=null;
+document.addEventListener('dragstart',e=>{ const t=e.target.closest&&e.target.closest('.token[draggable]'); if(!t) return; DRAGT=t.dataset.t; DRAGID=Number(t.dataset.id); e.dataTransfer.setData('text/plain',DRAGT); e.dataTransfer.effectAllowed='move'; t.classList.add('dragging'); });
 document.addEventListener('dragend',e=>{ DRAGT=null; document.querySelectorAll('.token.dragging,.station.over').forEach(x=>x.classList.remove('dragging','over')); });
 document.addEventListener('dragover',e=>{ const st=e.target.closest&&e.target.closest('.station'); if(st&&DRAGT){ e.preventDefault(); st.classList.add('over'); } });
 document.addEventListener('dragleave',e=>{ const st=e.target.closest&&e.target.closest('.station'); if(st) st.classList.remove('over'); });
-document.addEventListener('drop',e=>{ const st=e.target.closest&&e.target.closest('.station'); if(st&&DRAGT){ e.preventDefault(); const from=DRAGT; DRAGT=null; if(ui.sel!==null) dropOnStation(ui.sel,from,st.dataset.st); } });
+document.addEventListener('drop',e=>{ const st=e.target.closest&&e.target.closest('.station'); if(st&&DRAGT){ e.preventDefault(); const from=DRAGT; DRAGT=null; const ids=(ui.pickIds&&ui.pick===from&&ui.pickIds.includes(DRAGID))?ui.pickIds:[DRAGID]; DRAGID=null; if(ui.sel!==null) dropOnStation(ui.sel,from,st.dataset.st,ids); } });
 document.addEventListener('keydown',e=>{
   if(e.key==='Enter'||e.key===' '){ const zg=e.target.closest&&e.target.closest('g.zone'); if(zg){ e.preventDefault(); onZone(Number(zg.dataset.id)); return; } }
   if(e.key==='Enter'&&!e.target.closest('button,dialog,input,select,textarea,summary')){ e.preventDefault(); toggleReady(); }

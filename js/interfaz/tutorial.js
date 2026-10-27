@@ -18,7 +18,7 @@ const tutBarracks=()=>{ const z=zonesOf(G,ME).find(z=>z.b.some(b=>b.t==='cuartel
 const TUT_STEPS=[
   // ---- paso 1: oficios ----
   {step:1, t:'👋 Bienvenida', x:'Esta es <b>Adrianópolis</b>, tu capital (borde rojo). Tienes 4 pobladores. El juego avanza por <b>pasos</b>: das órdenes y presionas <b>¡Listo!</b>; cuando todos están listos, se resuelve el paso. Este comienzo guiado dura 20 pasos y después sigues jugando normal.', hl:'#tabBody .zhead', prep:()=>{ ui.sel=tutCap(); ui.tab='zona'; ui.zsub='resumen'; }},
-  {step:1, t:'🌾 Haz 2 agricultores', x:'Abre <b>Población</b> y arrastra 2 pobladores a la <b>Granja</b> (o tócalos y luego toca la Granja). Cada agricultor da 🌾 2; la comida que sobra hace crecer la zona.', hl:'.subtabs button[data-s="poblacion"], .station[data-st="agr"]', done:()=>tutSpecTo('agr')>=2},
+  {step:1, t:'🌾 Haz 2 agricultores', x:'Abre <b>Población</b> y arrastra 2 pobladores, uno por uno, a la <b>Granja</b> (o tócalos y luego toca la Granja). Cada persona tiene rasgos (íconos y bordes): tú eliges a quién especializar. Cada agricultor da 🌾 2; la comida que sobra hace crecer la zona.', hl:'.subtabs button[data-s="poblacion"], .station[data-st="agr"]', done:()=>tutSpecTo('agr')>=2},
   {step:1, t:'🔬 Haz 1 científico', x:'Ahora 1 poblador al <b>Laboratorio</b>. Los científicos investigan solos cuando hay una tecnología en cola.', hl:'.station[data-st="cie"]', done:()=>tutSpecTo('cie')>=1},
   {step:1, t:'✅ ¡Listo!', x:'Tus órdenes están en cola (pestaña <b>Órdenes</b>).'+LISTO+' También sirve la tecla Enter.', hl:'#readyBtn', wait:true},
   // ---- paso 2: tecnología ----

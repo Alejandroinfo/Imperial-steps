@@ -9,7 +9,7 @@ Documento de trabajo para corregir y construir encima. Reúne todo lo conversado
 - ❓ **Por definir** — falta una decisión o hay ambigüedad.
 - 🆕 **Nuevo en la última sesión** (26 de octubre de 2026). Junto a ✅ o 💡 indica si lo decidieron ustedes o si es una propuesta mía.
 
-**Última actualización:** 26 de octubre de 2026 (prototipo v0.13). 🆕 El 27 de octubre de 2026 se escribieron las reglas de **maravillas únicas**, **botín** e **ingenieros automáticos** (secciones 15.2 y 15.3); el prototipo todavía no las tiene (ver 23.5).
+**Última actualización:** 26 de octubre de 2026 (prototipo v0.13). 🆕 El 27 de octubre de 2026 se escribieron las reglas de **maravillas únicas**, **botín** e **ingenieros automáticos** (secciones 15.2 y 15.3); el prototipo ya tiene los **ingenieros automáticos** (15.2, 27/10/2026, v0.14); las maravillas únicas y lo de 13.3 todavía no (ver 23.5).
 
 Cómo usarlo: cambien el emoji de estado cuando decidan algo, tachen lo que no les guste y escriban encima.
 
@@ -121,7 +121,7 @@ Cada zona tiene un terreno. Algunos efectos dependen de si la unidad es **atacan
 | 11 | Frontera ancha | Dos pasos paralelos entre vecinos | 3 |
 | 12 | Rueda | Todo pasa por un centro compartido | 7 |
 
-- ✅ 🆕 **Fronteras (26/10/2026, decidido por Alejandro: mapas más conectados y que las tribus no sean el colchón entre imperios):** entre cada par de imperios vecinos se agrega una **zona de frontera** («tierra de nadie»). El camino que unía las dos tribus ahora pasa por ella, y además se une con la zona libre más cercana de cada imperio, así que los vecinos se tocan directamente. 💡 Se ubica con un criterio geométrico para que sus caminos no pasen por encima de otras zonas; en 25 de los 36 mapas no hay ningún cruce (los mapas originales tenían 30 de 36). Ver la regla en la sección 11.
+- ✅ 🆕 **Fronteras (26/10/2026, decidido por Alejandro: mapas más conectados y que las tribus no sean el colchón entre imperios):** entre cada par de imperios vecinos se agrega una **zona de frontera** («tierra de nadie»). El camino que unía las dos tribus ahora pasa por ella, y además se une con la zona libre más cercana de cada imperio, así que los vecinos se tocan directamente. 💡 Se ubica con un criterio geométrico para que sus caminos no pasen por encima de otras zonas; en 25 de los 36 mapas no hay ningún cruce (los mapas originales tenían 30 de 36). Ver la regla en la sección 11. 🆕 Ahora se llaman **villas francas** (ver 13.3).
 - 💡 Para la primera partida de mesa, probar un mapa de ritmo medio (por ejemplo 1, 4 o 10) con 3 jugadores, y comparar después con uno rápido (8) y uno lento (7).
 - ❓ Especialización y tamaño de población de cada tribu en cada mapa.
 
@@ -162,6 +162,19 @@ Cada zona tiene un terreno. Algunos efectos dependen de si la unidad es **atacan
 - ❓ 💡 Muerte por hambre en 2 rondas puede ser muy dura con pasos cortos; probar 3.
 
 ---
+
+### 5.4 Rasgos de las personas (🆕 27/10/2026, decididos por Alejandro; en el juego desde la v0.14, fases A y B)
+
+- ✅ Cada civil nace (o llega, o se crea con su tribu) con **2 rasgos distintos**, de nivel **muy malo (−2), malo (−1), bueno (+1) o muy bueno (+2)**. **Lo más común es bueno y malo**; los extremos son raros y **en promedio hay más positivos que negativos**.
+- ✅ Los rasgos se **reconocen con un ícono** de lo que afectan; al pasar el mouse se explica. **Borde dorado** si la persona tiene un rasgo muy bueno, **plateado** si solo bueno.
+- ✅ **Productividad por oficio:** el rasgo solo afecta ese oficio (🌾 Agricultura, ⚒ Ingeniería, 🪙 Comercio, 🔬 Ciencia): un +25 % de oro solo vale si la persona es comerciante. 🆕 El rasgo de oficio vale **también para el poblador sin oficio** (su 1 de comida o de producción), y 🌱 *Fertilidad* se quitó porque el crecimiento sale solo de la comida.
+- ✅ 🍽 **Apetito:** cuánta comida consume (bueno: come menos).
+- ✅ **El jugador elige a quién especializar**, persona por persona (tocándola o arrastrándola). Se automatiza con la orden *oficio al nacer*, no eligiendo a los mejores por él. Motivo: a veces conviene más comida u oro que un +25 % en ciencia.
+- 💡 **Probabilidades** por rasgo: muy malo 8 %, malo 32 %, bueno 43 %, muy bueno 17 % (promedio de unos +7 %). **Efecto**: ±25 % por nivel (±50 % en los extremos). Estimaciones mías; hay que jugarlas y simularlas.
+- 💡 Los rasgos **no cambian** y viajan con la persona al cambiar de oficio, ser capturada o licenciada. Las tribus también tienen gente con rasgos, y se conservan al anexarlas o conquistarlas. Los bots eligen a los de mejor rasgo para cada oficio.
+- 💡 Apetito: las fracciones se suman por zona y se redondean hacia arriba.
+- ❓ **Fase C (sin hacer):** ❤ Salud (vida) y ⚔ Fuerza (dados) para el combate; son valores enteros (vida 3, fuerza 2) y hay que decidir y simular cuánto valen (💡 ±1 y ±2).
+- ❓ Mostrar los rasgos también en el mapa y en el resumen de la zona, no solo en Población.
 
 ## 6. Recursos
 
@@ -238,7 +251,7 @@ Detalles:
 
 ## 8. Comida y crecimiento
 
-- ✅ 🆕 **Alimentación automática (26/10/2026, decidido por Alejandro):** cada zona come primero de lo suyo; lo que falte sale **sin costo** de la zona propia más cercana que tenga comida (guardada o producida), y luego de la siguiente. Vale igual para militares fuera de casa y para civiles de zonas que no producen comida. **Evitar el hambre va antes que crecer.** Después de alimentar a todos, el **excedente** se puede:
+- ✅ 🆕 **Alimentación automática (26/10/2026, decidido por Alejandro):** cada zona come primero de lo suyo; lo que falte sale de la zona propia más cercana que tenga comida (guardada o producida), y luego de la siguiente. ~~Sin costo.~~ ✅ 🆕 **Cambio del 27/10/2026 (decidido por Alejandro): mover esa comida cuesta oro de logística**, igual que un envío normal (distancia, Caminos, caravanas; *Graneros comunes* sigue dejando gratis la zona contigua). Si no hay oro suficiente, esa comida no llega y esa gente pasa hambre; vale también para las tropas fuera de casa. Vale igual para militares fuera de casa y para civiles de zonas que no producen comida. **Evitar el hambre va antes que crecer.** Después de alimentar a todos, el **excedente** se puede:
   1. **Almacenar** — ✅ 🆕 máximo **10 por punto de tamaño** de la zona, para comida y para producción por separado (antes 10 fijos). Ampliable con el Almacén (ver 15.1).
   2. **Enviar** a otra zona pagando la logística.
   3. **Crecer:** se gasta en progreso hacia un nuevo aldeano. 🆕 **Etapa de fundación:** hasta el paso 12, crecer cuesta la mitad, para que el inicio no sea tan lento (💡 `FOUNDING_STEPS = 12`). ✅ 🆕 **Cada zona elige su prioridad (decidido por Alejandro):** **Crecer** (todo el sobrante del paso, después de alimentar y de los envíos automáticos, va al crecimiento; es lo normal) o **Guardar** (el sobrante va al almacén; solo lo que no cabe va a crecer). Reemplaza la propuesta de repartir mitad y mitad.
@@ -398,7 +411,7 @@ Detalles:
   - Ambos atacan → pelean sin ventaja.
 - ✅ La zona queda **en tensión**. Si hay conflicto en cualquier lugar del mapa entre esos dos jugadores, **todas las zonas en tensión** que tengan entre ellos pasan a conflicto. Los beneficios de la zona los sigue teniendo quien la controlaba.
 - ✅ **Zona en conflicto:** si alguien ataca y al terminar la ronda de combate quedan tropas de ambos sin retirarse, sigue en conflicto el siguiente paso.
-- ✅ 🆕 **Dilema del prisionero en la frontera (26/10/2026, decidido por Alejandro):** la frontera **nunca tiene dueño**; cualquiera puede entrar con civiles o tropas. Quien tiene gente ahí no produce y come de su zona más cercana, pero gana oro: 💡 **+3 por paso a cada uno** mientras todos los presentes estén en paz, o **+4** si está solo. Si alguien ataca, ese paso nadie gana, y el atacante tiene sorpresa si el otro estaba en Paz. Cooperar conviene a los dos; traicionar conviene a uno.
+- ✅ 🆕 **Dilema del prisionero en la frontera (26/10/2026, decidido por Alejandro; 🆕 27/10/2026 pasa a las villas francas y cuentan solo las tropas, ver 13.3):** la frontera **nunca tiene dueño**; cualquiera puede entrar con civiles o tropas. Quien tiene gente ahí no produce y come de su zona más cercana, pero gana oro: 💡 **+3 por paso a cada uno** mientras todos los presentes estén en paz, o **+4** si está solo. Si alguien ataca, ese paso nadie gana, y el atacante tiene sorpresa si el otro estaba en Paz. Cooperar conviene a los dos; traicionar conviene a uno.
 - ✅ 🆕 **Postura entre jugadores (26/10/2026, decidido por Alejandro):** cada jugador tiene una postura **hacia cada rival**: **Paz** (por defecto) o **Alerta**. Con Alerta, sus tropas atacan a las de ese jugador **en cualquier zona donde coincidan**, con sorpresa si el otro está en Paz. Se elige en Imperio → Relaciones o en la pestaña Militar. Reemplaza la «postura de zona».
 
 ---
@@ -429,6 +442,11 @@ Detalles:
 - ❓ Aclarar "se regresa la mitad a la tribu original" (¿mitad de qué?).
 - ❓ Aclarar cuál vecino recibe la invasión cuando hay empate o varios.
 - 💡 El sistema de tributos e invasiones es complejo; dejarlo para una capa posterior.
+- 🆕 **Cambios del 27/10/2026 (decididos por Alejandro), que reemplazan parte de lo anterior; detalle en 13.3:**
+  - ✅ **Ya no se puede anexar una tribu desde el inicio.** Primero hay que **ganarse su confianza** cumpliendo sus pedidos; recién con la relación al máximo se puede anexar pagando recursos.
+  - ✅ **El tributo deja de ser una amenaza:** pasa a ser un pedido más, sin invasión si nadie paga.
+  - ✅ **Si atacas a una tribu, entras en guerra con ella:** ataca con **todas sus unidades** a tus zonas más cercanas hasta que la conquistes.
+  - ✅ **Los militares de las tribus no consumen comida.**
 
 ---
 
@@ -489,6 +507,36 @@ Detalles:
   - **Ofertas** (pagas y recibes): mercenarios, veteranos, arqueros, jinetes, refugiados, artesanos, mercaderes, sabio, escuela, caravana de hierro, mercado de granos, compradores, herrero, armero, juglares, parteras, pescadores, mineros.
   - **Apuestas** (pagas y puede salir mal): mapa del tesoro, alquimista.
 - ✅ Los bots también reciben encuentros y los deciden con una regla simple.
+
+### 13.3 Villas francas, subastas, tribus amigas e historias (🆕 27/10/2026, decididas por Alejandro)
+
+**Villas francas (antes «zonas de frontera»)**
+- ✅ Nadie puede adquirirlas. Los locales se gobiernan solos y **pagan a quien los protege**: tener **tropas** ahí da un flujo de recursos.
+- 💡 Nombre «villa franca» (franca = libre, sin señor). Solo cuentan los **militares**, ya no cualquier persona. Se mantiene el dilema del prisionero: +4 de oro por paso a quien protege solo, +3 a cada uno si son varios en paz, y nada si hay pelea.
+- ✅ Están en los **puntos medios entre donde empiezan los jugadores**, con **un promedio de una por jugador**, buscando simetría sin que sea obligatoria.
+- 💡 Hoy salen 1 (2 jugadores), 3 (3 jugadores) y 4 (4 jugadores) en los 12 mapas: falta **una segunda en los mapas de 2 jugadores**.
+
+**Subasta a sobre cerrado**
+- ✅ **Cada 20 pasos** hay una subasta abierta a **todos** los jugadores. Se sabe **en qué moneda** hay que pagar, pero no exactamente qué se ofrece.
+- ✅ Se ofrecen **tantos objetos como jugadores**, y **cada objeto se subasta por separado**: ofreces lo que quieras por cada uno, en secreto.
+- ✅ Gana la oferta más alta y **a los demás se les devuelve lo que ofrecieron**. **Si hay empate arriba, todos los empatados se lo llevan.**
+- 💡 Se anuncia **2 pasos antes**, con la moneda, para que todos puedan juntar. La moneda es oro o ciencia (globales); si fuera comida o producción, se paga desde la capital.
+- ❓ Qué se ofrece (tropas, tecnologías, personas, equipo, objetos únicos) y cuánta pista se da antes.
+
+**Encuentros de elegir entre dos**
+- ✅ Una categoría nueva dentro de los encuentros: llegan **dos ofertas** y eliges **una o ninguna**. Da costo de oportunidad sin castigar a nadie.
+
+**Pedidos de las tribus vecinas y relación**
+- ✅ Una **tribu neutral que toca tus zonas** te hace pedidos. **Cumplirlos mejora la relación**, hasta que puedes **anexarla pagando recursos**.
+- ✅ **Frecuencia fija y conocida, no al azar**, con pedidos sacados de una lista, igual para todos los vecinos.
+- 💡 Un pedido **cada 5 pasos**, en el mismo paso para todos, según el oficio de la tribu (la agrícola pide comida, la de producción pide herramientas…).
+- 💡 Relación de **0 a 3** (desconfianza, trato, amistad, alianza); en el nivel 3 se puede anexar. Rechazar un pedido no tiene castigo, solo no avanzas. Si dos jugadores la anexan en el mismo paso, se aplica el empate de siempre (nadie la anexa y el precio se duplica).
+- ✅ Conquistarla sigue siendo posible, pero **atacarla es entrar en guerra** con ella (ver sección 12).
+
+**Historias de 4 capítulos**
+- ✅ Encuentros encadenados: lo que eliges en cada capítulo cambia el siguiente, y la historia vuelve a lo largo de la partida.
+- 💡 Una historia por jugador y por partida, con un capítulo cada 8 pasos más o menos y un final distinto según el camino. Para empezar, 3 historias para elegir al azar.
+- ❓ Los argumentos de las historias y sus recompensas.
 
 ---
 
@@ -566,9 +614,7 @@ El catálogo completo está en **Tecnologias_v0.2.xlsx** (hojas *Reglas*, *Tecno
   - Conserva como máximo **1 edificio** (consecuencia directa de la regla 1 edificio por cada 3 de tamaño).
   - Los **edificios extra se retiran** y se recupera **la mitad de la producción** que costó construirlos.
 - ✅ La mitad de la producción recuperada se la lleva **el conquistador**, si el dueño anterior ya se fue de la zona.
-- ✅ 🆕 **Botín (27/10/2026, decidido por Alejandro):** al **conquistar** una zona, el atacante se lleva **la mitad de la producción que el dueño tuviera guardada en ella**. Así guardar mucho en una zona de frontera es un riesgo, producir de más ya no es solo desperdicio, y las guerras tienen premio (pendientes 26 y 28).
-  - ❓ 🆕 ¿Solo la producción, o también la comida guardada? (💡 solo producción: la comida ya tiene su propio costo si la zona cambia de manos.)
-  - ❓ 🆕 ¿Solo al conquistar, o también al ganar un combate sin quedarse con la zona?
+- ✅ 🆕 **Botín (27/10/2026, decidido por Alejandro; corregido el mismo día):** al **ganar el control de una zona** (por conquista o por anexión), te quedas con **toda la comida y la producción guardadas** en ella, y con los **civiles capturados** en el combate. ~~La mitad de la producción guardada.~~ ✅ **El juego ya lo hace así:** las reservas no se borran al cambiar de dueño, los civiles vencidos pasan al ganador como pobladores heridos, y al anexar una tribu toda su gente pasa a ser tuya. Así guardar mucho en una zona expuesta es un riesgo y las guerras tienen premio (pendientes 26 y 28).
 - ✅ El atributo de **capital se mantiene** en la zona conquistada (ver sección 7).
 - ❓ ¿Quién elige qué edificio se conserva?
 - ✅ Un jugador que pierde su capital **puede seguir jugando** con sus otras zonas; solo se elimina por la condición de la sección 17.
@@ -631,12 +677,14 @@ Es la misma idea que los científicos automáticos (sección 14.0), aplicada a l
 
 - ✅ 🆕 **Fusión de constructores en ingenieros (decidido por Alejandro):** desaparece el oficio de constructor (de **6 a 5 oficios**) y la zona Industrial se junta con la de Producción. Se acaba la «capacidad de obra» como un número aparte de la producción guardada.
 - ✅ 🆕 **Ingenieros automáticos (decidido por Alejandro: «si no está construyendo nada, está produciendo»):** si la zona tiene una obra en cola, sus ingenieros **construyen solos**, cada uno usando 2 de la producción guardada de la zona. Si la producción guardada no alcanza para todos, construyen los que alcance y **el resto produce** (ej.: con 4 guardados y 3 ingenieros, 2 construyen y 1 produce). Sin obra en cola, todos producen. Un ingeniero produce 2 **o** usa 2, no ambas cosas. **No existe orden de asignar.**
-- ✅ 🆕 **Zona de Producción:** su bono (4, 8 o 12) cuenta **como capacidad de obra** mientras sus ingenieros construyen (también limitado por la producción guardada); si no hay obra, cuenta como producción de siempre.
+- ✅ 🆕 **Cómo se reparte el trabajo en cada paso (decidido por Alejandro, 27/10/2026; v0.14):** se parte de la **producción guardada del paso anterior** y se ve si lo que se gastaría en obra supera lo que hay (guardado + lo que producen los demás + el bono seguro de la capital). Si la cuenta queda **en negativo**, pasan a producir primero **quienes mejor producen** hasta cerrar la brecha. Con la misma eficiencia es **mitad y mitad**: una mitad produce para que la otra construya. Si falta, se puede traer producción de zonas cercanas pagando oro (como ya era). Solo construyen los necesarios para lo que queda de las obras.
+- ✅ 🆕 **Pausa de obras (27/10/2026, decidido por Alejandro):** un botón ⏸ junto a la obra en curso pausa **todas las obras de la zona**: nadie construye, todos producen y la producción se **guarda en el almacén** (el exceso sobre el tope se pierde). Es una orden que queda activa hasta que se reanuda. 💡 Junto a «Crecer» el botón «⏸ Pausar crecimiento» es el mismo «Guardar» de siempre con otro nombre: el sobrante de comida se guarda.
+- ✅ 🆕 **Zona de Producción:** su bono (4, 8 o 12) cuenta **como capacidad de obra** mientras sus ingenieros construyen (también limitado por la producción guardada); si no hay obra, cuenta como producción de siempre. 💡 Cuenta como capacidad si al menos un ingeniero o poblador de la zona construye ese paso; lo que no se use en obra, produce.
 - ✅ Una obra cuesta 20 por nivel y **avanza cada paso hasta la capacidad de los ingenieros que construyen**, gastando de la producción guardada de la zona (la que producen los pobladores, los ingenieros libres, los talleres y la capital).
-- 💡 🆕 **Los pobladores ya no construyen** (antes sumaban 1 de capacidad). Consecuencia: al inicio nadie construye; hay que especializar ingenieros (1 de producción cada uno), igual que con los científicos. La apertura compite ahora entre crecer, ciencia y obras.
+- ✅ 🆕 **Los pobladores también construyen solos (decidido por Alejandro, 27/10/2026):** si hay algo en la lista de obras, cada poblador usa **1** de la producción guardada y **no genera su 1 de producción** (💡 sigue produciendo su 1 de comida); si no hay obra, produce como siempre. Es la misma idea que los ingenieros. 💡 Primero se asignan los ingenieros (usan más) y después los pobladores.
 - 💡 🆕 **Sin tiempo mínimo para la Maravilla:** la velocidad sale de cuántos ingenieros tienes (por ejemplo, 12 ingenieros en una zona de Producción nivel 3 serían unos 36 por paso, o sea unos 14 pasos para 500). Hay que simularlo.
-- ❓ 🆕 **Costo real de construir:** como el ingeniero que construye deja de producir, construir cuesta más en la práctica que antes. Medir en el simulador; si queda caro, compensar con Taller, zona de Producción y tecnologías.
-- ❓ 🆕 **Tecnologías a retocar** (hoy hablan de constructores o de zona industrial): *Cuadrillas de obra*, *Línea de ensamblaje*, *Gremios de constructores*, *Grandes obras*, *Logística de obra* y *Canteras de colina*. 💡 Casi todas solo cambian de palabra («ingeniero que construye» en vez de «constructor»; «zona de Producción» en vez de «zona industrial»), pero falta decidir qué tecnologías abren los niveles 2 y 3 de la zona de Producción.
+- ❓ 🆕 **Costo real de construir:** como el ingeniero que construye deja de producir, construir cuesta más en la práctica que antes. 🆕 **Medido (27/10/2026, 72 partidas de bots de 40 pasos):** con el sistema nuevo los bots construyen **más** (2,6 edificios por jugador al paso 40 contra 1,8; 1,5 contra 0,8 al paso 20), con algo más de población (10,4 contra 8,5) y algo menos de tecnologías (11,1 contra 12,4). Los bots no son personas: hay que confirmarlo jugando.
+- ✅ 🆕 **Tecnologías retocadas (v0.14, decidido por Alejandro):** *Cuadrillas de obra* y *Línea de ensamblaje* dicen «ingeniero que construye»; *Logística de obra*, «las obras traen producción de zonas a 2 espacios»; *Canteras de colina* ya hablaba de ingenieros y pobladores. Los niveles 2 y 3 de la zona de Producción ya los abrían *Ingeniería básica* e *Ingeniería avanzada*, así que *Gremios de constructores* (ahora **«Gremios de ingenieros»**) y *Grandes obras* pasan a dar un **descuento**: 💡 Gremios, construir y mejorar cuestan un **10 %** menos; Grandes obras, mejorar a nivel 3 o más cuesta **10 de producción menos** (mínimo 10). Las dos cifras son estimaciones mías y hay que simularlas. Siguen siendo vertebrales de Urbanismo.
 
 ### 15.3 Maravillas únicas ligadas a las ramas (🆕 27/10/2026)
 
@@ -836,8 +884,13 @@ Es la misma idea que los científicos automáticos (sección 14.0), aplicada a l
 37. ✅ 🆕 **Maravillas:** no se podían construir (la orden no se atendía); corregido al agregar la revisión de tipos.
 35. ❓ 🆕 **Multijugador para el primer playtest** por videollamada, cada uno en su computadora. ✅ 🆕 **Con Firebase Realtime Database (27/10/2026, decidido por Alejandro: más estable que PeerJS y nadie tiene que dejar su compu prendida como servidor).** Salas con código de 4 letras; el anfitrión resuelve cada paso y escribe el estado completo; cualquiera puede recargar y volver a su asiento. Hecho sobre la v0.13 (ya en `main`) y probado con dos navegadores y un Firebase falso (ver `docs/multijugador.md`). ❓ Falta la primera partida con el Firebase real. La versión anterior con servidor propio (rama `red/multijugador-salas`, sobre la v0.4) queda descartada.
 38. ❓ 🆕 **Maravillas únicas (15.3):** ✅ nombres y efectos ya decididos; falta pasarlos al Excel, decidir si cuentan como «nivel 5» para la victoria tecnológica, y confirmar las propuestas 💡 (empate, no demoler, anuncio de la obra).
-39. ❓ 🆕 **Ingenieros automáticos (15.2):** costo real de construir, tecnologías a retocar y qué tecnologías abren los niveles 2 y 3 de la zona de Producción.
-40. ❓ 🆕 **Botín (sección 15):** solo producción o también comida, y si aplica solo al conquistar.
+39. ✅ 🆕 **Ingenieros automáticos (15.2):** ya están en el juego (v0.14) y los pobladores también construyen solos. Quedan ❓ confirmar jugando el costo real de construir, las cifras 💡 de *Gremios de ingenieros* y *Grandes obras*, (los textos nuevos de esas cinco tecnologías ya están en `Tecnologias_v0.2.xlsx`).
+40. ✅ 🆕 **Botín (sección 15):** toda la comida y la producción guardadas, más los civiles capturados, al ganar el control por conquista o anexión. Ya funciona así en el juego.
+41. ❓ 🆕 **Villas francas (13.3):** segunda villa en los mapas de 2 jugadores, y confirmar que solo cuenten las tropas.
+42. ❓ 🆕 **Subasta (13.3):** qué se ofrece, cuánta pista se da y con cuánta anticipación se anuncia.
+43. ❓ 🆕 **Tribus amigas (13.3 y 12):** lista de pedidos por oficio, niveles de relación y precio de anexión con la relación al máximo.
+44. ❓ 🆕 **Historias (13.3):** argumentos, capítulos y recompensas.
+45. ❓ 🆕 **Rasgos de las personas (5.4):** ✅ fases A y B hechas. Falta la fase C (Salud y Fuerza en combate), confirmar jugando las probabilidades y el ±25 %, y mostrar los rasgos en el mapa y el resumen de la zona.
 
 ---
 
@@ -928,6 +981,19 @@ Es la misma idea que los científicos automáticos (sección 14.0), aplicada a l
 ### 23.5 Reglas decididas que el prototipo todavía no tiene (🆕 27/10/2026)
 
 - **Maravillas únicas** ligadas a las ramas (15.3).
-- **Botín** al conquistar (sección 15).
-- **Ingenieros automáticos** y fusión de constructores en ingenieros (15.2): el juego sigue con 6 oficios, capacidad de obra y zona industrial.
-- Al pasarlo al código hay que mover también los números a `js/config/` y retocar las tecnologías de 15.2.
+- ~~**Botín** al conquistar (sección 15).~~ Ya funciona: las reservas y los civiles capturados pasan al nuevo dueño.
+- **Villas francas** (nombre nuevo, solo tropas, segunda villa en mapas de 2), **subastas**, **encuentros de elegir entre dos**, **pedidos de las tribus y anexión por relación**, **guerra con las tribus** e **historias** (13.3 y 12).
+- ~~**Ingenieros automáticos** y fusión de constructores en ingenieros (15.2).~~ ✅ **Hecho en v0.14 (27/10/2026):** 5 oficios, obras automáticas, la zona Industrial se fusiona con la de Producción y los números nuevos están en `js/config/efectos_tecnologias.js`.
+- Al pasarlo al código hay que mover también los números a `js/config/`. (Las tecnologías de 15.2 ya se retocaron.)
+
+### 23.6 Cambios del 27 de octubre de 2026 (v0.14)
+
+- **Ingenieros automáticos (15.2):** desaparece el constructor (5 oficios civiles) y la zona Industrial; las obras se construyen solas con la producción guardada; los pobladores también construyen si hay obra. La zona muestra «N construyen: obra (x %)». El tutorial del paso 3 ahora pide un ingeniero (opcional).
+- **Tecnologías:** textos de *Cuadrillas de obra*, *Línea de ensamblaje*, *Logística de obra*, *Gremios de ingenieros* y *Grandes obras* (ver 15.2). Ya están pasados al Excel.
+- **Error corregido:** un jugador podía anexar dos tribus en el mismo paso pagando más ciencia de la que tenía y quedaba con ciencia negativa (la comprobación se hacía antes de cobrar la primera).
+- **Pruebas:** 9 casos nuevos de obras automáticas, tecnologías y oficios, y 1 de la doble anexión.
+- **Reparto entre producir y construir (27/10/2026):** se parte de lo guardado, y si la cuenta queda en negativo producen primero los que mejor producen; con igual eficiencia, mitad y mitad (15.2).
+- **Pausa de obras por zona** (botón ⏸ junto a la obra) y «⏸ Pausar crecimiento» junto a Crecer (15.2 y 8).
+- **La comida que se mueve de otra zona cuesta oro** (8). Con 48 partidas de bots las muertes por hambre no empeoran (425 contra 457 antes), pero conviene confirmarlo jugando.
+- **Pruebas:** 4 casos nuevos (pausa, acumulación con pausa, cobro de oro, hambre sin oro) y 3 del reparto mitad y mitad.
+- **Rasgos de las personas (fases A y B, 5.4):** identificador y 2 rasgos por civil, producción, ciencia, oro y comida por persona, elegir a quién especializar (tocar o arrastrar), fichas con íconos y bordes en Población. 11 casos de prueba nuevos.

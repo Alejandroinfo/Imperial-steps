@@ -30,7 +30,7 @@ function pullRes(g,f,z,res,need,maxDist){
 // y nadie la atiende, `npm run check` falla. Así se encontró que la Maravilla no se podía construir.
 /** @type {Record<TipoOrden, number>} */
 const ORDER_PHASE = {research:1,cancelres:1,stance:2,encounter:2,spec:3,demob:3,train:3,build:4,wonder:4,upgrade:4,bspec:4,demolish:4,
-  send:5,route:5,growmode:5,autospec:5,tribute:6,ally:6,annex:7,move:8};
+  send:5,route:5,growmode:5,pausebuild:5,autospec:5,tribute:6,ally:6,annex:7,move:8};
 /**
  * Aplica un paso completo: nacimientos, evento, órdenes, movimientos, combates, control y economía.
  * @param {Partida} g estado de la partida (se modifica)
@@ -72,6 +72,7 @@ function resolveStep(g,orders){
   by('send').forEach(o=>{ doSend(g,o,L); });
   by('route').forEach(o=>{ const z=Z[o.from]; if(!z||z.owner!==o.f) return; z.routes=(z.routes||[]).filter(r=>!(r.to===o.to&&r.res===o.res)); if(o.q&&o.to!==o.from) z.routes.push({to:o.to,res:o.res==='prod'?'prod':'food',q:o.q==='sobrante'?'sobrante':Math.max(1,Math.floor(o.q))}); });
   by('growmode').forEach(o=>{ const z=Z[o.zone]; if(z&&z.owner===o.f) z.growMode=o.mode==='guardar'?'guardar':'crecer'; });
+  by('pausebuild').forEach(o=>{ const z=Z[o.zone]; if(z&&z.owner===o.f) z.pauseBuild=!!o.on; });
   by('autospec').forEach(o=>{ const z=Z[o.zone]; if(z&&z.owner===o.f) z.autoSpec=CIV.includes(o.to)&&o.to!=='pob'?o.to:null; });
   by('tribute').forEach(o=>{ doTribute(g,o,L); });
   by('ally').forEach(o=>{ doAlly(g,o,L); });
@@ -149,8 +150,11 @@ function doSpec(g,o,L){
   const per=specPer(g,o.f,z,o.from,o.to);
   let n=Math.min(o.n||0,availUnits(g,z,o.f,o.from)); if(per>0) n=Math.min(n,Math.floor(z.prod/per));
   if(n<=0) return;
-  const us=lst(z,o.f); let k=0;
-  for(const u of us){ if(k>=n) break; if(u.t===o.from&&u.w===0&&!u.busy){ u.t=o.to; u.busy=1; k++; } }
+  const us=lst(z,o.f); const chosen=[];
+  // primero las personas que el jugador eligió, y si faltan, las primeras libres
+  (o.ids||[]).forEach(id=>{ const u=us.find(x=>x.id===id); if(u&&u.t===o.from&&u.w===0&&!u.busy&&!chosen.includes(u)&&chosen.length<n) chosen.push(u); });
+  for(const u of us){ if(chosen.length>=n) break; if(u.t===o.from&&u.w===0&&!u.busy&&!chosen.includes(u)) chosen.push(u); }
+  chosen.forEach(u=>{ u.t=o.to; u.busy=1; }); const k=chosen.length;
   z.prod-=per*k; if(k) g.fx.push({k:'spec',zone:z.id,f:o.f,n:k,to:o.to});
 }
 /** @param {Partida} g */
@@ -304,7 +308,7 @@ function controlZone(g,z,L){
     if(z.owner===null){ z.owner=f; if(isPl(f)){ g.fx.push({k:'take',zone:z.id,f}); L(PLN[f].name+' toma el control de '+zname(z)+'.'); if(g.M[f].colonos&&z.size<=3&&!z.settled){ for(let i=0;i<2;i++) lst(z,f).push(mkUnit(g,f,'pob')); } z.settled=1; } }
     else if(z.owner!==f&&!allied(g,z.owner,f)){
       const old=z.owner; const M=g.M[isPl(f)?f:0]; g.fx.push({k:'conq',zone:z.id,f,old});
-      z.owner=f; z.tmult=1; z.prog=0; z.proj=[]; z.conflict=false; z.eq={}; z.eqPend={}; if(f===TRIBE&&!z.tspec) z.tspec=['agr','ing','com','cie'][Math.floor(g.rng()*4)];
+      z.owner=f; z.tmult=1; z.prog=0; z.proj=[]; z.pauseBuild=false; z.conflict=false; z.eq={}; z.eqPend={}; if(f===TRIBE&&!z.tspec) z.tspec=['agr','ing','com','cie'][Math.floor(g.rng()*4)];
       if(isPl(f)){
         z.size=Math.min(z.size,M.conqSize);
         const keep=M.conqKeep; const wond=z.b.filter(b=>b.t==='mar'); const others=z.b.filter(b=>b.t!=='mar');

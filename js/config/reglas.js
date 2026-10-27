@@ -33,6 +33,20 @@ const UT = {
   ari:{hp:6,str:2,atk:2,def:1,init:7,siege:1},
   lan:{hp:4,str:2,atk:1,def:0,init:2,ranged:1,aoe:1,siege:1}
 };
+// Rasgos de las personas: cada civil nace con 2 rasgos distintos, de nivel -2 (muy malo), -1 (malo), +1 (bueno) o +2 (muy bueno).
+// Lo más común es bueno o malo; los extremos son raros y en promedio hay más positivos que negativos.
+// Cada nivel cambia un TRAIT_STEP (25 %) el rendimiento en lo que afecta el rasgo.
+const TRAIT_KINDS = ['agr','ing','com','cie','apt'];
+const TRAIT_ODDS = [[-2,0.08],[-1,0.32],[1,0.43],[2,0.17]];
+const TRAIT_STEP = 0.25;
+const TRAIT_INFO = {
+  agr:{ic:'🌾',n:'Agricultura',d:'la comida que produce (como agricultor o como poblador sin oficio)'},
+  ing:{ic:'⚒',n:'Ingeniería',d:'la producción que genera y lo que puede usar al construir (como ingeniero o poblador)'},
+  com:{ic:'🪙',n:'Comercio',d:'el oro que genera como comerciante'},
+  cie:{ic:'🔬',n:'Ciencia',d:'la ciencia que genera y lo que usa al investigar, como científico'},
+  apt:{ic:'🍽',n:'Apetito',d:'cuánta comida consume (positivo: come menos)'}
+};
+const TRAIT_LV = {'-2':'muy malo','-1':'malo','1':'bueno','2':'muy bueno'};
 // Entrenar: un civil pasa a soldado (2) y, si la tropa usa equipo, se fabrica su arma.
 // El arma cuesta 2 × el nivel de la tecnología que la desbloquea (Arco 1, Escudos 2, Caballos y Hachas 3).
 // Si una tropa con equipo muere en tu territorio, el arma queda guardada en la zona y se reutiliza.

@@ -59,7 +59,9 @@ function botOrders(g,f){
       const building=z.proj.length>0||(slotsOf(g,z)-z.b.length>0&&z.prod>=10);
       const want={agr:g.step<15?0.5:0.35,ing:building?0.27:0.12,com:0.13,cie:0.2}; let best=null,bd=0;
       for(const t in want){ const d=want[t]*civ.length-(cnt[t]||0); if(d>bd){bd=d;best=t;} }
-      if(best&&bd>=0.5) o.push({t:'spec',f,zone:z.id,from:'pob',to:/** @type {Civil} */(best),n:Math.min(2,pob,Math.floor(z.prod))});
+      if(best&&bd>=0.5){ const nn=Math.min(2,pob,Math.floor(z.prod));
+        const ids=us.filter(u=>u.t==='pob'&&u.w===0&&!u.busy).sort((a,b)=>trMul(b,best)-trMul(a,best)).slice(0,nn).map(u=>u.id);   // los bots eligen a los de mejor rasgo
+        o.push({t:'spec',f,zone:z.id,from:'pob',to:/** @type {Civil} */(best),n:nn,ids}); }
     }
     // construcción
     const freeSlots=slotsOf(g,z)-z.b.length-z.proj.filter(p=>p.k==='b'||p.k==='w').length;

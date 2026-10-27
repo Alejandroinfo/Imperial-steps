@@ -14,8 +14,9 @@ function dndHTML(z){
   STATIONS.forEach(([t,name,out])=>{
     const total=mineU.filter(u=>u.t===t).length, avail=availQ(z.id,t), inc=Math.max(0,delta[t]||0), wnd=mineU.filter(u=>u.t===t&&u.w>0).length;
     const sp=t==='pob'?'bas':t; let toks='';
-    for(let i=0;i<Math.min(avail,14);i++) toks+=`<div class="token ${ui.pick===t?'picked':''}" draggable="true" data-act="pick" data-t="${t}" title="${UN[t]}: arrástralo a otro oficio">${uIcon(t,34)}</div>`;
-    if(avail>14) toks+=`<div class="tokmore">+${avail-14}</div>`;
+    const picks=ui.pickIds||[]; const people=availListQ(z.id,t);
+    people.slice(0,40).forEach(u=>{ toks+=`<div class="token tk ${picks.includes(u.id)?'picked':''} ${traitBorder(u)}" draggable="true" data-act="pick" data-t="${t}" data-id="${u.id}" title="${esc(UN[t]+(u.tr&&u.tr.length?' · '+u.tr.map(traitText).join(' · '):'')+' · tócalo o arrástralo a otro oficio')}">${uIcon(t,34)}<div class="tkb">${traitChips(u)}</div></div>`; });
+    if(people.length>40) toks+=`<div class="tokmore">+${people.length-40}</div>`;
     for(let i=0;i<Math.min(inc,10);i++) toks+=`<div class="token ghost" title="Llegará al presionar ¡Listo!">${uIcon(t,34)}</div>`;
     if(wnd) toks+=`<div class="tokmore" title="Heridos">✚ ${wnd}</div>`;
     h+=`<div class="station ${ui.flashSt===t?'flash':''}" data-st="${t}" data-act="dropst" style="--sc:${SPECC[sp]}"><div class="sth">${emblemSVG(sp,17,36)}<div><b>${name}</b><small>${stationRate(t)}</small></div><span class="stn">${total}${delta[t]?`<i>${delta[t]>0?'+':''}${delta[t]}</i>`:''}</span></div><div class="stbody">${toks||'<span class="hint">suelta aquí</span>'}</div></div>`;
@@ -24,14 +25,17 @@ function dndHTML(z){
   const cm=commits(); if(cm.prod[z.id]) h+=`<div class="${z.prod-cm.prod[z.id]<0?'warn':'hint'}">Las órdenes de esta zona gastan ${cm.prod[z.id]} de producción (hay ${Math.floor(z.prod)}).</div>`;
   return h;
 }
-function dropOnStation(zid,from,to){
+// ids: las personas que el jugador eligió (si no hay, se usa la cantidad por vez, como antes)
+function dropOnStation(zid,from,to,ids){
   const z=G.zones[zid]; if(!z||z.owner!==ME||from===to) return;
   const per=specPer(G,ME,z,from,to); const cm=commits(); const prodLeft=z.prod-(cm.prod[zid]||0);
-  let n=ui.batch==='todos'?availQ(zid,from):Math.min(Number(ui.batch)||1,availQ(zid,from));
+  let list=(ids&&ids.length)?ids.slice():null;
+  let n=list?list.length:(ui.batch==='todos'?availQ(zid,from):Math.min(Number(ui.batch)||1,availQ(zid,from)));
   if(per>0) n=Math.min(n,Math.floor(prodLeft/per));
   if(n<=0){ toast('No se puede','Sin personas disponibles o sin producción suficiente ('+per+' por persona).','neg','⚠'); return; }
-  const ex=ui.orders.find(o=>o.t==='spec'&&o.zone===zid&&o.from===from&&o.to===to);
-  if(ex) ex.n+=n; else ui.orders.push({t:'spec',zone:zid,from,to,n});
+  if(list) list=list.slice(0,n);
+  const ex=ui.orders.find(o=>o.t==='spec'&&o.zone===zid&&o.from===from&&o.to===to&&!!o.ids===!!list);
+  if(ex){ ex.n+=n; if(list) ex.ids=ex.ids.concat(list); } else ui.orders.push(list?{t:'spec',zone:zid,from,to,n,ids:list}:{t:'spec',zone:zid,from,to,n});
   ui.flashSt=to; setTimeout(()=>{ ui.flashSt=null; document.querySelectorAll('.station.flash').forEach(e=>e.classList.remove('flash')); },900);
-  ui.pick=null; render();
+  ui.pick=null; ui.pickIds=[]; render();
 }

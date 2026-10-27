@@ -4,6 +4,10 @@ All notable changes, newest first. The game and the design documents are in Span
 
 ## Unreleased
 - **Automatic engineers**: the builder job is gone (5 civilian jobs) and the Industrial zone merged into Production. If a zone has a build queued, its engineers (2 each) and settlers (1 each) build on their own using the zone's stored production; the rest produce. Guilds of Engineers and Great Works now give build discounts. The zone summary shows who is building.
+- **Traits for people**: every civilian has 2 traits (very bad, bad, good, very good) that change what it produces in one job (farming, engineering, trade, science) or how much it eats. Good traits are drawn with a silver border and very good ones with a gold border, with an icon and a tooltip. The player chooses whom to specialize, one person at a time (click or drag).
+- **Build split**: stored production plus what the others produce decides who builds; when the balance is negative the best producers produce first (half and half at equal efficiency).
+- **Pause**: a button next to the current build pauses all builds in the zone so production is stored; "Pause growth" stores the food surplus.
+- **Moving food from another zone now costs logistics gold** (distance, roads, caravans); without gold that food does not arrive.
 - Fixed: a player could annex two tribes in one step paying more science than they had, ending with negative science.
 - **Online multiplayer with Firebase Realtime Database**: one player creates a room and shares a 4-letter code or a link; 2 to 4 people can join and empty seats are played by bots. The host's browser runs the engine and, once everyone is ready, resolves the step and publishes the full game state, so every screen stays in sync. Anyone, including the host, can reload the page and rejoin their seat. The Firebase SDK is loaded only when playing online; games against bots still work offline. Setup guide in `docs/multijugador.md` (Spanish); security rules in `firebase/reglas_base_datos.json`.
 - The seeded random generator exposes `state()`, so a game can be sent over the network and continued exactly.

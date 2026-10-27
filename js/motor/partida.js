@@ -58,7 +58,7 @@ function newGame(mapIdx,N,seed,thrMode){
   const zones=v.n.map((n,i)=>({id:i,sector:n[0],k:n[1],role:['capital','tribu','vacia','frontera'][n[2]],terrain:n[3],x:n[4],y:n[5],adj:[],
     owner:null,size:3,food:0,prod:0,prog:0,grow:0,conflict:false,capital:false,units:{},att:{},b:[],proj:[],bplan:null,res:null,tspec:null,tmult:1,ev:{}}));
   v.e.forEach(([a,b])=>{ zones[a].adj.push(b); zones[b].adj.push(a); });
-  const g={mapIdx,N,seed,rng,zones,map:v,hist:[],step:1,over:false,winner:[],thr:thrMode||'normal',F:[],M:[],log:[],evq:[],tributes:[],logiMult:1,evNow:null,tele:{ready:[],orders:[]}};
+  const g={nid:1,mapIdx,N,seed,rng,zones,map:v,hist:[],step:1,over:false,winner:[],thr:thrMode||'normal',F:[],M:[],log:[],evq:[],tributes:[],logiMult:1,evNow:null,tele:{ready:[],orders:[]}};
   const START=['Almacenes','Caminos','Hospitales','Cuarteles','Fortificaciones','Bibliotecas','Molinos','Talleres','Mercados'];
   for(let f=0;f<=TRIBE;f++){ const tc={}; if(f<N) START.forEach(n=>{ tc[n]=1; }); g.F.push({gold:f<N?10:0,tech:f<N?10:0,techs:tc,out:false,ghost:false,ally:null,req:null,lastAvoid:-99,notes:[],rq:[],rcap:0,stance:{},enc:null}); }
   recomputeMods(g);

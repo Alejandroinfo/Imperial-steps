@@ -20,7 +20,7 @@ function prueba(nombre, codigo) {
 }
 // Partida base: mapa 1, 2 jugadores; la capital del jugador 0 sin eventos.
 const base = `const G=newGame(0,2,1,'normal'); G.evq=[]; const cap=G.zones.find(z=>z.capital&&z.owner===0);
-  const civ=t=>mkUnit(G,0,t); const paso=(o)=>resolveStep(G,(o||[]).map(x=>Object.assign({f:0},x)));`;
+  const civ=t=>{ const u=mkUnit(G,0,t); u.tr=[]; return u; }; const conRasgo=(t,k,l)=>{ const u=mkUnit(G,0,t); u.tr=[{k,l}]; return u; }; const paso=(o)=>resolveStep(G,(o||[]).map(x=>Object.assign({f:0},x)));`;
 
 prueba('El almacén base es 10 por tamaño', base + `return capStore(G,cap,'food')===10*cap.size;`);
 
@@ -164,10 +164,17 @@ prueba('Etapa de fundación: crecer cuesta la mitad hasta el paso 12', base + `
   const antes=growCost(G,0,cap); G.step=20; const despues=growCost(G,0,cap); return antes<despues;`);
 
 // ---- Ingenieros automáticos (15.2) ----
-prueba('Con 4 de producción guardada y 3 ingenieros, 2 construyen y 1 produce', base + `
-  cap.units[0]=[civ('ing'),civ('ing'),civ('ing')]; cap.prod=4; cap.proj=[{k:'b',bt:'molino',left:40,tot:40,dup:0,lvl:2,spec:null}];
-  const pl=buildPlan(G,cap,0,false); paso(); const gastado=40-cap.proj[0].left;
-  const con=cap.last.prod; return pl.ing===2&&pl.cap===4&&gastado===4&&con<9;`);
+prueba('Con la misma eficiencia, sin nada guardado, la mitad produce para que la otra mitad construya', base + `
+  cap.terrain='lla'; cap.capital=false; cap.units[0]=[civ('ing'),civ('ing')]; cap.prod=0; cap.proj=[{k:'b',bt:'molino',left:40,tot:40,dup:0,lvl:2,spec:null}];
+  const pl=buildPlan(G,cap,0,false); return pl.ing===1&&pl.cap===2;`);
+
+prueba('Con producción guardada de sobra, todos pueden construir', base + `
+  cap.terrain='lla'; cap.capital=false; cap.units[0]=[civ('ing'),civ('ing'),civ('ing')]; cap.prod=20; cap.proj=[{k:'b',bt:'molino',left:40,tot:40,dup:0,lvl:2,spec:null}];
+  const pl=buildPlan(G,cap,0,false); return pl.ing===3&&pl.cap===6;`);
+
+prueba('Si la cuenta queda en negativo, producen primero los que mejor producen (pobladores en Montañas)', base + `
+  cap.terrain='mon'; cap.capital=false; cap.units[0]=[civ('ing'),civ('pob'),civ('pob')]; cap.prod=0; cap.proj=[{k:'b',bt:'molino',left:40,tot:40,dup:0,lvl:2,spec:null}];
+  const pl=buildPlan(G,cap,0,false); return pl.pob===0&&pl.ing===1;`);
 
 prueba('Sin obra en cola, todos los ingenieros producen', base + `
   cap.units[0]=[civ('ing'),civ('ing'),civ('ing')]; cap.prod=4; cap.proj=[];
@@ -178,9 +185,22 @@ prueba('Los pobladores también construyen solos si hay obra (1 cada uno) y, si 
   const pl=buildPlan(G,cap,0,false); const con=pl.pob===3&&pl.cap===3;
   cap.proj=[]; const pl2=buildPlan(G,cap,0,false); return con&&pl2.pob===0&&pl2.cap===0;`);
 
-prueba('Una obra sin producción guardada no avanza y nadie deja de producir', base + `
+prueba('Pausar las obras de una zona: nadie construye y todos producen', base + `
+  cap.units[0]=[civ('ing'),civ('ing')]; cap.prod=20; cap.proj=[{k:'b',bt:'molino',left:40,tot:40,dup:0,lvl:2,spec:null}];
+  paso([{t:'pausebuild',zone:cap.id,on:true}]); const parada=cap.proj[0].left===40&&cap.pauseBuild===true&&cap.bplan.cap===0;
+  paso([{t:'pausebuild',zone:cap.id,on:false}]); return parada&&cap.proj[0].left<40;`);
+
+prueba('Con la pausa, la producción se acumula en el almacén', base + `
   cap.units[0]=[civ('ing'),civ('ing')]; cap.prod=0; cap.proj=[{k:'b',bt:'molino',left:40,tot:40,dup:0,lvl:2,spec:null}];
-  const pl=buildPlan(G,cap,0,false); return pl.ing===0&&pl.cap===0;`);
+  paso([{t:'pausebuild',zone:cap.id,on:true}]); const a=cap.prod; paso(); return cap.prod>a&&a>0;`);
+
+prueba('Mover comida desde otra zona cuesta oro de logística', base + `
+  const v=G.zones[cap.adj[0]]; v.owner=0; v.units[0]=[civ('sol'),civ('sol')]; v.food=0; cap.food=30; G.F[0].gold=20;
+  paso(); return (v.units[0]||[]).every(u=>u.hg===0)&&G.F[0].gold<20+cap.last.gold;`);
+
+prueba('Sin oro para mover la comida, la gente de la otra zona pasa hambre', base + `
+  const v=G.zones[cap.adj[0]]; v.owner=0; v.units[0]=[civ('sol'),civ('sol')]; v.food=0; cap.food=30; G.F[0].gold=0; cap.units[0]=[civ('pob')];
+  paso(); return (v.units[0]||[]).some(u=>u.hg>0);`);
 
 prueba('Solo construyen los ingenieros que hacen falta para terminar la obra', base + `
   cap.units[0]=[civ('ing'),civ('ing'),civ('ing')]; cap.prod=30; cap.proj=[{k:'b',bt:'molino',left:3,tot:20,dup:0,lvl:1,spec:null}];
@@ -209,6 +229,46 @@ prueba('Un poblador que construye no produce su 1 de producción, pero sigue dan
   cap.units[0]=[civ('pob'),civ('pob'),civ('pob')]; cap.prod=10; cap.proj=[{k:'b',bt:'molino',left:40,tot:40,dup:0,lvl:2,spec:null}];
   paso(); const con=cap.lastBy.jobs.pob; const a=con.prod===0&&con.food===3;
   cap.proj=[]; cap.prod=10; paso(); const sin=cap.lastBy.jobs.pob; return a&&sin.prod>=3&&sin.food===3;`);
+
+// ---- Rasgos de las personas (fases A y B) ----
+prueba('Rasgos: cada persona tiene 2 rasgos distintos y en promedio hay más positivos que negativos', base + `
+  let suma=0,n=0,ext=0,com=0,dist=true; for(let i=0;i<4000;i++){ const r=rollTraits(G); if(r.length!==2||r[0].k===r[1].k) dist=false; r.forEach(t=>{ suma+=t.l; n++; if(Math.abs(t.l)===2) ext++; else com++; }); }
+  return dist&&suma/n>0&&ext/n>0.15&&ext/n<0.35&&com/n>0.65;`);
+
+prueba('Rasgos: un agricultor con rasgo bueno de agricultura da un 25 % más de comida', base + `
+  cap.units[0]=[conRasgo('agr','agr',1)]; paso(); return cap.lastBy.jobs.agr.food===2.5;`);
+
+prueba('Rasgos: un rasgo de otro oficio no afecta (el comerciante no ayuda al agricultor)', base + `
+  cap.units[0]=[conRasgo('agr','com',2)]; paso(); return cap.lastBy.jobs.agr.food===2;`);
+
+prueba('Rasgos: un rasgo muy malo quita la mitad', base + `
+  cap.units[0]=[conRasgo('agr','agr',-2)]; paso(); return cap.lastBy.jobs.agr.food===1;`);
+
+prueba('Rasgos: el rasgo de agricultura vale también para el poblador sin oficio (su comida)', base + `
+  cap.units[0]=[conRasgo('pob','agr',2)]; paso(); return cap.lastBy.jobs.pob.food===1.5;`);
+
+prueba('Rasgos: el comerciante con rasgo de comercio da más oro', base + `
+  cap.units[0]=[conRasgo('com','com',1)]; G.F[0].gold=0; paso(); return cap.lastBy.jobs.com.gold===2.5;`);
+
+prueba('Rasgos: apetito bueno hace comer menos (4 personas comen 3 en vez de 4)', base + `
+  const a=()=>{ const u=civ('pob'); u.tr=[{k:'apt',l:1}]; return u; }; cap.units[0]=[a(),a(),a(),a()]; cap.food=20; paso();
+  const bueno=cap.feed[0].need; cap.units[0]=[civ('pob'),civ('pob'),civ('pob'),civ('pob')]; cap.food=20; paso(); return bueno===3&&cap.feed[0].need===4;`);
+
+prueba('Rasgos: las personas tienen identificador único', base + `
+  const ids=G.zones.reduce((a,z)=>a.concat(Object.keys(z.units).reduce((b,f)=>b.concat(z.units[f].map(u=>u.id)),[])),[]); return ids.length>0&&ids.every(x=>x>0)&&new Set(ids).size===ids.length;`);
+
+prueba('Elegir personas: la orden especializa a las personas elegidas y no a otras', base + `
+  const a=conRasgo('pob','agr',2), b=civ('pob'), c=civ('pob'); cap.units[0]=[a,b,c]; cap.prod=10;
+  paso([{t:'spec',zone:cap.id,from:'pob',to:'agr',n:1,ids:[c.id]}]);
+  return c.t==='agr'&&a.t==='pob'&&b.t==='pob';`);
+
+prueba('Los rasgos viajan con la persona al cambiar de oficio', base + `
+  const a=conRasgo('pob','agr',2); cap.units[0]=[a]; cap.prod=10; paso([{t:'spec',zone:cap.id,from:'pob',to:'agr',n:1,ids:[a.id]}]);
+  return a.t==='agr'&&a.tr.length===1&&a.tr[0].k==='agr'&&a.tr[0].l===2;`);
+
+prueba('Obras: el reparto usa el rendimiento de cada persona y guarda a quién elige', base + `
+  cap.terrain='lla'; cap.capital=false; const a=conRasgo('ing','ing',2), b=civ('ing'); cap.units[0]=[a,b]; cap.prod=0; cap.proj=[{k:'b',bt:'molino',left:40,tot:40,dup:0,lvl:2,spec:null}];
+  const pl=buildPlan(G,cap,0,false); return pl.ing===1&&pl.ids.length===1&&(pl.ids[0]===a.id||pl.ids[0]===b.id);`);
 
 console.log(fallos ? `\n${fallos} reglas fallan.` : '\nTodas las reglas probadas se cumplen.');
 process.exit(fallos ? 1 : 0);

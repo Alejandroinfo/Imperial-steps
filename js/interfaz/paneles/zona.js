@@ -62,7 +62,8 @@ function buildingsHTML(z){
     if(b.t!=='mar'&&!up) h+=btnHTML('demolish','Destruir (recupera '+Math.floor((b.cost||20)*0.5)+')',`data-zone="${z.id}" data-bi="${i}"`);
     h+='</div></div>';
   });
-  z.proj.forEach(p=>{ const nm=p.k==='b'?'Construyendo '+BT[p.bt].n:p.k==='w'?'Construyendo una Maravilla':'Mejorando '+BT[z.b[p.bi]?z.b[p.bi].t:'almacen'].n+' a nivel '+p.to; h+=`<div class="proj">${nm}: ${p.tot-p.left}/${p.tot}<div class="bar"><i style="width:${Math.round(100*(p.tot-p.left)/p.tot)}%"></i></div></div>`; });
+  const pausedNow=(()=>{ const pd=ui.orders.filter(o=>o.t==='pausebuild'&&o.zone===z.id).pop(); return pd?pd.on:!!z.pauseBuild; })();
+  z.proj.forEach((p,pi)=>{ const nm=p.k==='b'?'Construyendo '+BT[p.bt].n:p.k==='w'?'Construyendo una Maravilla':'Mejorando '+BT[z.b[p.bi]?z.b[p.bi].t:'almacen'].n+' a nivel '+p.to; h+=`<div class="proj">${pi===0?`<button class="btn" style="float:right;padding:0 8px;min-width:0" data-act="pausebuild" data-zone="${z.id}" title="${pausedNow?'Reanudar las obras de esta zona':'Pausar las obras de esta zona: la producción se guarda en el almacén'}" aria-pressed="${pausedNow}">${pausedNow?'▶':'⏸'}</button>`:''}${nm}${pausedNow?' (en pausa)':''}: ${p.tot-p.left}/${p.tot}<div class="bar"><i style="width:${Math.round(100*(p.tot-p.left)/p.tot)}%"></i></div></div>`; });
   h+=buildCardsHTML(z);
   return h;
 }
@@ -121,7 +122,7 @@ function openMove(fromId,toId){
   const s=G.zones[fromId], z=G.zones[toId]; const hostile=(z.owner!==null&&z.owner!==ME&&!allied(G,ME,z.owner));
   ui.sel=fromId; ui.mv={from:fromId,to:toId,st:hostile?'ataque':'paz'};
   // por defecto: todas las tropas y, si la zona destino es libre o propia, 1 civil (de preferencia un poblador)
-  const civPick=hostile?null:['pob','agr','com','ing','con','cie'].find(t=>availQ(fromId,t)>0);
+  const civPick=hostile?null:['pob','agr','com','ing','cie'].find(t=>availQ(fromId,t)>0);
   CIV.concat(MIL).forEach(t=>{ const mx=availQ(fromId,t); ui.form['mv_'+t]=MIL.includes(t)?(t==='ari'||t==='lan'?0:mx):(t===civPick?1:0); });
   ui.form.mv_via=''; ui.tab='zona'; ui.zsub='mover';
 }
@@ -162,7 +163,7 @@ function zoneOverview(z){
   // --- reservas ---
   const cf=capStore(G,z,'food'), cp=capStore(G,z,'prod'), gc=growCost(G,z.owner,z);
   const rt=(z.routes||[]); const gm=z.growMode||GROW_MODE_DEFAULT;
-  h+=`<div class="hint" style="margin:-2px 0 4px">${gm==='crecer'?'👶 El sobrante va a <b>crecer</b>':'🏺 El sobrante se <b>guarda</b>'}${z.autoSpec?` · los que nacen serán <b>${UNP[z.autoSpec].toLowerCase()}</b>`:''}${rt.length?` · 🔁 ${rt.length} envío${rt.length>1?'s':''} automático${rt.length>1?'s':''}`:''} <a href="#" data-act="zsub" data-s="recursos" class="wlink">cambiar</a></div>`;
+  h+=`<div class="hint" style="margin:-2px 0 4px">${gm==='crecer'?'👶 El sobrante va a <b>crecer</b>':'⏸ El crecimiento está <b>en pausa</b>: el sobrante se guarda'}${z.autoSpec?` · los que nacen serán <b>${UNP[z.autoSpec].toLowerCase()}</b>`:''}${rt.length?` · 🔁 ${rt.length} envío${rt.length>1?'s':''} automático${rt.length>1?'s':''}`:''} <a href="#" data-act="zsub" data-s="recursos" class="wlink">cambiar</a></div>`;
   h+=`<div class="zres3"><div><span title="comida">🌾</span><b>${Math.floor(z.food)}/${cf}</b>${barHTML(z.food,cf,'#9DC764')}</div><div><span title="producción">⚒</span><b>${Math.floor(z.prod)}/${cp}</b>${barHTML(z.prod,cp,'#C9A878')}</div><div><span title="crecimiento">👶</span><b>${Math.floor(z.prog)}/${gc}</b>${barHTML(z.prog,gc,'#7FB2E5')}<small>${growText(z)}</small></div></div>`;
   // --- quién trabaja y dónde ---
   const us=z.units[ME]||[]; const cnt={}; us.forEach(u=>{ cnt[u.t]=(cnt[u.t]||0)+1; });
@@ -173,9 +174,9 @@ function zoneOverview(z){
     const where=[];
     blds.filter(b=>!b.mil&&b.who&&b.who[t]).forEach(b=>{ const k=b.who[t]/Math.max(1,b.wk); ['food','prod','gold','tech'].forEach(r=>{ out[r]+=(b[r]||0)*k; }); where.push(`${b.who[t]} en ${BT[b.t].n.toLowerCase()}${b.dup?' 2.º':''}`); });
     let note='';
-    if(t==='con'||t==='pob'){ const pr=z.proj[0]; if(t==='con') note=pr?`construyen: ${projName(z,pr)} (${Math.round(100*(pr.tot-pr.left)/pr.tot)} %)`:'sin obra: no hay nada que construir'; else if(pr) note='también ayudan en la obra'; }
+    if((t==='ing'||t==='pob')&&L&&L.building&&L.building[t]>0){ const pr=z.proj[0]; note=`${L.building[t]} construye${L.building[t]===1?'':'n'}${pr?': '+projName(z,pr)+' ('+Math.round(100*(pr.tot-pr.left)/pr.tot)+' %)':''}`; }
     if(t==='cie') note=G.F[ME].rq.length?`${pl.n} investiga${pl.n===1?'':'n'}${pl.sci-pl.n>0?`, ${pl.sci-pl.n} genera${pl.sci-pl.n===1?'':'n'} ciencia`:''}`:'generan ciencia (no hay nada en cola)';
-    const free=cnt[t]-where.reduce((a,w)=>a+parseInt(w),0); if(where.length&&free>0&&t!=='con') where.push(`${free} ${t==='pob'?'en casa':'en el campo'}`);
+    const free=cnt[t]-where.reduce((a,w)=>a+parseInt(w),0); if(where.length&&free>0) where.push(`${free} ${t==='pob'?'en casa':'en el campo'}`);
     rows+=`<div class="wrow">${uIcon(t,30)}<div class="wtx"><b>${cnt[t]} ${(cnt[t]>1?UNP[t]:UN[t]).toLowerCase()}</b><small>${esc([where.join(' · '),note].filter(Boolean).join(' · ')||(t==='pob'?'en casa: un poco de comida y producción':'trabajando en el campo'))}</small></div><div class="wout">${outChips(out)}</div></div>`;
   });
   if(L&&L.idle&&(L.idle.busy||L.idle.moving)) rows+=`<div class="hint">${L.idle.busy?L.idle.busy+' cambiando de oficio (no producen este paso)':''}${L.idle.busy&&L.idle.moving?' · ':''}${L.idle.moving?L.idle.moving+' recién llegados':''}</div>`;
@@ -289,7 +290,7 @@ function demobHTML(z){
 function growModeHTML(z){
   const pend=ui.orders.filter(o=>o.t==='growmode'&&o.zone===z.id).pop(); const cur=pend?pend.mode:(z.growMode||GROW_MODE_DEFAULT);
   const ST=cur==='crecer'?'Después de alimentar a todos y de los envíos automáticos, <b>todo el sobrante va a crecer</b>. Las reservas no aumentan.':'Después de alimentar a todos y de los envíos, <b>el sobrante se guarda</b> en el almacén; solo lo que no cabe va a crecer. Útil para juntar comida para una tribu, un tributo o una guerra.';
-  return `<h4>Comida que sobra${infoBtn('sobra',ST)}</h4><div class="row"><span class="seg"><button data-act="growmode" data-v="crecer" aria-pressed="${cur==='crecer'}">👶 Crecer</button><button data-act="growmode" data-v="guardar" aria-pressed="${cur==='guardar'}">🏺 Guardar</button></span></div>`+infoBody('sobra',ST)+``;
+  return `<h4>Comida que sobra${infoBtn('sobra',ST)}</h4><div class="row"><span class="seg"><button data-act="growmode" data-v="crecer" aria-pressed="${cur==='crecer'}">👶 Crecer</button><button data-act="growmode" data-v="guardar" aria-pressed="${cur==='guardar'}">⏸ Pausar crecimiento (guardar)</button></span></div>`+infoBody('sobra',ST)+``;
 }
 // Envíos que se repiten cada paso.
 function routesHTML(z){

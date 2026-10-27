@@ -22,8 +22,27 @@ function stanceOf(g,a,b){ if(!isPl(a)||!isPl(b)) return 'alerta'; const s=g.F[a]
 function mkUnit(g,f,t){
   const M=g.M[f]||newMods(), base=UT[t];
   const hp=base.hp+(M.u[t]?M.u[t].hp:0)+(base.civ?M.civHp:0);
-  return {t,hp,w:0,str:base.civ?1:2,busy:0,mv:0,hg:0};
+  g.nid=(g.nid||1);
+  const u={t,hp,w:0,str:base.civ?1:2,busy:0,mv:0,hg:0,id:g.nid++};
+  if(base.civ) u.tr=rollTraits(g);
+  return u;
 }
+// Dos rasgos distintos al azar (con la semilla de la partida, así que todos los jugadores ven lo mismo).
+/** @param {Partida} g */
+function rollTraits(g){
+  const pool=TRAIT_KINDS.slice(), out=[];
+  for(let i=0;i<2;i++){
+    const k=pool.splice(Math.floor(g.rng()*pool.length),1)[0];
+    const r=g.rng(); let acc=0, l=TRAIT_ODDS[TRAIT_ODDS.length-1][0];
+    for(const [lv,p] of TRAIT_ODDS){ acc+=p; if(r<acc){ l=lv; break; } }
+    out.push({k,l});
+  }
+  return out;
+}
+// Multiplicador de rendimiento de una persona en lo que afecta ese rasgo (1 = sin rasgo).
+function trMul(u,k){ const t=(u.tr||[]).find(x=>x.k===k); return t?1+TRAIT_STEP*t.l:1; }
+// El apetito es al revés: un rasgo bueno hace comer menos.
+function aptMul(u){ const t=(u.tr||[]).find(x=>x.k==='apt'); return t?1-TRAIT_STEP*t.l:1; }
 /** @param {Partida} g */
 function mhp(g,f,t,z){
   const M=g.M[f]||newMods(), base=UT[t]; let h=base.hp+(M.u[t]?M.u[t].hp:0)+(base.civ?M.civHp:0);

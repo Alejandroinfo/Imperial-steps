@@ -1,9 +1,9 @@
 """Partida en línea de prueba con dos navegadores, sin internet ni Firebase real.
 
-Usa pruebas/firebase_falso.js en lugar del SDK de Firebase y comprueba: crear sala, unirse con
-el enlace, empezar con un bot, que las dos pantallas queden con el mismo estado paso a paso,
-que la invitada y el anfitrión puedan recargar la página y volver a su asiento, y los mensajes
-para quien llega tarde o escribe un código que no existe.
+Usa pruebas/firebase_falso.js en lugar del SDK de Firebase y comprueba: crear sala, copiar el
+enlace, entrar con el enlace escribiendo solo el nombre, empezar con un bot, que las dos pantallas
+queden con el mismo estado paso a paso, que se pueda recargar la página o cerrar el navegador y
+volver con el mismo nombre (también el anfitrión), y los avisos para quien llega tarde.
 
 Uso:  pip install playwright && python -m playwright install chromium
       python -m http.server 8766          (desde la raíz del repositorio, en otra terminal)
@@ -33,7 +33,7 @@ def revisar(nombre, ok):
 
 with sync_playwright() as p:
     nav = p.chromium.launch()
-    ctx = nav.new_context(viewport={'width': 1300, 'height': 850})
+    ctx = nav.new_context(viewport={'width': 1300, 'height': 850}, permissions=['clipboard-read', 'clipboard-write'])
     ctx.add_init_script(path=str(RAIZ / 'pruebas' / 'firebase_falso.js'))
     ctx.route('**/js/red/config_firebase.js',
               lambda r: r.fulfill(status=200, content_type='application/javascript', body=CONFIG))
@@ -55,18 +55,31 @@ with sync_playwright() as p:
         b.wait_for_function(f'window.__ui.G.step>{paso}', timeout=20000)
         time.sleep(1.2)
 
-    A, B = pagina('anfitrión'), pagina('invitada')
+    def volver(nombre, n):
+        pg = pagina(n)
+        pg.goto(URL)
+        pg.click('#btnOnline2')
+        pg.fill('#redName', nombre)
+        pg.fill('#redCode', codigo)
+        pg.click('#redJoin')
+        return pg
+
+    A, B = pagina('anfitrión'), pagina('invitado')
     A.goto(URL)
     A.click('#btnOnline2')
-    A.fill('#redName', 'Pao')
+    A.fill('#redName', 'Ana')
     A.click('#redCreate')
     A.wait_for_function("document.getElementById('redCodeShow').textContent.length===4")
     codigo = A.inner_text('#redCodeShow')
+    A.click('#redCopy')
+    time.sleep(0.3)
+    revisar('el botón copia el enlace de invitación', A.evaluate('navigator.clipboard.readText()').endswith('?sala=' + codigo))
     B.goto(URL + '?sala=' + codigo)
     B.wait_for_selector('#dlgRed[open]')
-    revisar('el enlace trae el código de la sala', B.input_value('#redCode') == codigo)
-    B.fill('#redName', 'Ale')
-    B.click('#redJoin')
+    revisar('con el enlace solo pide el nombre', B.is_visible('#redInvite') and not B.is_visible('#redCreate')
+            and not B.is_visible('#redCode') and B.inner_text('#redJoin') == 'Entrar a la sala')
+    B.fill('#redName', 'Beto')
+    B.press('#redName', 'Enter')
     A.wait_for_function("document.querySelectorAll('#redPlayers li').length===2")
     revisar('solo el anfitrión ve «Empezar partida»', A.is_visible('#redStart') and not B.is_visible('#redStart'))
     A.select_option('#redN', '3')
@@ -75,7 +88,7 @@ with sync_playwright() as p:
         pg.wait_for_function('window.__ui.G && window.__ui.G.N===3 && NET.on', timeout=15000)
     time.sleep(1)
     revisar('asientos y nombres', A.evaluate('ME') == 0 and B.evaluate('ME') == 1
-            and A.evaluate('PLN.slice(0,3).map(p=>p.name)') == ['Pao', 'Ale', 'Bot ocre'])
+            and A.evaluate('PLN.slice(0,3).map(p=>p.name)') == ['Ana', 'Beto', 'Bot ocre'])
     revisar('mismo estado al empezar', mismo(A, B))
     for _ in range(4):
         listo_ambos(A, B)
@@ -85,19 +98,34 @@ with sync_playwright() as p:
     B.reload()
     B.wait_for_function('window.__ui.G && NET.on && ME===1', timeout=15000)
     time.sleep(1.5)
-    revisar('la invitada recarga y vuelve a su asiento', mismo(A, B))
+    revisar('el invitado recarga y vuelve a su asiento', mismo(A, B))
     paso = A.evaluate('window.__ui.G.step')
     B.click('#readyBtn')
     time.sleep(0.8)
     A.reload()
     A.wait_for_function('window.__ui.G && NET.on && NET.host && ME===0', timeout=15000)
     time.sleep(1.5)
-    revisar('el anfitrión recarga, vuelve y ve a la invitada lista',
+    revisar('el anfitrión recarga, vuelve y ve al invitado listo',
             A.evaluate('window.__ui.ui.ready[1]') is True and mismo(A, B))
     A.click('#readyBtn')
     B.wait_for_function(f'window.__ui.G.step>{paso}', timeout=20000)
     time.sleep(1.2)
     revisar('la partida sigue después de recargar', mismo(A, B))
+    B.close()
+    time.sleep(1)
+    B = volver('beto', 'invitado de vuelta')
+    B.wait_for_function('window.__ui.G && NET.on && ME===1', timeout=15000)
+    time.sleep(1.5)
+    revisar('el invitado cierra el navegador y vuelve con su nombre', mismo(A, B))
+    paso = A.evaluate('window.__ui.G.step')
+    A.close()
+    time.sleep(1)
+    A = volver('Ana', 'anfitrión de vuelta')
+    A.wait_for_function('window.__ui.G && NET.on && NET.host && ME===0', timeout=15000)
+    time.sleep(1.5)
+    revisar('el anfitrión cierra el navegador y vuelve con su nombre', mismo(A, B))
+    listo_ambos(A, B)
+    revisar('la partida sigue con el anfitrión de vuelta', mismo(A, B) and A.evaluate('window.__ui.G.step') > paso)
     C = pagina('tarde')
     C.goto(URL + '?sala=' + codigo)
     C.wait_for_selector('#dlgRed[open]')
@@ -105,6 +133,10 @@ with sync_playwright() as p:
     C.click('#redJoin')
     time.sleep(1.5)
     revisar('quien llega tarde recibe un aviso', 'ya empezó' in C.inner_text('#redMsg'))
+    C.fill('#redName', 'Beto')
+    C.click('#redJoin')
+    time.sleep(1.5)
+    revisar('no se puede quitar el asiento a alguien conectado', 'ya está conectado' in C.inner_text('#redMsg'))
     revisar('sin errores en las páginas', not errores)
     for e in errores[:5]:
         print('   ', e)

@@ -12,18 +12,17 @@ const PLN = [
 ];
 const TERRN = {mon:'Montañas',pra:'Praderas',bos:'Bosques',rio:'Ríos',col:'Colinas',lla:'Llanuras'};
 const RISK = {mon:2,col:2,bos:1.5,rio:1.5,pra:1,lla:1};
-const CIV = ['pob','agr','ing','con','cie','com'];
+const CIV = ['pob','agr','ing','cie','com'];
 const MIL = ['sol','arq','cab','esc','ber','ari','lan'];
-const UN = {pob:'Poblador',agr:'Agricultor',ing:'Ingeniero',con:'Constructor',cie:'Científico',com:'Comerciante',
+const UN = {pob:'Poblador',agr:'Agricultor',ing:'Ingeniero',cie:'Científico',com:'Comerciante',
             sol:'Soldado',arq:'Arquero',cab:'Caballero',esc:'Escudero',ber:'Berserker',ari:'Ariete',lan:'Lanzapiedras'};
-const UNP = {pob:'Pobladores',agr:'Agricultores',ing:'Ingenieros',con:'Constructores',cie:'Científicos',com:'Comerciantes',
+const UNP = {pob:'Pobladores',agr:'Agricultores',ing:'Ingenieros',cie:'Científicos',com:'Comerciantes',
             sol:'Soldados',arq:'Arqueros',cab:'Caballeros',esc:'Escuderos',ber:'Berserkers',ari:'Arietes',lan:'Lanzapiedras'};
 // hp, fuerza (dados), ataque, defensa, iniciativa (menor actúa primero)
 const UT = {
   pob:{civ:1,hp:3,str:1,atk:1,def:0,init:10},
   agr:{civ:1,hp:3,str:1,atk:1,def:0,init:10},
   ing:{civ:1,hp:3,str:1,atk:1,def:0,init:10},
-  con:{civ:1,hp:3,str:1,atk:1,def:0,init:10},
   cie:{civ:1,hp:3,str:1,atk:1,def:0,init:10},
   com:{civ:1,hp:3,str:1,atk:1,def:0,init:10},
   sol:{hp:3,str:2,atk:1,def:0,init:5},

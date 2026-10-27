@@ -3,7 +3,9 @@
 // Ayudantes del estado de la partida: azar con semilla, unidades, zonas, almacenamiento,
 // investigación y nombres de las zonas.
 
-function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+// Generador aleatorio con semilla. state() devuelve su estado para guardarlo o mandarlo por la red:
+// mulberry32(r.state()) sigue exactamente la misma secuencia.
+function mulberry32(a){const r=function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}; r.state=()=>a|0; return r;}
 const zname = z => z.name||('Zona '+(z.id+1));
 const isPl = f => f!==null && f!==undefined && f>=0 && f<TRIBE;
 function lst(z,f){ return z.units[f]||(z.units[f]=[]); }

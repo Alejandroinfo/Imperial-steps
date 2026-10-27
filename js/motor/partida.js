@@ -56,7 +56,7 @@ function newGame(mapIdx,N,seed,thrMode){
   const rng=mulberry32(seed); const md=DATA.maps[mapIdx]; const v=addFrontiers(md.v[String(N)],N);
   /** @type {Zona[]} */
   const zones=v.n.map((n,i)=>({id:i,sector:n[0],k:n[1],role:['capital','tribu','vacia','frontera'][n[2]],terrain:n[3],x:n[4],y:n[5],adj:[],
-    owner:null,size:3,food:0,prod:0,prog:0,grow:0,conflict:false,capital:false,units:{},att:{},b:[],proj:[],res:null,tspec:null,tmult:1,ev:{}}));
+    owner:null,size:3,food:0,prod:0,prog:0,grow:0,conflict:false,capital:false,units:{},att:{},b:[],proj:[],bplan:null,res:null,tspec:null,tmult:1,ev:{}}));
   v.e.forEach(([a,b])=>{ zones[a].adj.push(b); zones[b].adj.push(a); });
   const g={mapIdx,N,seed,rng,zones,map:v,hist:[],step:1,over:false,winner:[],thr:thrMode||'normal',F:[],M:[],log:[],evq:[],tributes:[],logiMult:1,evNow:null,tele:{ready:[],orders:[]}};
   const START=['Almacenes','Caminos','Hospitales','Cuarteles','Fortificaciones','Bibliotecas','Molinos','Talleres','Mercados'];

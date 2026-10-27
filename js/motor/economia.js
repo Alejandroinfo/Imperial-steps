@@ -8,28 +8,45 @@ function growCost(g,f,z){
   if(g.step<=FOUNDING_STEPS) c=Math.ceil(c/2);   // etapa de fundación: los primeros pasos son más rápidos
   return Math.max(1,c);
 }
+// Obras automáticas (igual que los científicos): si la zona tiene obras en cola, sus ingenieros y pobladores libres
+// construyen solos, cada uno usando de la producción guardada (ingeniero 2 + Cuadrillas/Línea; poblador 1);
+// los que no alcancen producen. Se decide antes de producir, con la producción guardada al inicio del paso
+// (más lo que se pueda traer de zonas cercanas pagando oro). Sin obra en cola, todos producen.
 /** @param {Partida} g */
-function conCap(g,z,f){
-  const M=g.M[f]; const us=(z.units[f]||[]).filter(u=>UT[u.t].civ&&u.w===0&&!u.busy&&!u.mv); const dbl=M.terrDouble?2:1; let c=0;
-  us.forEach(u=>{ if(u.t==='con') c+=2+M.conUse; else if(u.t==='pob') c+=1+(z.terrain==='col'?dbl*(1+M.tx.col):0); });
-  const sp=zoneSpec(g,z,f); if(sp.spec==='con') c+=[0,4,8,12][sp.lvl];
-  return c;
+function buildPlan(g,z,f,pull){
+  const plan={ing:0,pob:0,bonus:0,cap:0,work:0,stock:0};
+  if(!isPl(f)||!z.proj.length) return plan;
+  const M=g.M[f]; const dbl=M.terrDouble?2:1; const hill=z.terrain==='col'?dbl*(1+M.tx.col):0;
+  const free=t=>(z.units[f]||[]).filter(u=>u.t===t&&u.w===0&&!u.busy&&!u.mv).length;
+  const nIng=free('ing'), nPob=free('pob'), useIng=2+M.conUse+hill, usePob=1+hill;
+  const sp=zoneSpec(g,z,f); const zb=sp.spec==='ing'?[0,4,8,12][sp.lvl]+M.zProdLvl*sp.lvl:0;
+  const work=z.proj.reduce((a,p)=>a+p.left,0); plan.work=work;
+  const maxCap=Math.min(work,nIng*useIng+nPob*usePob+(nIng+nPob>0?zb:0));
+  if(pull&&z.prod<maxCap) pullRes(g,f,z,'prod',maxCap-z.prod,M.pullDist);
+  let budget=Math.floor(z.prod), left=work; plan.stock=budget;
+  const take=(n,use,key)=>{ for(let i=0;i<n&&left>0;i++){ const c=Math.min(use,left); if(budget<c) break; budget-=c; left-=c; plan.cap+=c; plan[key]++; } };
+  take(nIng,useIng,'ing'); take(nPob,usePob,'pob');
+  if(plan.ing+plan.pob>0&&zb>0&&left>0){ const b=Math.min(zb,budget,left); plan.bonus=b; plan.cap+=b; }
+  return plan;
 }
 /** @param {Partida} g */
 function produceZone(g,z){
   const f=z.owner; if(!isPl(f)) return; const M=g.M[f], F=g.F[f]; const us=z.units[f]||[];
   const sciAll=us.filter(u=>u.t==='cie'&&u.w===0&&!u.busy&&!u.mv); const nres=Math.min(z.resN||0,sciAll.length); const researchers=new Set(sciAll.slice(0,nres));  // z.resN lo fija researchPlan
-  const act=us.filter(u=>UT[u.t].civ&&u.w===0&&!u.busy&&!u.mv&&!researchers.has(u));
+  const bp=z.bplan||{ing:0,pob:0,bonus:0,cap:0}; const builders=new Set(), pobBuilders=new Set(); let bi=bp.ing, bpob=bp.pob;   // los pobladores que construyen siguen dando comida; los ingenieros que construyen no producen
+  us.forEach(u=>{ if(u.w!==0||u.busy||u.mv) return; if(u.t==='ing'&&bi>0){ builders.add(u); bi--; } else if(u.t==='pob'&&bpob>0){ pobBuilders.add(u); bpob--; } });
+  const act=us.filter(u=>UT[u.t].civ&&u.w===0&&!u.busy&&!u.mv&&!researchers.has(u)&&!builders.has(u));
   const T=z.terrain, dbl=M.terrDouble?2:1, tx=M.tx[T]||0, ev=z.ev||{};
   let food=0,prod=0,gold=0,tech=0;
   // registro de quién produce qué, para el resumen de la zona
   const by={jobs:{},blds:[],cap:0,zone:null,researching:researchers.size,
+    building:{ing:bp.ing,pob:bp.pob,cap:bp.cap,bonus:bp.bonus},
     idle:{moving:us.filter(u=>UT[u.t].civ&&u.mv).length,busy:us.filter(u=>UT[u.t].civ&&u.busy&&!u.mv).length,wounded:us.filter(u=>UT[u.t].civ&&u.w>0).length}};
   const job=t=>by.jobs[t]||(by.jobs[t]={n:0,food:0,prod:0,gold:0,tech:0});
   act.forEach(u=>{
     const h=u.half?0.5:1; const J=job(u.t); J.n++; let df=0,dp=0,dg=0,dt=0;
     switch(u.t){
-      case 'pob': df=h*Math.max(0,1+M.pobFood+(T==='pra'?dbl*(1+tx):0)+(ev.foodPob||0)); dp=h*Math.max(0,1+M.pobProd+(T==='mon'?dbl*(1+tx):0)+(ev.prodPob||0)); break;
+      case 'pob': df=h*Math.max(0,1+M.pobFood+(T==='pra'?dbl*(1+tx):0)+(ev.foodPob||0)); dp=pobBuilders.has(u)?0:h*Math.max(0,1+M.pobProd+(T==='mon'?dbl*(1+tx):0)+(ev.prodPob||0)); break;
       case 'agr': df=h*Math.max(0,2+M.agrFood+(T==='pra'?dbl*(1+tx):0)+(ev.foodAgr||0)); break;
       case 'ing': dp=h*Math.max(0,2+M.ingProd+(T==='mon'?dbl*(1+tx):0)+(ev.prodIng||0)); break;
       case 'cie': dt=h*Math.max(0,2+M.cieTech+(T==='lla'?dbl*(1+tx):0)+(ev.techCie||0)); break;
@@ -40,7 +57,7 @@ function produceZone(g,z){
   const sp=zoneSpec(g,z,f); z.sp=sp; const lv=sp.lvl, zb=[0,4,8,12][lv];
   const f0=food,p0=prod,g0=gold,t0=tech;
   if(sp.spec==='agr') food+=zb+M.zFoodLvl*lv+(lv===3?M.revol:0);
-  if(sp.spec==='ing') prod+=zb+M.zProdLvl*lv;
+  if(sp.spec==='ing') prod+=zb+M.zProdLvl*lv-bp.bonus;   // lo que no se use en obra produce
   if(sp.spec==='com') gold+=zb+(lv===3?M.ruta:0);
   if(sp.spec==='cie'&&nres===0) tech+=zb;
   if(food-f0||prod-p0||gold-g0||tech-t0) by.zone={spec:sp.spec,lvl:lv,food:food-f0,prod:prod-p0,gold:gold-g0,tech:tech-t0};
@@ -106,6 +123,7 @@ function researchPlan(g,f){
 function economy(g,L){
   const Z=g.zones; Z.forEach(z=>{ z.rcap=0; z.nres=0; z.f0=z.food; z.p0=z.prod; z.feed={}; z.feedOut=0; });
   for(let f=0;f<g.N;f++){ const plan=researchPlan(g,f); Object.keys(plan).forEach(id=>{ g.zones[id].resN=plan[id].n; g.zones[id].resBonus=plan[id].bonus; }); }
+  Z.forEach(z=>{ z.bplan=isPl(z.owner)?buildPlan(g,z,z.owner,true):null; });
   Z.forEach(z=>{ if(isPl(z.owner)){ produceZone(g,z); if(z.last) g.fx.push({k:'prod',zone:z.id,f:z.owner,food:z.last.food,prod:z.last.prod,gold:z.last.gold,tech:z.last.tech}); } });
   for(let f=0;f<g.N;f++) if(!g.F[f].out||g.F[f].ghost) globalProduce(g,f);
   holdResources(g,L);
@@ -121,10 +139,9 @@ function economy(g,L){
   }
   // construcción
   Z.forEach(z=>{
-    const f=z.owner; if(!isPl(f)||!z.proj.length) return; let cap=conCap(g,z,f); const M=g.M[f];
+    const f=z.owner; if(!isPl(f)||!z.proj.length||!z.bplan) return; let cap=z.bplan.cap;
     for(const p of z.proj.slice()){
       if(cap<=0) break; const need=Math.min(cap,p.left);
-      if(z.prod<need) pullRes(g,f,z,'prod',need-z.prod,M.pullDist);
       const spend=Math.min(need,Math.floor(z.prod)); if(spend<=0) continue;
       z.prod-=spend; p.left-=spend; cap-=spend;
       if(p.left<=0){

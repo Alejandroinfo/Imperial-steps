@@ -193,7 +193,7 @@ function doBuild(g,o,L){
   const used=z.b.length+z.proj.filter(p=>p.k==='b'||p.k==='w').length; if(used>=slotsOf(g,z)) return;
   const have=sameCount(z,o.bt); if(have>=maxSame(g,f,o.bt)) return;
   // se construye directamente en el nivel más alto desbloqueado (cuesta lo mismo que construir y mejorar)
-  const dup=have>0?1:0, lvl=buildLevel(g,f,o.bt), c=stepCost(g,f,z,o.bt,dup)*lvl;
+  const dup=have>0?1:0, lvl=buildLevel(g,f,o.bt), c=Math.max(10,Math.round(stepCost(g,f,z,o.bt,dup)*lvl*g.M[f].bPct));
   const spec=(o.spec&&specOptions(g,f,o.bt).includes(o.spec))?o.spec:null;
   z.proj.push({k:'b',bt:o.bt,left:c,tot:c,dup,lvl,spec});
 }
@@ -209,7 +209,7 @@ function doUpgrade(g,o,L){
   const z=g.zones[o.zone]; if(!z||z.owner!==o.f) return; const b=z.b[o.bi]; if(!b||b.t==='mar') return; const f=o.f;
   const to=b.l+1; if(to>5||to>capLevel(g,f,b.t)) return; if(b.t==='cuartel'&&to>5) return;
   if(z.proj.some(p=>p.k==='u'&&p.bi===o.bi)) return;
-  const c=stepCost(g,f,z,b.t,b.dup); z.proj.push({k:'u',bi:o.bi,to,left:c,tot:c});
+  const c=Math.max(10,Math.round((stepCost(g,f,z,b.t,b.dup)-(to>=3?g.M[f].upgRebate:0))*g.M[f].bPct)); z.proj.push({k:'u',bi:o.bi,to,left:c,tot:c});
 }
 /** @param {Partida} g */
 function doSend(g,o,L){
@@ -255,6 +255,7 @@ function resolveAnnex(g,list,L){
     const t=g.zones[id], arr=by[id], facs=[...new Set(arr.map(x=>x.o.f))];
     if(facs.length>1){ t.tmult*=2; L(zname(t)+': varios jugadores pagaron a la vez. Nadie anexa y el precio se duplica.'); return; }
     const x=arr[0], f=x.o.f, F=g.F[f];
+    if(annexHave(g,f,t)<x.price) return;   // si ya pagó otra anexión en este paso y no le alcanza para ésta, no se anexa
     if(x.res==='gold') F.gold-=x.price; else if(x.res==='tech') F.tech-=x.price;
     else { let need=x.price; nearOwnZones(g,f,t).sort((a,b)=>b[x.res]-a[x.res]).forEach(z=>{ const take=Math.min(z[x.res],need); z[x.res]-=take; need-=take; }); }
     t.owner=f; t.units[f]=t.units[TRIBE]; delete t.units[TRIBE]; t.units[f].forEach(u=>{ u.hg=0; }); t.tmult=1; t.food=Math.max(t.food,4);

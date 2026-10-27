@@ -77,15 +77,19 @@
   <h2 id="redTitle">Jugar en línea</h2>
   <p class="warn" id="redOff" hidden></p>
   <div id="redForm">
-    <div class="sform"><label>Tu nombre<input id="redName" maxlength="14" placeholder="Pao" autocomplete="nickname"></label></div>
-    <p class="hint">Crea una sala y comparte el código, o escribe el código que te pasaron.</p>
-    <div class="dactions"><button class="btn primary" id="redCreate">Crear sala</button></div>
-    <div class="sform"><label>Código de sala<input id="redCode" maxlength="4" placeholder="ABCD" autocapitalize="characters"></label></div>
+    <p id="redInvite" hidden></p>
+    <div class="sform"><label>Tu nombre<input id="redName" maxlength="14" placeholder="Tu nombre" autocomplete="nickname"></label></div>
+    <div id="redNew">
+      <p class="hint">Crea una sala y comparte el enlace, o escribe el código que te pasaron. Para volver a una partida, usa el mismo nombre con el que entraste.</p>
+      <div class="dactions"><button class="btn primary" id="redCreate">Crear sala</button></div>
+      <div class="sform"><label>Código de sala<input id="redCode" maxlength="4" placeholder="ABCD" autocapitalize="characters"></label></div>
+    </div>
     <div class="dactions"><button class="btn" id="redJoin">Unirme</button></div>
   </div>
   <div id="redLobby" hidden>
     <p>Código de la sala: <b id="redCodeShow"></b></p>
-    <p class="hint">O comparte este enlace: <a id="redLink" target="_blank" rel="noopener"></a></p>
+    <div class="row"><button class="btn primary" id="redCopy">📋 Copiar enlace de invitación</button><span class="hint" id="redCopied" hidden>¡Copiado! Pégalo en el chat de la familia.</span></div>
+    <p class="hint">Enlace: <a id="redLink" target="_blank" rel="noopener"></a></p>
     <ul id="redPlayers"></ul>
     <div class="sform" id="redHost">
       <label>Mapa<select id="redMap"></select></label>

@@ -1,0 +1,34 @@
+{
+  "rules": {
+    "salas": {
+      "$codigo": {
+        ".read": "auth != null",
+        "creador": {
+          ".write": "auth != null && !data.exists() && newData.val() === auth.uid"
+        },
+        "creada": {
+          ".write": "auth != null && !data.exists() && root.child('salas').child($codigo).child('creador').val() === auth.uid"
+        },
+        "jugadores": {
+          "$asiento": {
+            ".write": "auth != null && ((!data.exists() && newData.child('uid').val() === auth.uid) || data.child('uid').val() === auth.uid)"
+          }
+        },
+        "config": {
+          ".write": "auth != null && !data.exists() && root.child('salas').child($codigo).child('creador').val() === auth.uid"
+        },
+        "estado": {
+          ".write": "auth != null && root.child('salas').child($codigo).child('creador').val() === auth.uid"
+        },
+        "listos": {
+          ".write": "auth != null && root.child('salas').child($codigo).child('creador').val() === auth.uid"
+        },
+        "ordenes": {
+          "$asiento": {
+            ".write": "auth != null && root.child('salas').child($codigo).child('jugadores').child($asiento).child('uid').val() === auth.uid"
+          }
+        }
+      }
+    }
+  }
+}

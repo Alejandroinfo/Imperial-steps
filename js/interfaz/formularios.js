@@ -8,7 +8,7 @@ function selHTML(key,opts,def){
 }
 function numHTML(key,def,max){ return `<input type="number" min="0" max="${max}" value="${fv(key,def)}" data-f="${key}" class="n">`; }
 function btnHTML(act,label,extra,cls){ return `<button class="btn ${cls||''}" data-act="${act}" ${extra||''}>${label}</button>`; }
-const ME=0;
+let ME=0;   // asiento de quien juega en esta pantalla (en línea lo fija la sala)
 // Íconos de los recursos y una cantidad con su ícono (menos texto en la interfaz)
 const RI={food:'🌾',prod:'⚒',gold:'🪙',tech:'🔬'};
 const RN={food:'comida',prod:'producción',gold:'oro',tech:'ciencia'};
@@ -21,6 +21,14 @@ const BRANCH_STYLE={
   'Armas y unidades':['#B8433A','⚔'],'Cuartel y entrenamiento':['#7A2E24','🛡'],'Defensa':['#6F6962','🏰'],'Guerra y conquista':['#A12F4F','🚩']
 };
 const bCol=r=>(BRANCH_STYLE[r]||['#999','•'])[0], bIco=r=>(BRANCH_STYLE[r]||['#999','•'])[1];
+// Ayuda corta junto a un título: el símbolo ⓘ muestra el texto al pasar el mouse y lo abre con un clic
+// (se recuerda abierto o cerrado). infoBtn va dentro del título; infoBody, justo debajo.
+function infoOpen(key){ return !!(ui.det&&ui.det['i_'+key]); }
+function infoBtn(key,html){
+  const open=infoOpen(key), plain=html.replace(/<[^>]+>/g,'').replace(/"/g,'&quot;');
+  return ` <button class="infob" data-act="fold" data-k="i_${key}" aria-expanded="${open}" aria-label="${open?'Ocultar ayuda':'Cómo funciona'}" title="${open?'Ocultar ayuda':plain}">ⓘ</button>`;
+}
+function infoBody(key,html){ return infoOpen(key)?`<div class="hint">${html}</div>`:''; }
 function mine(z){ return z.owner===ME; }
 function fm(n){ return Math.round(n*10)/10; }
 

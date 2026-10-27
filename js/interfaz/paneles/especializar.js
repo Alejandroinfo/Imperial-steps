@@ -8,7 +8,7 @@ function dndHTML(z){
   const mineU=z.units[ME]||[]; const delta={};
   ui.orders.filter(o=>o.t==='spec'&&o.zone===z.id).forEach(o=>{ delta[o.from]=(delta[o.from]||0)-o.n; delta[o.to]=(delta[o.to]||0)+o.n; });
   const batch=ui.batch||1;
-  let h=`<div class="hint">Arrastra a las personas hacia el oficio que quieres (o tócalas y luego toca el oficio). Cada cambio cuesta producción. Lo que sueltas queda en cola hasta que presiones ¡Listo!.</div>`;
+  let h='';
   h+=`<div class="row"><span class="hint">Cuántos por vez:</span><span class="seg">${[1,2,5,'todos'].map(b=>`<button data-act="batch" data-b="${b}" aria-pressed="${String(batch)===String(b)}">${b}</button>`).join('')}</span></div>`;
   h+='<div class="stations">';
   STATIONS.forEach(([t,name,out])=>{

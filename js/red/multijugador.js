@@ -28,7 +28,14 @@ const NET_BOT_NAMES = ['Bot rojo', 'Bot azul', 'Bot ocre', 'Bot verde'];
 const NET_SDK = '13.1.0';
 const NET_LETTERS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';   // sin I ni O, para no confundirlas con 1 y 0
 
-function netConfigured(){ return typeof FIREBASE_CONFIG === 'object' && FIREBASE_CONFIG.apiKey && !/PEGAR/.test(FIREBASE_CONFIG.apiKey); }
+// Acepta el bloque con el nombre del juego (FIREBASE_CONFIG) o tal como lo copia Firebase (firebaseConfig).
+// Si falta databaseURL, usa la dirección por defecto de Realtime Database en Estados Unidos.
+function netCfg(){
+  const c = (typeof FIREBASE_CONFIG === 'object' && FIREBASE_CONFIG) || (typeof firebaseConfig === 'object' && firebaseConfig) || null;
+  if(c && !c.databaseURL && c.projectId) c.databaseURL = 'https://' + c.projectId + '-default-rtdb.firebaseio.com';
+  return c;
+}
+function netConfigured(){ const c = netCfg(); return !!(c && c.apiKey && !/PEGAR/.test(c.apiKey)); }
 function netAvailable(){ return (location.protocol === 'http:' || location.protocol === 'https:') && netConfigured(); }
 function netSave(){ try{ sessionStorage.setItem('pasos_sala', JSON.stringify({code:NET.code, name:NET.name})); }catch(e){} }
 function netLoad(){ try{ return JSON.parse(sessionStorage.getItem('pasos_sala') || 'null'); }catch(e){ return null; } }
@@ -47,7 +54,7 @@ async function netFirebase(){
     if(!firebase.auth) await netLoadScript(base + 'firebase-auth-compat.js');
     if(!firebase.database) await netLoadScript(base + 'firebase-database-compat.js');
   }
-  if(!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+  if(!firebase.apps.length) firebase.initializeApp(netCfg());
   const auth = firebase.auth();
   await auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);   // una identidad por pestaña
   // Al recargar, Firebase recupera la identidad de esta pestaña un instante después: hay que esperarla.

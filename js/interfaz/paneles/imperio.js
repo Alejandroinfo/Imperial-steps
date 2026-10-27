@@ -28,7 +28,7 @@ function panelImperio(){
   }
   // recursos estratégicos del mapa
   const all=G.zones.filter(z=>z.res);
-  h+=`<h4>Recursos estratégicos del mapa <a href="#" data-wiki="estrategicos" class="wlink">ⓘ</a></h4><div class="hint">Cada uno da su efecto mientras lo controles, y además <b>rinde más mientras más tiempo lo tengas</b>: +1 por paso al empezar, +1 más cada ${RES_GROW_EVERY} pasos (hasta +${RES_MAX}). Si te lo quitan, el contador vuelve a cero.</div><div class="mz">`;
+  h+=`<h4>Recursos estratégicos del mapa <a href="#" data-wiki="estrategicos" class="wlink" title="${(`Cada uno da su efecto mientras lo controles, y además <b>rinde más mientras más tiempo lo tengas</b>: +1 por paso al empezar, +1 más cada ${RES_GROW_EVERY} pasos (hasta +${RES_MAX}). Si te lo quitan, el contador vuelve a cero.`).replace(/<[^>]+>/g,'')}">ⓘ</a></h4><div class="mz">`;
   all.sort((a,b)=>(b.owner===ME)-(a.owner===ME)).forEach(z=>{ const r=RES[z.res], k=RES_YIELD[z.res], own=z.owner===ME;
     const who=z.owner===null?'<span class="tag" style="background:#6B8E5A">libre</span>':z.owner===TRIBE?'<span class="tag" style="background:#8A5A3A">tribu</span>':`<span class="tag" style="background:${PLN[z.owner].col}">${esc(PLN[z.owner].name)}</span>`;
     h+=`<div class="mzr"><span class="dot" style="background:${r.col};width:16px;height:16px"></span><div class="mzt"><span><b>${esc(r.n)}</b> ${who}</span><small>${esc(zname(z))} · ${r.sc==='global'?'global':'local'}: ${esc(r.d)}</small><small>${isPl(z.owner)?`Rinde ${IMP_ICON[k]} +${resBonus(z)} por paso · ${z.resHeld||0} pasos en manos de ${own?'ti':esc(PLN[z.owner].name)}`:`Rendiría ${IMP_ICON[k]} +1 por paso al tomarlo`}</small></div><button class="btn" data-act="gozone" data-id="${z.id}">Ver</button></div>`; });

@@ -214,7 +214,7 @@ function subPoblacion(z){
   { const pend=ui.orders.filter(o=>o.t==='autospec'&&o.zone===z.id).pop(); const cur=pend?(pend.to||'pob'):(z.autoSpec||'pob'); const per=specPer(G,ME,z,'pob',cur==='pob'?'agr':cur);
     h+=fold('nacer','Los que nazcan aquí serán',cur==='pob'?'pobladores':UNP[cur].toLowerCase());
     if(ui.det&&ui.det.nacer) h+=`<div class="row">${CIV.map(t=>`<button class="btn ${cur===t?'primary':''}" data-act="autospec" data-v="${t}" title="${UNP[t]}">${uIcon(t,22)}</button>`).join('')}</div><div class="hint">${cur==='pob'?'Pobladores (sin especializar).':`Cada poblador que nazca se hace <b>${UN[cur].toLowerCase()}</b> al instante si hay ${rq('prod',per)}; si no, queda como poblador.`}</div>`; }
-  h+='<h4>Oficios <a href="#" data-wiki="oficios" class="wlink">ⓘ</a></h4>'+dndHTML(z);
+  h+='<h4>Oficios <a href="#" data-wiki="oficios" class="wlink" title="Arrastra a las personas hacia el oficio que quieres (o tócalas y luego toca el oficio). Cada cambio cuesta producción. Lo que sueltas queda en cola hasta que presiones ¡Listo!.">ⓘ</a></h4>'+dndHTML(z);
   const civT=CIV.filter(t=>availQ(z.id,t)>0);
   if(civT.length){
     const fromT=civT.includes(fv('sp_from','pob'))?fv('sp_from','pob'):civT[0];
@@ -242,8 +242,8 @@ function subMilitar(z){
   const mil=MIL.filter(t=>by[t]); let h='<h4>Tropas</h4>'+(mil.length?'<div class="kv">'+mil.map(t=>`<span>${uIcon(t,20)} ${UNP[t]}</span><span>${by[t].n}${by[t].w?` <small>(${by[t].w} herid.)</small>`:''}</span>`).join('')+'</div>'+supplyHTML(z):'<div class="hint">Sin tropas.</div>');
   if(!mine(z)) return h;
   h+=relationsHTML(true);
-  h+='<h4>Entrenar militares</h4>';
-  { const cu=z.b.some(b=>b.t==='cuartel'); if(!cu) h+='<div class="hint">Se puede entrenar en cualquier zona. Con un <b>Cuartel</b>, además, sus tropas no comen y se mueven una zona extra.</div>';
+  { const T='Se puede entrenar en cualquier zona. Con un <b>Cuartel</b>, además, sus tropas no comen y se mueven una zona extra.'; h+='<h4>Entrenar militares'+infoBtn('cuartel',T)+'</h4>'+infoBody('cuartel',T); }
+  { const cu=z.b.some(b=>b.t==='cuartel');
     const opts=MIL.filter(t=>!TRAIN_TECH[t]||techOwn(G,ME,TRAIN_TECH[t]));
     const uT=opts.includes(fv('tr_u','sol'))?fv('tr_u','sol'):opts[0];
     const weapon=['arq','esc','ber','cab'].includes(uT);
@@ -266,10 +266,11 @@ function subMilitar(z){
 function relationsHTML(compact){
   const others=[...Array(G.N).keys()].filter(f=>f!==ME&&!G.F[f].out);
   if(!others.length) return '';
-  let h=`<h4>Postura con cada jugador</h4>`;
+  const PT='En <b>Alerta</b>, tus tropas atacan a las de ese jugador en cualquier zona donde coincidan, y tienes sorpresa si él está en Paz. En <b>Paz</b> conviven, salvo que alguien entre atacando.';
+  let h=`<h4>Postura con cada jugador${infoBtn('postura',PT)}</h4>`+infoBody('postura',PT);
   h+=others.map(f=>{ const pend=ui.orders.filter(o=>o.t==='stance'&&o.target===f).pop(); const cur=pend?pend.stance:stanceOf(G,ME,f); const al=allied(G,ME,f);
     return `<div class="rel"><span class="dot" style="background:${PLN[f].col}"></span><b>${esc(PLN[f].name)}</b>${al?'<span class="hint">aliado</span>':`<span class="seg"><button data-act="stance" data-t="${f}" data-v="paz" aria-pressed="${cur==='paz'}">Paz</button><button data-act="stance" data-t="${f}" data-v="alerta" aria-pressed="${cur==='alerta'}">Alerta</button></span>`}</div>`; }).join('');
-  return h+`<div class="hint">En <b>Alerta</b>, tus tropas atacan a las de ese jugador en cualquier zona donde coincidan, y tienes sorpresa si él está en Paz. En <b>Paz</b> conviven, salvo que alguien entre atacando.</div>`;
+  return h;
 }
 function demobHTML(z){
   const can=DEMOB_FROM.filter(t=>availQ(z.id,t)>0);
@@ -287,7 +288,8 @@ function demobHTML(z){
 // Prioridad de la comida que sobra: crecer o guardar.
 function growModeHTML(z){
   const pend=ui.orders.filter(o=>o.t==='growmode'&&o.zone===z.id).pop(); const cur=pend?pend.mode:(z.growMode||GROW_MODE_DEFAULT);
-  return `<h4>Comida que sobra</h4><div class="row"><span class="seg"><button data-act="growmode" data-v="crecer" aria-pressed="${cur==='crecer'}">👶 Crecer</button><button data-act="growmode" data-v="guardar" aria-pressed="${cur==='guardar'}">🏺 Guardar</button></span></div><div class="hint">${cur==='crecer'?'Después de alimentar a todos y de los envíos automáticos, <b>todo el sobrante va a crecer</b>. Las reservas no aumentan.':'Después de alimentar a todos y de los envíos, <b>el sobrante se guarda</b> en el almacén; solo lo que no cabe va a crecer. Útil para juntar comida para una tribu, un tributo o una guerra.'}</div>`;
+  const ST=cur==='crecer'?'Después de alimentar a todos y de los envíos automáticos, <b>todo el sobrante va a crecer</b>. Las reservas no aumentan.':'Después de alimentar a todos y de los envíos, <b>el sobrante se guarda</b> en el almacén; solo lo que no cabe va a crecer. Útil para juntar comida para una tribu, un tributo o una guerra.';
+  return `<h4>Comida que sobra${infoBtn('sobra',ST)}</h4><div class="row"><span class="seg"><button data-act="growmode" data-v="crecer" aria-pressed="${cur==='crecer'}">👶 Crecer</button><button data-act="growmode" data-v="guardar" aria-pressed="${cur==='guardar'}">🏺 Guardar</button></span></div>`+infoBody('sobra',ST)+``;
 }
 // Envíos que se repiten cada paso.
 function routesHTML(z){

@@ -3,6 +3,8 @@
 All notable changes, newest first. The game and the design documents are in Spanish; this log is in English.
 
 ## Unreleased
+- **Automatic engineers**: the builder job is gone (5 civilian jobs) and the Industrial zone merged into Production. If a zone has a build queued, its engineers (2 each) and settlers (1 each) build on their own using the zone's stored production; the rest produce. Guilds of Engineers and Great Works now give build discounts. The zone summary shows who is building.
+- Fixed: a player could annex two tribes in one step paying more science than they had, ending with negative science.
 - **Online multiplayer with Firebase Realtime Database**: one player creates a room and shares a 4-letter code or a link; 2 to 4 people can join and empty seats are played by bots. The host's browser runs the engine and, once everyone is ready, resolves the step and publishes the full game state, so every screen stays in sync. Anyone, including the host, can reload the page and rejoin their seat. The Firebase SDK is loaded only when playing online; games against bots still work offline. Setup guide in `docs/multijugador.md` (Spanish); security rules in `firebase/reglas_base_datos.json`.
 - The seeded random generator exposes `state()`, so a game can be sent over the network and continued exactly.
 - New tests: `pruebas/probar_red.js` (a game state sent over the network stays identical, 18 cases, part of `npm test`) and `pruebas/probar_en_linea.py` (a two-browser online game against a fake Firebase, no internet needed).

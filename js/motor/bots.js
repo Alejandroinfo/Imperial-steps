@@ -55,9 +55,9 @@ function botOrders(g,f){
     const cnt={}; civ.forEach(u=>{ cnt[u.t]=(cnt[u.t]||0)+1; });
     // especialización
     if(pob>=1&&civ.length>=3&&z.prod>=1){
-      // constructores solo si hay (o habrá) una obra; al inicio, sobre todo agricultores
+      // los ingenieros construyen solos si hay obra; al inicio, sobre todo agricultores
       const building=z.proj.length>0||(slotsOf(g,z)-z.b.length>0&&z.prod>=10);
-      const want={agr:g.step<15?0.5:0.35,ing:0.12,con:building?0.15:0,com:0.13,cie:0.2}; let best=null,bd=0;
+      const want={agr:g.step<15?0.5:0.35,ing:building?0.27:0.12,com:0.13,cie:0.2}; let best=null,bd=0;
       for(const t in want){ const d=want[t]*civ.length-(cnt[t]||0); if(d>bd){bd=d;best=t;} }
       if(best&&bd>=0.5) o.push({t:'spec',f,zone:z.id,from:'pob',to:/** @type {Civil} */(best),n:Math.min(2,pob,Math.floor(z.prod))});
     }
@@ -84,7 +84,7 @@ function botOrders(g,f){
     z.adj.forEach(a=>{ const t=g.zones[a]; if(t.owner===TRIBE){ const price=annexPrice(g,f,t), res=TSPEC_RES[t.tspec]; const have=annexHave(g,f,t); if(have>=price+4&&rng()<0.6&&!o.some(x=>x.t==='annex'&&x.zone===t.id)) o.push({t:'annex',f,zone:t.id,from:z.id}); } });
     // expansión
     // a quién mandar a expandirse: un poblador si hay; si no, alguien de un oficio que sobre
-    const mover=pob>=1?'pob':(['com','agr','ing','con'].find(t=>(cnt[t]||0)>=2)||null);
+    const mover=pob>=1?'pob':(['com','agr','ing'].find(t=>(cnt[t]||0)>=2)||null);
     const frAdj=g.zones.find(t=>t.role==='frontera'&&t.adj.includes(z.id)&&t.owner===null&&!(t.units[f]||[]).length);
     if(mover&&frAdj&&(!z.capital||civ.length>=4)&&rng()<0.6) o.push({t:'move',f,from:z.id,to:frAdj.id,u:{[mover]:1},stance:'paz'});
     if(mover&&civ.length>=4&&(pob>=3||!z.capital||civ.length>=5)&&rng()<(style==='eco'?0.5:0.4)){

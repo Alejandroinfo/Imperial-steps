@@ -15,7 +15,7 @@ function storyHTML(){
   const st=G.F[ME].story; if(!st||!STORIES[st.id]) return '';
   const S=STORIES[st.id], done=st.done, ch=Math.min(4,st.ch-(done?1:0));
   const dots=[1,2,3,4].map(i=>`<i class="${i<=st.tags.length?'on':''}"></i>`).join('');
-  return `<h4>📖 Tu historia <a href="#" data-wiki="historias" class="wlink">ⓘ</a></h4><div class="box"><b>«${esc(S.n)}»</b> <span class="relbar">${dots}</span><div class="hint">${done?'Terminada: '+st.tags.length+' de 4 capítulos vividos.':`Capítulo ${ch} de 4: llega hacia el paso ${st.next}.`} Lo que eliges cambia el siguiente capítulo y el final. Dejar pasar un capítulo no tiene castigo.</div></div>`;
+  return `<h4>📖 Tu historia${(G.F[ME].stories||1)>1||done?` (${G.F[ME].stories||1}.ª)`:''} <a href="#" data-wiki="historias" class="wlink">ⓘ</a></h4><div class="box"><b>«${esc(S.n)}»</b> <span class="relbar">${dots}</span><div class="hint">${done?'Terminada: '+st.tags.length+' de 4 capítulos vividos.'+((G.F[ME].stories||1)<STORY_MAX?' La próxima llega hacia el paso '+(st.nextNew+2)+'.':' No quedan más historias en esta partida.'):`Capítulo ${ch} de 4: llega hacia el paso ${st.next}.`} Lo que eliges cambia el siguiente capítulo y el final. Dejar pasar un capítulo no tiene castigo.</div></div>`;
 }
 function panelImperio(){
   const F=G.F[ME], M=G.M[ME]; const zs=zonesOf(G,ME);
@@ -34,13 +34,13 @@ function panelImperio(){
   // eventos
   h+='<h4>Eventos <a href="#" data-wiki="eventos" class="wlink">ⓘ</a></h4>';
   const up=upcomingEvents(G,ME);
-  h+=G.evNow?`<div class="hint">Este paso: <b>${EVT[G.evNow.id].n}</b> — ${EVT[G.evNow.id].d}.</div>`:'<div class="hint">Este paso no hubo evento (hay uno cada 3 pasos a partir del paso 6).</div>';
-  h+=up.length?'<ul class="evl">'+up.map(x=>`<li>Paso ${x.step}: <b>${x.ev.n}</b> — ${x.ev.d} ${x.ev.k==='+'?'<span class="tag" style="background:#2F7F4F">positivo</span>':x.ev.k==='-'?'<span class="tag" style="background:#B3541E">negativo</span>':'<span class="tag" style="background:#6B5B50">tribus</span>'}</li>`).join('')+'</ul>':'<div class="hint">No ves ningún evento próximo (tu anticipación es de '+M.foresight+' pasos).</div>';
+  { const act=(G.evAct||[]).filter(a=>a.end>=G.step&&!EVT[a.id].inst&&EVT[a.id].k!=='t'); h+=act.length?'<div class="hint">Este año: '+act.map(a=>`<b>${EVT[a.id].n}</b> (quedan ${a.end-G.step+1} paso${a.end-G.step+1===1?'':'s'})`).join(' + ')+'.</div>':`<div class="hint">${G.step<=YEAR_STEPS?'El primer año es de fundación: sin eventos. El año que viene llega una parte cierta (Prosperidad o Escasez) y una variable.':'Ahora no hay ningún evento del año activo.'} Cada paso es un mes.</div>`; }
+  h+=up.length?'<ul class="evl">'+up.map(x=>`<li>Paso ${x.step} (${MONTH_N[(x.step-1)%YEAR_STEPS]}): <b>${x.ev.n}</b> — ${x.ev.d}${x.dur>=YEAR_STEPS?' · dura todo el año':''} ${x.ev.k==='+'?'<span class="tag" style="background:#2F7F4F">positivo</span>':x.ev.k==='-'?'<span class="tag" style="background:#B3541E">negativo</span>':'<span class="tag" style="background:#6B5B50">tribus</span>'}</li>`).join('')+'</ul>':'<div class="hint">No ves ningún evento próximo (tu anticipación es de '+M.foresight+' pasos).</div>';
   // tributos
   const tr=G.tributes.filter(t=>t.targets.includes(ME)&&!t.paid[ME]);
   if(tr.length){
-    h+='<h4>Exigencias de tributo</h4>';
-    tr.forEach(t=>{ const z=G.zones[t.zone]; const src=zonesOf(G,ME).filter(a=>z.adj.includes(a.id)); h+=`<div class="box">La tribu de ${zname(z)} exige <b>${t.amount} de ${TSPEC_N[t.res]}</b> antes del paso ${t.due}. Si nadie paga, invade.<div class="row">${src.length?src.map(a=>btnHTML('tribute','Pagar desde '+zname(a),`data-tribe="${z.id}" data-from="${a.id}"`)).join(' '):'<span class="hint">Necesitas una zona tuya vecina.</span>'}</div></div>`; });
+    h+='<h4>Pedidos de tribus</h4>';
+    tr.forEach(t=>{ const z=G.zones[t.zone]; const src=zonesOf(G,ME).filter(a=>z.adj.includes(a.id)); h+=`<div class="box">La tribu de ${zname(z)} pide <b>${t.amount} de ${TSPEC_N[t.res]}</b>: quedan <b>${t.due-G.step+1} paso${t.due-G.step+1===1?'':'s'}</b> (hasta el paso ${t.due}). Cumplirlo sube tu relación; ignorarlo la baja (a −3 te ataca).<div class="row">${src.length?src.map(a=>btnHTML('tribute','Pagar desde '+zname(a),`data-tribe="${z.id}" data-from="${a.id}"`)).join(' '):'<span class="hint">Necesitas una zona tuya vecina.</span>'}</div></div>`; });
   }
   // alianzas
   const ghosts=[...Array(G.N).keys()].filter(f=>G.F[f].ghost&&f!==ME);

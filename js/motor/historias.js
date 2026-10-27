@@ -66,6 +66,7 @@ const STORIES = {
       {lbl:'Aceptar su gratitud',cost:null,g:{R:{units:{cab:1,sol:2}},T:{res:'prod',n:20,prog:15}}},
       {lbl:'Pedirle un favor mayor',cost:{res:'gold',n:8},g:{R:{tpob:[{k:'ing',l:2},{k:'agr',l:2}]},T:{tres:{key:'madera'},res:'gold',n:20}}}]}}
 };
+Object.assign(STORIES, STORIES_EXTRA);   // 17 historias más (js/datos/historias_extra.js): en total 20
 const STORY_IDS = Object.keys(STORIES);
 
 // La marca que más elegiste (si empatan, la última).
@@ -87,5 +88,5 @@ function makeChapter(g,f){
 function storyAdvance(g,f,tag,L){
   const st=g.F[f].story; if(!st||st.done) return; const S=STORIES[st.id];
   st.tags.push(tag&&tag!=='-'?tag:(st.tags[st.tags.length-1]||S.tags[0])); st.ch++;
-  if(st.ch>4){ st.done=1; L(PLN[f].name+' termina la historia «'+S.n+'».'); g.fx.push({k:'storyend',f}); } else st.next=g.step+STORY_GAP;
+  if(st.ch>4){ st.done=1; st.nextNew=g.step+STORY_BREAK_MIN+(g.step%(STORY_BREAK_MAX-STORY_BREAK_MIN+1)); L(PLN[f].name+' termina la historia «'+S.n+'».'); g.fx.push({k:'storyend',f}); } else st.next=g.step+STORY_GAP;
 }

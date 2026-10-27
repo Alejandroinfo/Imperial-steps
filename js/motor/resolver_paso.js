@@ -48,7 +48,7 @@ function resolveStep(g,orders){
       if(z.autoSpec){ const per=specPer(g,z.owner,z,'pob',z.autoSpec); if(z.prod>=per){ z.prod-=per; u.t=z.autoSpec; } }
       lst(z,z.owner).push(u); } L(zname(z)+': nace'+(z.grow>1?'n ':' ')+z.grow+' poblador'+(z.grow>1?'es':'')+(z.autoSpec?' (se especializa'+(z.grow>1?'n':'')+' como '+UN[z.autoSpec].toLowerCase()+')':'')+'.'); g.fx.push({k:'born',zone:z.id,f:z.owner,n:z.grow}); } z.grow=0; });
   // 1. evento
-  g.evNow=g.evq.find(e=>e.step===g.step)||null; applyEventMods(g,g.evNow,L);
+  { const empiezan=g.evq.filter(e=>e.step===g.step); g.evNow=empiezan[0]||null; g.evAct=(g.evAct||[]).filter(a=>a.end>=g.step); empiezan.forEach(e=>{ g.evAct.push({id:e.id,start:g.step,end:g.step+(e.dur||1)-1}); }); applyEventMods(g,g.evAct,L); }
   g.evq=g.evq.filter(e=>e.step>g.step);
   // 2. órdenes
   /** Las órdenes de un tipo, ya con su forma exacta. @template {TipoOrden} K @param {K} t @returns {Array<Extract<Orden,{t:K}> & {f:Jugador}>} */
@@ -237,7 +237,7 @@ function doSend(g,o,L){
 }
 // Cumplir un pedido sube la relación con la tribu (0 a 3); con 3 se puede anexar.
 /** @param {Partida} g */
-function tribeRel(g,zid,f,L){ const tz=g.zones[zid]; tz.rel=tz.rel||{}; tz.rel[f]=Math.min(TRIBE_REL_MAX,(tz.rel[f]||0)+1); L(PLN[f].name+' cumple el pedido de la tribu de '+zname(tz)+': relación '+tz.rel[f]+'/'+TRIBE_REL_MAX+' ('+TRIBE_REL_N[tz.rel[f]]+').'); }
+function tribeRel(g,zid,f,L){ const tz=g.zones[zid]; tz.rel=tz.rel||{}; tz.rel[f]=Math.min(TRIBE_REL_MAX,(tz.rel[f]||0)+1); tz.paidAt=tz.paidAt||{}; tz.paidAt[f]=g.step; L(PLN[f].name+' cumple el pedido de la tribu de '+zname(tz)+': relación '+tz.rel[f]+'/'+TRIBE_REL_MAX+' ('+TRIBE_REL_N[tz.rel[f]]+').'); }
 /** @param {Partida} g */
 function doTribute(g,o,L){
   const t=g.tributes.find(x=>x.zone===o.tribe); const z=g.zones[o.from]; if(!t||!z||z.owner!==o.f) return;

@@ -20,10 +20,10 @@ function suggestions(){
   if(G.auction&&G.step<=G.auction.step&&!(G.auction.bids[ME]&&Object.keys(G.auction.bids[ME]).length)&&!queued('bid')) out.push({k:'tip',t:`Subasta en ${G.auction.step-G.step||'0'} paso(s): se paga con ${RN[G.auction.cur]}. Mira los objetos y haz tus ofertas en Imperio.`,go:{tab:'imperio'}});
   // Avisos
   { const short=hungerRisk(); if(short){ const cap=mz.find(z=>z.capital)||mz[0]; out.push({k:'warn',t:`Tu gente podría pasar hambre: entre todas tus zonas faltan unos ${short} de comida. Haz agricultores o reduce tropas.`,go:{zone:cap?cap.id:mz[0].id,sub:'poblacion'}}); } }
-  (G.tributes||[]).forEach(tr=>{ if(tr.targets.includes(ME)&&!tr.paid[ME]&&!queued('tribute',o=>o.tribe===tr.zone)) out.push({k:'warn',t:`La tribu de ${zname(G.zones[tr.zone])} exige ${tr.amount} de ${TSPEC_N[tr.res]}; si nadie paga, invade.`,go:{zone:tr.zone,sub:'resumen'}}); });
+  (G.tributes||[]).forEach(tr=>{ if(tr.targets.includes(ME)&&!tr.paid[ME]&&!queued('tribute',o=>o.tribe===tr.zone)) { const rl=((G.zones[tr.zone].rel||{})[ME])||0; out.push({k:rl<=-1?'warn':'idea',t:`La tribu de ${zname(G.zones[tr.zone])} pide ${tr.amount} de ${TSPEC_N[tr.res]} (quedan ${tr.due-G.step+1} paso${tr.due-G.step+1===1?'':'s'}). Si lo ignoras, la relación baja a ${Math.max(TRIBE_REL_MIN,rl-1)}${rl-1<=TRIBE_REL_MIN?' y te ataca':''}.`,go:{zone:tr.zone,sub:'resumen'}}); } });
   upcomingEvents(G,ME).forEach(e=>{
-    if(!e.ev||!e.ev.terr) return; const hit=mz.filter(z=>e.ev.terr.includes(z.terrain)); if(!hit.length) return;
-    const n=e.step-G.step; out.push({k:'warn',t:`${n<=0?'Este paso':n===1?'En 1 paso':'En '+n+' pasos'}: ${e.ev.n} en ${TERRN[hit[0].terrain]} (${hit.map(zname).join(', ')}). ${e.ev.d}.`,go:{zone:hit[0].id,sub:'resumen'}});
+    if(!e.ev||!e.ev.terr) return; const hit=mz.filter(z=>e.ev.terr.includes('all')||e.ev.terr.includes(z.terrain)); if(!hit.length) return;
+    const n=e.step-G.step; out.push({k:'warn',t:`${n<=0?'Este paso':n===1?'En 1 paso':'En '+n+' pasos'}: ${e.ev.n}${e.ev.terr.includes('all')?' en todo tu imperio':' en '+TERRN[hit[0].terrain]+' ('+hit.map(zname).join(', ')+')'}. ${e.ev.d}.`,go:{zone:hit[0].id,sub:'resumen'}});
   });
   // Ideas
   const cap=mz.find(z=>z.capital)||mz[0];
@@ -89,6 +89,13 @@ function encBarHTML(){
 }
 // Un encuentro por decidir sale en una ventana emergente (no ocupa el panel). Al decidir, la ventana se cierra y la decisión
 // queda en la pestaña Órdenes. «Decidir después» la esconde y deja una pastilla en el panel para volver a abrirla.
+// Eventos que están actuando (o que empiezan este paso), con los pasos que quedan. Para que se vea de un vistazo qué pasa «este mes».
+function evChipsHTML(){
+  if(!G||G.over) return '';
+  const run=(G.evAct||[]).filter(a=>a.end>=G.step&&EVT[a.id].k!=='t'&&!EVT[a.id].inst).map(a=>({e:EVT[a.id],left:a.end-G.step+1,now:0}));
+  const start=(G.evq||[]).filter(x=>x.step===G.step&&EVT[x.id].k!=='t'&&!EVT[x.id].inst).map(x=>({e:EVT[x.id],left:x.dur||1,now:1}));
+  return run.concat(start).map(x=>`<span class="evchip ${x.e.k==='+'?'pos':'neg'}" title="${esc(x.e.n+': '+x.e.d+'. '+(x.now?'Empieza este paso y dura '+x.left+' pasos.':'Quedan '+x.left+' paso'+(x.left===1?'':'s')+'.'))}">${x.e.k==='+'?'🌟':'⚠'} ${esc(x.e.n)} <b>${x.now?'empieza':x.left+(x.left===1?' paso':' pasos')}</b></span>`).join('');
+}
 function encPending(){ if(!G||G.over) return null; const e=G.F[ME].enc; return (e&&!ui.orders.some(o=>o.t==='encounter'))?e:null; }
 function encPillHTML(){ const e=encPending(); if(!e||ui.encHide!==e.step) return ''; const z=G.zones[e.zone];
   return `<button class="encpill ${e.k}" data-act="encopen">${e.k==='trato'?'🤝 Oferta de '+esc(e.who):(e.k==='amenaza'?'⚠':e.k==='historia'?'📖':'📜')+' Encuentro en '+esc(zname(z))} · decidir</button>`; }

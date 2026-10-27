@@ -128,9 +128,11 @@ function playFx(list,condsBefore){
   sceneDirector(list);
   const mine=z=>G.zones[z].owner===ME||true;
   let tProd=0, slotUse={};
+  { const yr=list.filter(e=>e.k==='event'&&e.dur>=YEAR_STEPS); if(yr.length){ const names=yr.map(e=>EVT[e.id].n); const pos=EVT[yr[0].id].k==='+'; banner('🗓 Año '+(Math.floor((G.step-1)/YEAR_STEPS)+1)+': '+names.join(' + ')+' · dura todo el año',pos?'pos':'neg'); sfxLater(pos?'goodEvent':'badEvent',250,0); } }
   list.forEach(e=>{
     switch(e.k){
-      case 'event': { const ev=EVT[e.id]; banner(ev.n+' — '+ev.d, ev.k==='+'?'pos':ev.k==='-'?'neg':'tri'); sfxLater(ev.k==='+'?'goodEvent':ev.k==='-'?'badEvent':'horn',250,0); break; }
+      case 'tribewar': fxRing(e.zone,'#C8452F',900); sfxLater('horn',300,0); toast('¡Una tribu te declara la guerra!',zname(G.zones[e.zone])+' ataca '+(e.f===ME?'tus zonas cercanas':'a '+PLN[e.f].name)+'.','neg','⚔'); break;
+      case 'event': { if(e.dur>=YEAR_STEPS) break; const ev=EVT[e.id]; banner(ev.n+' — '+ev.d+(e.dur>1?' · dura '+e.dur+' pasos':''), ev.k==='+'?'pos':ev.k==='-'?'neg':'tri'); sfxLater(ev.k==='+'?'goodEvent':ev.k==='-'?'badEvent':'horn',250,0); break; }
       case 'move': fxMove(e.from,e.to,e.f,e.n,e.mil,0,e.st); if(e.f===ME) sfxLater('move',100,300); break;
       case 'send': fxFloat(e.to,'+'+e.q+' '+(e.res==='food'?'comida':'prod.'),'#E9C46A',700,0,-10); break;
       case 'fight': {

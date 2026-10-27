@@ -5,7 +5,7 @@
 /** @param {Partida} g */
 function growCost(g,f,z){
   const M=g.M[f]; let c=(z.size+1)*(z.size+1)-M.growSub;   // crecer a tamaño n cuesta n² (3.º = 9, 4.º = 16, 10.º = 100)
-  if(M.growHalf) c=Math.ceil(c/2); if(g.growHalfEv) c=Math.ceil(c/2);
+  if(M.growHalf) c=Math.ceil(c/2); if(g.growHalfEv) c=Math.ceil(c*EV_FERTIL_FACTOR);
   if(g.step<=FOUNDING_STEPS) c=Math.ceil(c/2);   // etapa de fundación: los primeros pasos son más rápidos
   return Math.max(1,c);
 }
@@ -105,6 +105,7 @@ function produceZone(g,z){
   // edificios militares: quiénes trabajan en ellos
   z.b.forEach(b=>{ if(BT[b.t].mil) by.blds.push({t:b.t,l:b.l,s:b.s,dup:b.dup,wk:b.wk,max:bldSlots(g,f,b),mil:1}); });
   z.lastBy=by;
+  if(ev.mul){ food*=ev.mul.food; prod*=ev.mul.prod; gold*=ev.mul.gold; tech*=ev.mul.tech; }   // la parte cierta del año (Prosperidad o Escasez)
   z.food+=Math.round(food); z.prod+=Math.round(prod); F.gold+=Math.round(gold); F.tech+=Math.round(tech);
   z.last={food:Math.round(food),prod:Math.round(prod),gold:Math.round(gold),tech:Math.round(tech)};
 }

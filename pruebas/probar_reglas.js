@@ -155,6 +155,28 @@ prueba('Oferta que caduca: se devuelve; y no se puede ofrecer lo que no se tiene
   G.F[0].gold=0; G.offers.push({id:99,from:0,to:1,give:{res:'gold',n:10},ask:{res:'tech',n:5},step:G.step-OFFER_TTL-2}); paso();
   return sin&&G.offers.length===0&&!G.F[1].enc&&G.F[0].gold>=10;`);
 
+prueba('Un año tiene una parte cierta (Prosperidad o Escasez) y una variable del mismo signo, y las dos duran los 12 pasos', `
+  const H=newGame(0,3,5,'normal'); const y2=H.evq.filter(e=>e.step===(EV_FIRST_YEAR-1)*YEAR_STEPS+1); const base=y2.find(e=>EVT[e.id].year), fl=y2.find(e=>!EVT[e.id].year);
+  const sig=EVT[base.id].k; return y2.length===2&&base.dur===YEAR_STEPS&&fl.dur===YEAR_STEPS&&EVT[fl.id].k===sig&&H.evq.every(e=>e.step>YEAR_STEPS);`);
+
+prueba('El primer año es de fundación (sin eventos) y nunca hay tres años seguidos del mismo signo', `
+  let ok=true; for(let sd=1;sd<=20;sd++){ const H=newGame(sd%12,2,sd,'normal'); for(let i=0;i<8;i++){ H.evq=[]; scheduleEvents(H); } const sg=H.evGen.signs; for(let i=2;i<sg.length;i++) if(sg[i]===sg[i-1]&&sg[i]===sg[i-2]) ok=false; if(H.evq.some(e=>e.step<=YEAR_STEPS)) ok=false; }
+  return ok;`);
+
+prueba('Un evento del año dura los 12 pasos y sus efectos se mantienen', base + `
+  const z=cap; z.terrain='pra'; G.evq=[{step:G.step,id:'cosecha',dur:YEAR_STEPS}]; const ef=[]; for(let i=0;i<YEAR_STEPS+1;i++){ paso(); ef.push((z.ev&&z.ev.foodAgr)||0); }
+  return ef.slice(0,YEAR_STEPS).every(v=>v>0)&&ef[YEAR_STEPS]===0;`);
+
+prueba('Prosperidad sube y Escasez baja un 15 % lo que producen todas las zonas', base + `
+  const z=cap; z.units[0]=[civ('agr'),civ('agr'),civ('ing'),civ('com')]; z.b=[]; const f0=()=>{ z.food=0; z.prod=0; G.F[0].gold=0; };
+  G.evq=[]; f0(); paso(); const n=z.last.food; G.evAct=[]; G.evq=[{step:G.step,id:'prosper',dur:YEAR_STEPS}]; f0(); paso(); const p=z.last.food;
+  G.evAct=[]; G.evq=[{step:G.step,id:'escasez',dur:YEAR_STEPS}]; f0(); paso(); const e=z.last.food;
+  return p>n&&e<n&&z.ev.mul&&Math.abs(z.ev.mul.food-(1-EV_BASE_PCT))<1e-9;`);
+
+prueba('El evento negativo variable se puede evitar con Pronóstico, pero la parte cierta del año no', base + `
+  G.M[0].avoidNeg=1; G.F[0].lastAvoid=-99; const z=cap; z.terrain='pra'; G.evq=[{step:G.step,id:'escasez',dur:YEAR_STEPS},{step:G.step,id:'sequia',dur:YEAR_STEPS}]; paso();
+  return !(z.ev.foodAgr<-0.6)&&z.ev.mul&&z.ev.mul.food<1;`);
+
 prueba('Cada mapa tiene zonas de frontera entre imperios vecinos', base + `
   const fr=G.zones.filter(z=>z.role==='frontera'); return fr.length>=1&&fr.every(z=>z.adj.length>=2&&z.owner===null);`);
 
@@ -428,12 +450,24 @@ prueba('Entre los encuentros de la partida aparecen los de elegir entre dos', ba
   cap.units[0]=[civ('pob')]; let visto=false; for(let i=0;i<160&&!visto;i++){ paso(); const e=G.F[0].enc; if(e&&e.k==='eleccion'&&e.opts&&e.opts.length===2) visto=true; if(e) G.F[0].enc=null; } return visto;`);
 
 const TRIBU = `const tz=G.zones.find(z=>z.owner===4); tz.tspec='agr'; const n=G.zones[tz.adj.find(a=>G.zones[a].role!=='frontera'&&G.zones[a].owner===null)]; n.owner=0; n.size=6; n.units[0]=[civ('pob'),civ('pob')]; n.food=45;`;
-prueba('Tribus: cada 5 pasos piden lo de su oficio a los vecinos, y rechazar no tiene castigo', base + TRIBU + `
-  tz.tspec='com'; G.step=5; const u0=(tz.units[4]||[]).length; paso(); const t=G.tributes.find(t=>t.zone===tz.id);
-  const pide=!!t&&t.res==='gold'&&t.targets.includes(0); for(let i=0;i<7;i++) paso(); return pide&&!G.tributes.some(x=>x.zone===tz.id&&x===t)&&(tz.units[4]||[]).length>=u0&&!G.hist.some(h=>h.lines.some(l=>l.includes('ataca '+zname(n))));`);
+prueba('Tribus: cada TRIBE_REQ_EVERY pasos piden lo de su oficio a los vecinos; ignorarlo baja la relación 1 pero no ataca de inmediato', base + TRIBU + `
+  tz.tspec='com'; G.step=TRIBE_REQ_EVERY; const u0=(tz.units[4]||[]).length; paso(); const t=G.tributes.find(t=>t.zone===tz.id);
+  const pide=!!t&&t.res==='gold'&&t.targets.includes(0); for(let i=0;i<TRIBE_REQ_EVERY+2;i++) paso(); return pide&&!G.tributes.some(x=>x.zone===tz.id&&x===t)&&(tz.units[4]||[]).length>=u0&&(tz.rel||{})[0]===-1&&!(G.wars||[]).some(w=>w.tribe===tz.id);`);
 
 prueba('Tribus: cumplir un pedido sube la relación (0 a 3)', base + TRIBU + `
-  tz.tspec='com'; G.step=5; paso(); G.F[0].gold=60; paso([{t:'tribute',tribe:tz.id,from:n.id}]); return (tz.rel||{})[0]===1;`);
+  tz.tspec='com'; G.step=TRIBE_REQ_EVERY; paso(); G.F[0].gold=60; paso([{t:'tribute',tribe:tz.id,from:n.id}]); return (tz.rel||{})[0]===1;`);
+
+prueba('Tribus: tras cumplir un pedido, esa tribu no vuelve a pedirte hasta pasado el descanso', base + TRIBU + `
+  tz.tspec='com'; G.step=TRIBE_REQ_EVERY; paso(); G.F[0].gold=99; paso([{t:'tribute',tribe:tz.id,from:n.id}]); const pagó=(tz.paidAt||{})[0]!==undefined;
+  const sig=tribeNextAsk(G,tz,0); let pidio=false; for(let i=0;i<TRIBE_REQ_COOLDOWN-2;i++){ paso(); if(G.tributes.some(t=>t.zone===tz.id&&t.targets.includes(0)&&!t.paid[0])) pidio=true; }
+  return pagó&&!pidio&&sig>=TRIBE_REQ_COOLDOWN-TRIBE_REQ_EVERY;`);
+
+prueba('Tribus: cada pedido ignorado baja la relación 1 y, en insatisfacción 3, la tribu declara la guerra', base + TRIBU + `
+  tz.tspec='com'; const ant=[]; for(let i=0;i<4*TRIBE_REQ_EVERY&&!(G.wars||[]).some(w=>w.tribe===tz.id);i++){ paso(); ant.push((tz.rel||{})[0]||0); }
+  const guerra=(G.wars||[]).some(w=>w.tribe===tz.id&&w.f===0); return guerra&&ant.includes(-1)&&ant.includes(-2)&&(tz.rel||{})[0]===0&&G.hist.some(h=>h.lines.some(l=>l.includes('declara la guerra')));`);
+
+prueba('Tribus: cumplir un pedido sube la relación aunque estuviera en negativo', base + TRIBU + `
+  tz.tspec='com'; tz.rel={0:-2}; G.step=TRIBE_REQ_EVERY; paso(); G.F[0].gold=60; paso([{t:'tribute',tribe:tz.id,from:n.id}]); return tz.rel[0]===-1;`);
 
 prueba('Tribus: sin relación 3 no se puede anexar; con relación 3 sí', base + TRIBU + `
   tz.rel={0:2}; G.F[0].gold=0; paso([{t:'annex',zone:tz.id,from:n.id}]); const antes=tz.owner===4; tz.rel={0:3}; n.food=45; paso([{t:'annex',zone:tz.id,from:n.id}]); return antes&&tz.owner===0;`);
@@ -487,12 +521,52 @@ prueba('Subasta: se puede ofertar con una orden y cambiarla hasta el paso de la 
 
 // ---- Historias de 4 capítulos (13.3) ----
 const HIST = `const F=G.F[0]; const nuevo=(id,ch,tags)=>{ F.story={id,ch,next:0,tags}; F.enc=null; F.encNext=999; F.enc=makeChapter(G,0); return F.enc; };`;
-prueba('Las 3 historias están completas: 4 capítulos, variantes por camino y finales por camino', base + `
-  const ganaOk=g=>!g||Object.keys(g).every(k=>['units','res','n','eq','prog','rel','tpob','saber','bld','tres'].includes(k));
-  return STORY_IDS.length===3&&STORY_IDS.every(id=>{ const S=STORIES[id]; const t=S.tags; const optOk=o=>o.lbl&&(o.cost===null||(o.cost.res&&o.cost.n>0));
+prueba('Las 20 historias están completas: 4 capítulos, variantes por camino y finales por camino', base + `
+  const ganaOk=g=>!g||(Object.keys(g).every(k=>['units','res','n','eq','prog','rel','tpob','saber','bld','tres'].includes(k))&&(!g.units||Object.keys(g.units).every(t=>UT[t]))&&(!g.res||(['food','prod','gold','tech'].includes(g.res)&&g.n>0))&&(!g.eq||Object.keys(g.eq).every(t=>EQUIP_N[t]))&&(!g.tpob||g.tpob.every(x=>TRAIT_INFO[x.k]&&Math.abs(x.l)<=2))&&(!g.bld||BT[g.bld])&&(!g.tres||RES[g.tres.key]));
+  return STORY_IDS.length===20&&new Set(STORY_IDS.map(id=>STORIES[id].n)).size===20&&STORY_IDS.every(id=>{ const S=STORIES[id]; const t=S.tags; const optOk=o=>o.lbl&&(o.cost===null||(o.cost.res&&o.cost.n>0));
     const c1=S[1].opts.length>=2&&S[1].opts.every(o=>optOk(o)&&ganaOk(o.gain));
     const c23=[2,3].every(c=>t.every(tag=>S[c][tag]&&S[c][tag].txt&&S[c][tag].opts.length===2&&S[c][tag].opts.every(o=>optOk(o)&&ganaOk(o.gain)&&t.includes(o.t))));
     const c4=t.every(tag=>S[4].txt[tag])&&S[4].opts.length===2&&S[4].opts.every(o=>optOk(o)&&t.every(tag=>ganaOk(o.g[tag])&&o.g[tag])); return c1&&c23&&c4; });`);
+
+prueba('Cada historia se puede vivir entera por sus dos caminos, sin errores y llegando al final', base + `
+  const F=G.F[0]; let ok=true, n=0; cap.units[0]=[civ('pob'),civ('pob')];
+  for(const id of STORY_IDS) for(const lado of [0,1]) {
+    F.story={id,ch:1,next:99,tags:[]}; F.enc=null; G.hist=[]; const t=STORIES[id].tags;
+    for(let ch=1;ch<=4;ch++){
+      F.story.ch=ch; cap.food=500; cap.prod=500; F.gold=500; F.tech=500; F.enc=makeChapter(G,0);
+      if(!F.enc||!F.enc.opts||F.enc.opts.length<2){ ok=false; break; }
+      let i=0; if(ch>1&&ch<4){ i=F.enc.opts.findIndex(o=>o.t===t[lado]); if(i<0) i=0; } else i=lado%F.enc.opts.length;
+      try{ resolveStep(G,[{f:0,t:'encounter',choice:['a','b','c'][i]}]); }catch(e){ ok=false; console.log('  ✗ '+id+' cap '+ch+': '+e.message); break; }
+      F.enc=null; n++;
+    }
+    if(!(F.story.done||F.story.ch>=4)) ok=false;
+  }
+  return ok&&n===STORY_IDS.length*8;`);
+
+prueba('Hay 40 encuentros base (86 variantes) y 20 de elegir entre dos (40 variantes), todos con datos válidos', base + `
+  const resOk=r=>['food','prod','gold','tech'].includes(r);
+  const gainOk=g=>!g||(Object.keys(g).every(k=>['units','res','n','eq','prog','rel','tpob','saber','bld','tres','gamble'].includes(k))&&(!g.units||Object.keys(g.units).every(t=>UT[t]))&&(!g.res||(resOk(g.res)&&g.n>0))&&(!g.eq||Object.keys(g.eq).every(t=>EQUIP_N[t]))&&(!g.gamble||(g.gamble.p>0&&g.gamble.p<1&&resOk(g.gamble.res)&&g.gamble.n>0)));
+  const ids=new Set(ENCOUNTERS.map(e=>e.id)).size===ENCOUNTERS.length&&new Set(CHOICES.map(e=>e.id)).size===CHOICES.length;
+  const encOk=ENCOUNTERS.every(e=>e.who.length>=2&&e.txt&&e.cost&&resOk(e.cost.res)&&e.cost.n>0&&gainOk(e.gain)&&(!e.terr||e.terr.every(t=>TERRN[t])));
+  const chOk=CHOICES.every(e=>e.who.length===2&&e.opts.length===2&&e.opts.every(o=>o.lbl&&resOk(o.cost.res)&&o.cost.n>0&&gainOk(o.gain)));
+  return ENCOUNTERS.length===40&&ENC_VARIANTS===86&&CHOICES.length===20&&CHOICES.reduce((a,e)=>a+e.who.length,0)===40&&ids&&encOk&&chOk;`);
+
+prueba('Las historias llegan una tras otra, sin repetirse, con descanso entre ellas y hasta STORY_MAX por jugador', base + `
+  const F=G.F[0]; const ini=[]; let ult=0, ok=true;
+  for(let i=0;i<140;i++){ cap.food=300; cap.prod=300; F.gold=999; F.tech=999; const o=F.enc?[{t:'encounter',choice:F.enc.opts?'a':'si'}]:[]; const antes=F.stories||0; paso(o); if((F.stories||0)>antes){ ini.push(G.step); }
+    if(F.story&&F.story.done&&!F.story.fin){ F.story.fin=G.step; } }
+  const u=F.storyUsed||[]; const distintas=new Set(u).size===u.length&&u.length===F.stories;
+  return distintas&&F.stories>=3&&F.stories<=STORY_MAX;`);
+
+prueba('Al terminar una historia hay un descanso de STORY_BREAK_MIN a STORY_BREAK_MAX pasos antes de la siguiente', base + `
+  const F=G.F[0]; F.story={id:'caravana',ch:4,next:99,tags:['C','C','C']}; F.storyUsed=['caravana']; F.stories=1; F.encNext=999;
+  F.enc=makeChapter(G,0); paso([{t:'encounter',choice:'a'}]); const st=F.story; const espera=st.done&&st.nextNew>=G.step+STORY_BREAK_MIN-1&&st.nextNew<=G.step+STORY_BREAK_MAX;
+  F.encNext=undefined; for(let i=0;i<STORY_BREAK_MAX+4;i++){ cap.food=300; paso(F.enc?[{t:'encounter',choice:F.enc.opts?'a':'si'}]:[]); }
+  return espera&&F.stories>=2&&F.story.id!=='caravana'&&F.storyUsed.length===F.stories;`);
+
+prueba('Con STORY_MAX historias vividas no llega ninguna más', base + `
+  const F=G.F[0]; F.story={id:'caravana',ch:5,next:99,tags:['C','C','C','C'],done:1,nextNew:G.step}; F.storyUsed=['caravana','maestro','heredero','pozo']; F.stories=STORY_MAX; F.encNext=undefined;
+  for(let i=0;i<20;i++){ cap.food=300; paso(F.enc?[{t:'encounter',choice:F.enc.opts?'a':'si'}]:[]); } return F.stories===STORY_MAX&&F.story.id==='caravana';`);
 
 prueba('Cada jugador recibe su primer capítulo hacia el paso 10, como un encuentro de historia', base + `
   let visto=0; for(let i=0;i<16&&!visto;i++){ paso(); const e=G.F[0].enc; if(e&&e.k==='historia') visto=G.step; else if(e) G.F[0].enc=null; }
@@ -514,8 +588,9 @@ prueba('Historia: el capítulo final depende del camino que más tomaste', base 
   const c=nuevo('caravana',4,['C','C','T']).opts[0].gain, t=nuevo('caravana',4,['T','T','C']).opts[0].gain; const p1=nuevo('heredero',4,['R','T','R']).txt, p2=nuevo('heredero',4,['T','R','T']).txt;
   return c.res==='gold'&&c.n>=30&&t.rel===1&&p1!==p2;`);
 
-prueba('Historia: al cerrar el capítulo 4 la historia termina y no llegan más capítulos', base + HIST + `
-  nuevo('maestro',4,['S','O','S']); paso([{t:'encounter',choice:'a'}]); const fin=F.story.done===1&&F.story.ch===5; let mas=false; F.encNext=undefined; for(let i=0;i<24;i++){ paso(); if(G.F[0].enc&&G.F[0].enc.k==='historia') mas=true; G.F[0].enc=null; } return fin&&!mas;`);
+prueba('Historia: al cerrar el capítulo 4 la historia termina; no llegan más capítulos de ella y la siguiente espera su descanso', base + HIST + `
+  nuevo('maestro',4,['S','O','S']); paso([{t:'encounter',choice:'a'}]); const fin=F.story.done===1&&F.story.ch===5; const t0=G.step; let mal=false; F.storyUsed=['maestro']; F.stories=1; F.encNext=undefined;
+  for(let i=0;i<24;i++){ cap.food=300; paso(); const e=G.F[0].enc; if(e&&e.k==='historia'){ if(e.story.id==='maestro'||G.step<t0+STORY_BREAK_MIN) mal=true; } G.F[0].enc=null; } return fin&&!mal;`);
 
 prueba('Historia: ganancias nuevas (relación, poblador extraordinario, saber, edificio, recurso temporal)', base + HIST + `
   const tz=G.zones.find(z=>z.owner===4); const n=G.zones[tz.adj.find(a=>G.zones[a].role!=='frontera'&&G.zones[a].owner===null)]; n.owner=0; n.units[0]=[civ('pob')];

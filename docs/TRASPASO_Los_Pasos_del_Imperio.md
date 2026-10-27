@@ -2,7 +2,7 @@
 
 **Para qué sirve este documento:** permite retomar el proyecto en una conversación nueva (o con otra persona) sin tener que volver a explicar nada. Está escrito para leerse de arriba abajo en 10 minutos.
 
-**Última actualización:** 27 de octubre de 2026 (v0.14: ingenieros automáticos en el juego; reglas de maravillas únicas y de 13.3 aún sin programar; multijugador con Firebase)
+**Última actualización:** 27 de octubre de 2026, noche, con años de eventos y tribus con relación −3 a +3 (🆕 pueblo vivo, rasgos y recursos con insignias, recursos de plata y oro, crecimiento n², puestos por nivel, ofertas entre jugadores, encuentros en ventana y escenas de fin de paso; ver sección 11)
 **Autor del diseño:** Alejandro.
 
 ⚠ **Quién escribe:** en este proyecto escribe siempre **Alejandro**, autor único del diseño y del código. Las preferencias de la cuenta de Claude están a nombre de otra persona (Pao); no la confundas con él, no le atribuyas ideas, decisiones ni partidas de prueba, y háblale a Alejandro en masculino.
@@ -32,7 +32,8 @@
 |---|---|---|
 | **`docs/Reglas_v0.1.md`** | Todas las reglas, con ✅ decidido, 💡 propuesta, ❓ por definir y 🆕 nuevo. La sección 20 lista los pendientes y la 23 el estado del prototipo. | Vivo |
 | **`docs/TRASPASO_Los_Pasos_del_Imperio.md`** | Este documento. | Vivo |
-| **`docs/TRASPASO_sesion_2026-10-26.md`** | 🆕 Traspaso detallado de la sesión del 26/10/2026 (v0.3 → v0.13): qué se decidió, qué cambió y qué quedó pendiente. | Vivo |
+| **`docs/TRASPASO_sesion_2026-10-26.md`** y **`..._2026-10-27.md`** | Historial detallado de esas sesiones (qué se decidió y qué cambió). **No hace falta subirlos al Proyecto**: lo que importa ya está en este documento y en las Reglas. Subirlos solo si se va a trabajar en el tutorial o en la interfaz. | Historial |
+| **`docs/CONTEXTO_PROYECTO/`** | 🆕 Copias listas para subir al Proyecto de Claude (3 archivos) y una guía de qué borrar. Se regenera con `python herramientas/generar_contexto.py`; **no se edita a mano**. | Generado |
 | **`docs/Como_manejar_el_proyecto.md`** | Cómo trabajamos. | Estable |
 | **`Tecnologias_v0.2.xlsx`** | Catálogo de 203 tecnologías. ⚠ Los textos de Almacén, Intereses del almacén y Capital próspera cambiaron en el juego y falta pasarlos al Excel. | Vivo |
 | **`index.html`, `css/`, `js/`** | El juego. `js/datos` (mapas y tecnologías), `js/config` (números de balance), `js/motor` (reglas, sin pantalla) y `js/interfaz` (lo que se ve). | Vivo |
@@ -104,7 +105,7 @@
 ### Tribus, eventos, victoria y fantasmas
 - 🆕 **Fronteras:** entre imperios vecinos hay una tierra de nadie sin dueño; quienes estén ahí ganan 🪙 +3 por paso cada uno mientras haya paz (+4 si hay uno solo). Es el dilema del prisionero del juego.
 - **Tribus:** una por oficio. **Anexar** cuesta `16 + 3 por civil + 5 por guerrero` (una típica, 30), pagado con las reservas de tus zonas cercanas; si dos pagan a la vez nadie la anexa y el precio se duplica. **Conquistar** da el 60 % de ese valor. A veces exigen **tributo** (6) y, si nadie paga, invaden.
-- 🆕 **Encuentros:** sin aviso, cada 4 a 7 pasos, en una zona tuya; 20 tipos de ofertas y apuestas que piden y dan más a medida que avanza la partida. Se deciden en el mismo paso. **Solo oportunidades:** rechazarlos no tiene consecuencias.
+- 🆕 **Encuentros:** sin aviso, cada 4 a 7 pasos, en una zona tuya; **40 tipos** de ofertas y apuestas (86 variantes) y **20 de elegir entre dos** (40 variantes) que piden y dan más a medida que avanza la partida; catálogo en `docs/encuentros.md`. Se deciden en el mismo paso. **Solo oportunidades:** rechazarlos no tiene consecuencias.
 - 🆕 **Recursos estratégicos:** rinden más mientras más tiempo los controles (+1 a +4 por paso).
 - **Eventos:** 16 en total; **uno cada 3 pasos desde el paso 6**; se anuncian con 2 pasos de anticipación (más con tecnología); el terreno multiplica el efecto.
 - **Victoria (2 de 7 a la vez):** Comercial (1000 de oro), Económica (75 de población), Tecnología (5 de nivel 5 de ramas distintas), Territorial (>70 % del mapa), Militar (2 capitales), Desarrollo (20 edificios), Maravillas (3). Empate: la partida sigue hasta que uno tenga una condición más.
@@ -138,6 +139,7 @@
 - **Prototipo jugable v0.13** con los 12 mapas, de 2 a 4 jugadores, economía local y global, 6 oficios, 10 edificios con niveles y especializaciones, las 203 tecnologías, 8 tipos de unidad, combate completo, tribus, eventos, fantasmas, alianzas y las 7 condiciones de victoria.
 - 🆕 **Interfaz (26/10/2026):** mapa como valle continuo (cercas donde hay camino, barrancos donde no), resumen de zona con quién trabaja y dónde, placas con reservas y pasos hasta el próximo poblador, edificios en tarjetas, tecnologías en subpestañas, con **«⭐ Te ayudan ahora»**, colores por rama y el **impacto que tendrían hoy** (ej.: «🌾 +3 por paso»), sugerencias del paso, tributos visibles, **visor de batallas golpe por golpe**, **sonido y efectos** (generados por código, con controles en el Menú), postura con cada jugador y turno en la barra superior.
 - 🆕 **Proyecto en GitHub** (github.com/Alejandroinfo/Imperial-steps) organizado por capas, con README, guía de colaboración y pruebas automáticas.
+- 🆕 **Sesión del 27/10/2026 (noche):** pueblo vivo en el mapa; rasgos y recursos con insignias y fichas; recursos de plata y oro; crecer cuesta n²; 2 puestos de trabajo por nivel de edificio; ofertas de recursos entre jugadores; encuentros en ventana emergente; avance de vecinos en Victoria; escenas de fin de paso; moverse y enviar sin listas desplegables. Detalle en las Reglas (sección 24) y en la sección 11 de este documento.
 
 ---
 
@@ -157,6 +159,8 @@
 5. **Pasar el motor a Python** con pytest y tablas de configuración; después, el simulador de balance. 🆕 La separación por capas ya lo deja preparado.
 6. ✅ 🆕 ~~Multijugador real~~ hecho con Firebase (salas con código y reconexión), ver 3c.
 7. 🆕 ✅ El código v0.13 ya está en GitHub (27/10/2026). Falta **activar GitHub Pages** (Settings → Pages → rama `main`, carpeta raíz) para que el enlace «Play it in your browser» del README funcione; para jugar en línea, esa dirección hay que autorizarla en Firebase (`docs/multijugador.md`, paso 7).
+
+3e. 🆕 **Confirmar jugando lo del 27/10/2026:** años con parte cierta (±15 %) y variable y primer año de fundación, tribus cada 8 pasos con descanso de 12 y ataque en insatisfacción 3; **decidir si la inundación y los eventos de tribu se vuelven tipos de año**; probar si 2 o 3 historias por partida (descanso 6 a 10 pasos) se sienten bien; además, el crecimiento n² baja la población de los bots un 20 % (13,5 → 10,5 a los 60 pasos) y los puestos por nivel suben el rendimiento de los edificios altos: ver si la economía queda bien o hay que compensar. Valores 💡 de plata y oro. Que los bots también hagan ofertas.
 
 ### Media
 7. **Bots mejores:** siguen atacando poco.
@@ -204,16 +208,13 @@
 
 ## 9. Cómo seguir en una conversación nueva
 
-Sube a un **Proyecto de Claude** como conocimiento del proyecto:
+Sube a un **Proyecto de Claude** como conocimiento del proyecto **solo estos 3 archivos** (están listos en `docs/CONTEXTO_PROYECTO/`, con la guía `LEEME_QUE_BORRAR_Y_QUE_QUEDARSE.md`):
 
-- `docs/TRASPASO_sesion_2026-10-26.md` (lo último que se hizo)
-- `docs/TRASPASO_Los_Pasos_del_Imperio.md` (este documento)
-- `docs/Reglas_v0.1.md`
-- `Tecnologias_v0.2.xlsx`
-- `dist/Los_Pasos_del_Imperio.html` (el juego en un solo archivo; se genera con `python herramientas/empaquetar.py`)
-- El atlas de mapas (`atlas_mapas.html`) si se va a trabajar en mapas.
+- `1_TRASPASO_Los_Pasos_del_Imperio.md` (este documento)
+- `2_Reglas_v0.1.md`
+- `3_Como_manejar_el_proyecto.md`
 
-🆕 El código está en **github.com/Alejandroinfo/Imperial-steps**; con el conector de GitHub, Claude puede leerlo y subir cambios.
+No subas el juego empaquetado (`dist/…html`), el atlas ni el Excel de tecnologías: pesan mucho, se desactualizan, y Claude puede leer el código y los datos (`js/datos/tecnologias.js`) directamente en **github.com/Alejandroinfo/Imperial-steps** con el conector de GitHub. Tras cambiar documentos, corre `python herramientas/generar_contexto.py` y reemplaza los 3 archivos en el Proyecto.
 
 Y abre un chat por tema. Mensaje inicial sugerido:
 
@@ -256,7 +257,7 @@ Al cerrar cada sesión:
 | 🆕 Los pobladores también construyen solos si hay obra (1 de la producción guardada); si no, producen | Misma idea que los ingenieros; evita una apertura en la que nadie puede construir |
 | 🆕 Rasgos de las personas: 2 por civil, de muy malo a muy bueno, por oficio; el jugador elige a quién especializar | Da identidad a cada poblador sin que el juego decida por ti; a veces importa más la comida o el oro que un +25 % en ciencia |
 | 🆕 Maravillas únicas en el juego: empate por producción destinable; la maravilla no cuenta como nivel 5; nadie pierde la tecnología ya investigada (quien pierde la carrera solo pierde la obra y recupera la mitad de la producción) | Decididas por Alejandro el 27/10/2026; la carrera se ve en Imperio y cada ganador se queda con un efecto único |
-| 🆕 Tres historias de 4 capítulos (caravana, maestro, heredero) con camino y final, sin amenazas | Aprobadas por Alejandro el 27/10/2026; dejar pasar un capítulo no castiga |
+| 🆕 **20 historias** de 4 capítulos con camino y final, sin amenazas (las 3 primeras: caravana, maestro, heredero; 17 nuevas el 27/10/2026) | Aprobadas por Alejandro el 27/10/2026; dejar pasar un capítulo no castiga |
 | 🆕 Subasta: catálogo de 5 con nivel bronce/plata/oro visible, pago con oro, ciencia, comida o producción de todo el imperio (en igual porcentaje por zona), cargamento directo al crecimiento y recurso temporal de 40 pasos | Decidido por Alejandro el 27/10/2026; se sabe la categoría y el nivel pero no los detalles |
 | 🆕 Zonas peligrosas con bono mayor (+8/+6) y solo tropas; tribus con relación, pedidos cada 5 pasos y guerra de 5 rondas (los civiles se vuelven guerreros) | La comida cuesta oro; Alejandro prefirió subir el bono antes que alimentar gratis. En la guerra se hereda la regla de berserkers |
 | 🆕 Música de Suno (plan gratis) en el repositorio con crédito (opción B) | Más cómodo que repartirla aparte; Alejandro asume el riesgo pequeño de licencia. Alternativa limpia: Suno Pro un mes o música CC0 |
@@ -281,3 +282,26 @@ Al cerrar cada sesión:
 | 🆕 Seguir con SVG para dibujar; PixiJS como opción si hace falta más fluidez | En la comparación, PixiJS se ve igual y SVG funcionó bien en una computadora normal |
 | 🆕 Trabajar directo en `main`, sin ramas | Las ramas confundían más de lo que ayudaban en un proyecto que lleva sobre todo una persona |
 | 🆕 Multijugador con Firebase Realtime Database, con el anfitrión como autoridad | Más estable que PeerJS entre casas distintas y sin servidor propio; con una sola pantalla resolviendo, nadie se desincroniza |
+
+---
+
+## 11. 🆕 Última sesión (27/10/2026, noche): qué cambió y dónde mirar
+
+Reglas en `docs/Reglas_v0.1.md`, sección 24 (con ✅ y 💡). Código nuevo o tocado:
+
+| Tema | Dónde |
+|---|---|
+| Pueblo vivo (rutinas por oficio, escenario por zona, hambre y heridas) | `js/interfaz/vida.js`, `figRows` en `js/interfaz/dibujo/figuras.js`, `groundDecor` en `territorio.js`, estilos al final de `css/estilos.css` |
+| Rasgos: insignias, apodos, ficha | `js/interfaz/formularios.js` (`traitBadge`, `TRAIT_EPI`, `fichaHTML`) |
+| Recursos de plata y oro | `RES`, `RES_TIER` en `js/config/reglas.js`; `resMul`, `zoneDeps`, `hasRes` (devuelve 0/1/2) en `motor/estado.js`; reparto en `motor/partida.js` (azar propio); rendimiento en `motor/encuentros.js` (`holdResources`); insignias `depBadge` y tarjetas `depCardsHTML` en `formularios.js` |
+| Crecer n², puestos por nivel | `growCost` en `motor/economia.js`; `WORKERS_PER_LEVEL` y `bldSlots` |
+| Ofertas entre jugadores | orden `offer`; `doOffer`, `makeTradeEnc`, `refundOffer` en `motor/encuentros.js`; `offerBuilderHTML` en `paneles/zona.js` |
+| Años con eventos (parte cierta + variable) | `YEAR_STEPS`, `EV_FIRST_YEAR`, `EV_BASE_PCT` en `reglas.js`; `scheduleEvents` (azar propio `g.evGen`), `applyEventMods` en `motor/eventos.js`; `g.evAct`; `z.ev.mul` en `economia.js`; `evChipsHTML` en `sugerencias.js` |
+| Tribus: relación −3 a +3, descanso y relojes | `TRIBE_REQ_EVERY`, `TRIBE_REQ_COOLDOWN`, `TRIBE_REL_MIN`; `tribeIgnored`, `tribeAttacks` en `motor/combate.js`; `tz.paidAt`, `tribeNextAsk` en `eventos.js`; `relBarHTML`, `tmbar` en `zona.js` |
+| Encuentros en ventana, pestañas, victoria de vecinos | `encPopup` en `sugerencias.js`; `vicNeighbors` en `paneles/ordenes.js`; `#dlgEnc` en `index.html` |
+| Escenas de fin de paso | `sceneDirector` en `interfaz/animaciones.js` |
+| Moverse y enviar sin listas | `moveFormHTML`, `sendCardHTML`, `neighborsHTML` en `paneles/zona.js`; acciones en `acciones.js` |
+| Contenido: 20 historias, 40 encuentros, 20 de elegir entre dos | `js/datos/historias_extra.js`, `js/datos/encuentros_extra.js` (se unen a los de `motor/historias.js` y `motor/encuentros.js`); catálogos generados en `docs/historias.md` y `docs/encuentros.md` con `node herramientas/generar_catalogo.js` (no se editan a mano). Las historias salen una tras otra (`F.stories`, `F.storyUsed`, `STORY_BREAK_*`, `STORY_MAX` en `reglas.js`; lógica en `scheduleEncounters`) |
+| Pruebas | `pruebas/probar_reglas.js` (más casos), `pruebas/probar_interfaz.py` (14 comprobaciones de navegador) |
+
+**Cosas que conviene saber:** `hasRes` devuelve un número (no un booleano); las pruebas de reglas borran los depósitos del mapa (`base`) para aislarse; las copias sueltas de `.js` y CSS que hay en la **raíz del repositorio** son restos de una subida accidental: el juego solo usa `index.html`, `js/` y `css/` (conviene borrarlas).

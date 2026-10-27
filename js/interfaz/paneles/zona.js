@@ -24,11 +24,20 @@ function frontierHTML(z){
   h+=`<div class="hint">${me?(others.length?`Compartes la zona peligrosa con ${others.map(f=>`<b style="color:${PLN[f].col}">${esc(PLN[f].name)}</b>`).join(' y ')}. Tu postura hacia ${others.length>1?'ellos':'él'}: ${others.map(f=>stanceOf(G,ME,f)==='alerta'?'⚔ Alerta':'☮ Paz').join(', ')}.`:'Estás solo aquí: ganas el bono mayor mientras nadie más ponga tropas.'):(others.length?`Aquí está ${others.map(f=>esc(PLN[f].name)).join(' y ')}. Puedes entrar con civiles: si los dos están en paz, ganan los dos.`:'Está vacía: quien llegue primero gana el bono mayor.')} La gente aquí no produce y come de tu zona más cercana.${gain?` Último paso: ${rq('gold',gain,true)}.`:''}</div></div>`;
   return h;
 }
+// Barra de relación de −3 (insatisfacción 3: te ataca) a +3 (alianza: puedes anexarla).
+function relBarHTML(rel){
+  return '<span class="relb">'+[-3,-2,-1,0,1,2,3].map(i=>`<i class="${i===0?'mid':i<0?'neg':'pos'}${(i<0&&rel<=i)||(i>0&&rel>=i)?' on':''}"></i>`).join('')+'</span>';
+}
+// Qué pasa con tu relación según lo que hagas con el pedido: cumplir sube 1 e ignorar baja 1 (a −3 ataca).
+function relConsequence(rel){
+  const dn=Math.max(TRIBE_REL_MIN,rel-1);
+  return `Si lo cumples, tu relación sube a <b>${Math.min(TRIBE_REL_MAX,rel+1)}</b>. Si lo ignoras, baja a <b>${dn}</b>${dn<=TRIBE_REL_MIN?' y <b>te ataca</b>':dn<0?` (insatisfacción ${-dn} de ${-TRIBE_REL_MIN}; con ${-TRIBE_REL_MIN} ataca)`:''}.`;
+}
 function tributeHTML(z){
   const t=(G.tributes||[]).find(x=>x.zone===z.id&&x.targets.includes(ME)); if(!t) return '';
   const res=t.res, local=(res==='food'||res==='prod'); const F=G.F[ME];
   const inQ=ui.orders.some(o=>o.t==='tribute'&&o.tribe===z.id);
-  const rel=((z.rel||{})[ME])||0; let h=`<div class="tribute"><div class="trh">🤝 <b>Pide ${rq(res,t.amount)}</b> hasta el paso ${t.due}</div><div class="hint">Cumplirlo sube tu relación con ella (${rel}/${TRIBE_REL_MAX}). Rechazarlo no tiene castigo; con relación ${TRIBE_REL_MAX} podrás anexarla.</div>`;
+  const rel=((z.rel||{})[ME])||0; let h=`<div class="tribute"><div class="trh">🤝 <b>Pide ${rq(res,t.amount)}</b> · quedan <b>${t.due-G.step+1} paso${t.due-G.step+1===1?'':'s'}</b></div><div class="tmbar ${(t.due-G.step+1)<=2?'war':''}" title="Pasos que quedan para cumplir el pedido"><i style="width:${Math.max(6,Math.round(100*(t.due-G.step+1)/TRIBE_REQ_EVERY))}%"></i></div><div class="hint">Relación ${relBarHTML(rel)} <b>${TRIBE_REL_N[rel+3]}</b> (${rel>0?'+':''}${rel}). ${relConsequence(rel)}</div>`;
   if(t.paid[ME]) return h+'<div class="ok">✓ Ya pagaste tu parte.</div></div>';
   if(inQ) return h+'<div class="ok">✓ El pago está en cola: se hace al presionar ¡Listo!</div></div>';
   const mine=zonesOf(G,ME).filter(a=>z.adj.includes(a.id));
@@ -44,9 +53,10 @@ function annexHTML(z){
   const price=annexPrice(G,ME,z), res=TSPEC_RES[z.tspec]; const near=nearOwnZones(G,ME,z), have=annexHave(G,ME,z), p=tribePop(z);
   const rel=((z.rel||{})[ME])||0, war=(G.wars||[]).find(w=>w.tribe===z.id&&w.f===ME);
   let h=`<div class="box"><b>Tribu ${esc(({agr:'agrícola',ing:'de producción',com:'comercial',cie:'de tecnología'})[z.tspec]||'')}</b> · ${p.civ} civiles y ${p.mil} guerreros<div class="hint">Para unirse piden <b>${rq(res,price)}</b>${z.tmult>1?' (×2 por un empate)':''} · conquistarla da ${rq(res,conquestReward(z))}</div>`;
-  h+=`<div class="relbar" title="Cumple sus pedidos (uno cada ${TRIBE_REQ_EVERY} pasos) para ganarte su confianza">Relación: ${[0,1,2,3].map(i=>`<i class="${i<rel?'on':''}"></i>`).join('')} <b>${TRIBE_REL_N[rel]}</b> (${rel}/${TRIBE_REL_MAX})</div>`;
-  if(war) return h+`<div class="warn">⚔ <b>En guerra contigo</b>: sus civiles se volvieron guerreros y atacan tus zonas cercanas (${war.left} paso${war.left===1?'':'s'} más, o hasta que la conquistes).</div></div>`;
-  if(rel<TRIBE_REL_MAX) return h+`<div class="hint">Todavía no puedes anexarla: primero cumple sus pedidos hasta tener relación ${TRIBE_REL_MAX}. Atacarla es entrar en guerra con ella.</div></div>`;
+  h+=`<div class="relbar" title="Cumplir un pedido sube 1; ignorarlo baja 1. Con +${TRIBE_REL_MAX} puedes anexarla; con ${TRIBE_REL_MIN} te ataca.">Relación: ${relBarHTML(rel)} <b>${TRIBE_REL_N[rel+3]}</b> (${rel>0?'+':''}${rel})</div>`;
+  { const na=tribeNextAsk(G,z,ME); if(!war) h+=`<div class="${rel<=-2?'warn':'hint'}">${rel<0?'😠 <b>Insatisfacción '+(-rel)+' de '+(-TRIBE_REL_MIN)+'</b>: '+(rel<=-2?'un pedido más ignorado y te ataca. ':'')+'':''}⏳ ${na===null?'No te pedirá más por ahora.':na===0?'Te pide algo este mismo paso.':'Próximo pedido en <b>'+na+' paso'+(na===1?'':'s')+'</b>.'} Cumplir sube la relación; ignorar la baja.</div>`; }
+  if(war) return h+`<div class="warn">⚔ <b>En guerra contigo</b>: sus civiles se volvieron guerreros y atacan tus zonas cercanas con todos los suyos. Quedan <b>${war.left} paso${war.left===1?'':'s'}</b> de guerra, o hasta que la conquistes.</div><div class="tmbar war"><i style="width:${Math.round(100*war.left/TRIBE_WAR_STEPS)}%"></i></div></div>`;
+  if(rel<TRIBE_REL_MAX) return h+`<div class="hint">Todavía no puedes anexarla: primero cumple sus pedidos hasta tener relación ${TRIBE_REL_MAX} (hoy ${rel}). Atacarla es entrar en guerra con ella.</div></div>`;
   if(near.length){
     const where=(res==='food'||res==='prod')?` (suma de ${near.length} zona${near.length>1?'s':''} tuya${near.length>1?'s':''} cerca)`:' (global)';
     h+=`<div class="${have>=price?'hint':'warn'}">Tienes ${Math.floor(have)}${where}.</div>`;

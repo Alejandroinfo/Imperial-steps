@@ -44,7 +44,7 @@ interface Zona {
   att: { [f: number]: boolean };
   b: Edificio[]; proj: Proyecto[];
   res: string | null; tspec: Civil | null; tmult: number; tbase?: number; settled?: number;
-  ev: { [k: string]: number };
+  ev: { [k: string]: any };
   // economía de la zona
   growMode?: 'crecer' | 'guardar'; pauseBuild?: boolean; rel?: { [f: number]: number }; fh?: { [f: number]: number }; autoSpec?: Civil | null; routes?: EnvioAuto[];
   bplan?: {ing:number; pob:number; bonus:number; cap:number; work:number; stock:number; pot?:number; paused?:boolean; ids?:number[]} | null; resN?: number; resBonus?: number; rcap?: number; nres?: number;
@@ -54,7 +54,7 @@ interface Zona {
   lastBy?: any; sp?: { spec: string; lvl: number; n: number };
   // equipo militar guardado y recursos estratégicos
   eq?: { [t: string]: number }; eqPend?: { [t: string]: number };
-  resHeld?: number; resOwner?: Jugador | null; resGain?: { res: Recurso; n: number }; resO?: string | null; resGains?: { key: string; tier: string; res: Recurso; n: number }[];
+  resHeld?: number; resOwner?: Jugador | null; resGain?: { res: Recurso; n: number }; resO?: string | null; paidAt?: { [f: number]: number }; resGains?: { key: string; tier: string; res: Recurso; n: number }[];
   frontGain?: { [f: number]: number };
 }
 
@@ -73,7 +73,7 @@ interface EstadoJugador {
   lastAvoid: number; notes: string[];
   rq: { name: string; left: number; tot: number }[]; rcap: number; rspent?: number;
   stance: { [otro: number]: Postura };
-  enc: Encuentro | null; encNext?: number; caravanUsed?: number; story?: { id: string; ch: number; next: number; tags: string[]; done?: number }; tres?: { key: string; until: number }[];
+  enc: Encuentro | null; encNext?: number; caravanUsed?: number; story?: { id: string; ch: number; next: number; tags: string[]; done?: number; nextNew?: number }; stories?: number; storyUsed?: string[]; tres?: { key: string; until: number }[];
 }
 
 interface Partida {
@@ -83,7 +83,7 @@ interface Partida {
   F: EstadoJugador[]; M: any[];
   hist: { step: number; ev: string | null; lines: string[] }[];
   log: string[]; logNow?: string[]; fx?: any[];
-  evq: { step: number; id: string }[]; evNow?: { step: number; id: string } | null;
+  evq: { step: number; id: string; dur?: number }[]; evNow?: { step: number; id: string; dur?: number } | null; evAct?: { id: string; start: number; end: number; avoid?: { [f: number]: number } }[]; evGen?: { yr: number; signs: number[]; s: number };
   offers: Oferta[]; offerSeq?: number;
   tributes: { zone: ZonaId; amount: number; due: number; paid: { [f: number]: number }; targets: Jugador[]; res: Recurso }[];
   battles?: any[]; logiMult: number; fever?: number; growHalfEv?: number;

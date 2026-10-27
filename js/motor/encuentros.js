@@ -17,6 +17,7 @@
 
 const ENC_FIRST = 4, ENC_MIN_GAP = 4, ENC_MAX_GAP = 7;
 
+/** @type {any[]} */
 const ENCOUNTERS = [
   {id:'mercenarios', k:'oferta', who:['Unos mercenarios','Una compañía libre','Soldados de fortuna'], txt:'ofrecen sus espadas', cost:{res:'gold',n:5}, gain:{units:{sol:2}}},
   {id:'veteranos', k:'oferta', who:['Unos veteranos','Antiguos guardias de un rey caído'], txt:'buscan un señor que los alimente', cost:{res:'food',n:6}, gain:{units:{sol:2}}, str:4},
@@ -41,21 +42,24 @@ const ENCOUNTERS = [
 ];
 // Encuentros de elegir entre dos (13.3): llegan dos ofertas y eliges una o ninguna. Da costo de oportunidad sin castigar.
 const ENC_CHOICE_P = 1/3;   // uno de cada tres encuentros
+/** @type {any[]} */
 const CHOICES = [
   {id:'ch_tropas', who:['Dos emisarios rivales','Un capitán y un cazador'], txt:'ofrecen tropas, pero solo puedes aceptar a uno', opts:[{lbl:'Mercenarios',cost:{res:'gold',n:5},gain:{units:{sol:2}}},{lbl:'Arqueros',cost:{res:'gold',n:7},gain:{units:{arq:2}}}]},
   {id:'ch_saber', who:['Un maestro y una sabia','Dos viajeros de otras tierras'], txt:'ofrecen enseñar, pero solo a uno le harás caso', opts:[{lbl:'Formar a un científico',cost:{res:'food',n:4},gain:{units:{cie:1}}},{lbl:'Compartir su saber',cost:{res:'gold',n:5},gain:{res:'tech',n:10}}]},
-  {id:'ch_mercado', who:['Dos caravanas que llegan a la vez'], txt:'venden lo suyo, pero no hay sitio para las dos', opts:[{lbl:'Granos',cost:{res:'gold',n:4},gain:{res:'food',n:12}},{lbl:'Hierro y madera',cost:{res:'gold',n:6},gain:{res:'prod',n:12}}]},
-  {id:'ch_fiesta', who:['Unos juglares y unas parteras'], txt:'se ofrecen para ayudar a tu gente', opts:[{lbl:'Juglares',cost:{res:'gold',n:3},gain:{prog:10}},{lbl:'Parteras',cost:{res:'food',n:4},gain:{prog:12}}]},
-  {id:'ch_oficios', who:['Un gremio de canteros y una familia de mercaderes'], txt:'quieren instalarse en tu zona', opts:[{lbl:'Artesanos',cost:{res:'food',n:5},gain:{units:{ing:2}}},{lbl:'Mercaderes',cost:{res:'gold',n:6},gain:{units:{com:2}}}]},
-  {id:'ch_armas', who:['Un herrero y un armero'], txt:'fabrican para tu cuartel, pero solo uno a la vez', opts:[{lbl:'Arcos',cost:{res:'gold',n:5},gain:{eq:{arq:2}}},{lbl:'Escudos',cost:{res:'prod',n:7},gain:{eq:{esc:2}}}]}
+  {id:'ch_mercado', who:['Dos caravanas que llegan a la vez','Dos barcazas en el mismo muelle'], txt:'venden lo suyo, pero no hay sitio para las dos', opts:[{lbl:'Granos',cost:{res:'gold',n:4},gain:{res:'food',n:12}},{lbl:'Hierro y madera',cost:{res:'gold',n:6},gain:{res:'prod',n:12}}]},
+  {id:'ch_fiesta', who:['Unos juglares y unas parteras','Una cofradía y unas campesinas'], txt:'se ofrecen para ayudar a tu gente', opts:[{lbl:'Juglares',cost:{res:'gold',n:3},gain:{prog:10}},{lbl:'Parteras',cost:{res:'food',n:4},gain:{prog:12}}]},
+  {id:'ch_oficios', who:['Un gremio de canteros y una familia de mercaderes','Unos artesanos y unos comerciantes'], txt:'quieren instalarse en tu zona', opts:[{lbl:'Artesanos',cost:{res:'food',n:5},gain:{units:{ing:2}}},{lbl:'Mercaderes',cost:{res:'gold',n:6},gain:{units:{com:2}}}]},
+  {id:'ch_armas', who:['Un herrero y un armero','Dos talleres que compiten'], txt:'fabrican para tu cuartel, pero solo uno a la vez', opts:[{lbl:'Arcos',cost:{res:'gold',n:5},gain:{eq:{arq:2}}},{lbl:'Escudos',cost:{res:'prod',n:7},gain:{eq:{esc:2}}}]}
 ];
+// 20 encuentros más y 14 de elegir entre dos (js/datos/encuentros_extra.js): en total 40 encuentros base y 20 de elegir entre dos
+ENCOUNTERS.push(...ENCOUNTERS_EXTRA); CHOICES.push(...CHOICES_EXTRA);
 const ENC={}; ENCOUNTERS.forEach(e=>{ ENC[e.id]=e; });
 const ENC_VARIANTS=ENCOUNTERS.reduce((a,e)=>a+e.who.length,0);
 
 // Si quien llega es uno solo («Una compañía libre»), el verbo va en singular.
 const ENC_SING={'exigen un pago o atacan':'exige un pago o ataca','ofrecen':'ofrece','buscan':'busca','se unirían':'se uniría','piden':'pide','trabajarían':'trabajaría','quieren':'quiere',
   'compartirían':'compartiría','formarían':'formaría','venden':'vende','pagan':'paga','alegrarían':'alegraría','cuidarían':'cuidaría',
-  'cambian':'cambia','cavarían':'cavaría','exigen':'exige','te robarán':'te robará'};
+  'cambian':'cambia','cavarían':'cavaría','enseñan':'enseña','entrenarían':'entrenaría','se quedarían':'se quedaría','copiarían':'copiaría','fabrican':'fabrica','dejan':'deja','abrirían':'abriría','comparten':'comparte','te retan':'te reta','organizan':'organiza','prometen':'promete','exigen':'exige','te robarán':'te robará'};
 function encConj(who,txt){ if(!/^(Un|Una|El|La) /.test(who)) return txt; for(const pl in ENC_SING) if(txt.startsWith(pl)) return ENC_SING[pl]+txt.slice(pl.length); return txt; }
 /** @param {Partida} g */
 function encScale(g){ return 1+g.step/15; }
@@ -194,7 +198,12 @@ function scheduleEncounters(g){
     const F=g.F[f]; if(F.out||F.enc) continue;
     { const of=g.offers.find(x=>x.to===f); if(of){ const e=makeTradeEnc(g,f,of); g.offers.splice(g.offers.indexOf(of),1); if(e){ F.enc=e; L2(g,PLN[f].name+' recibe una oferta de '+PLN[of.from].name+'.'); continue; } refundOffer(g,of,(m)=>L2(g,m),'sin zona para recibirla'); } }
     if(F.encNext===999) continue;   // comienzo guiado: sin encuentros ni historias
-    if(!F.story) F.story={id:STORY_IDS[Math.floor(g.rng()*STORY_IDS.length)],ch:1,next:Math.max(STORY_FIRST,g.step+2)+Math.floor(g.rng()*3),tags:[]};
+    // la primera historia, o una nueva cuando la anterior terminó y pasó el descanso (distinta de las ya vividas, hasta STORY_MAX)
+    if(!F.story||(F.story.done&&(F.stories||1)<STORY_MAX&&g.step+1>=(F.story.nextNew||0))){
+      const used=F.storyUsed||(F.story?[F.story.id]:[]); let pool=STORY_IDS.filter(id=>!used.includes(id)); if(!pool.length) pool=STORY_IDS.slice();
+      const id=pool[Math.floor(g.rng()*pool.length)];
+      F.story={id,ch:1,next:Math.max(STORY_FIRST,g.step+2)+Math.floor(g.rng()*3),tags:[]}; F.storyUsed=used.concat(id); F.stories=(F.stories||0)+1;
+    }
     if(!F.story.done&&g.step+1>=F.story.next){ const ch=makeChapter(g,f); if(ch){ F.enc=ch; L2(g,PLN[f].name+': llega un capítulo de «'+STORIES[F.story.id].n+'».'); continue; } }
     if(F.encNext===undefined) F.encNext=ENC_FIRST+Math.floor(g.rng()*3);
     if(g.step+1<F.encNext) continue;

@@ -11,6 +11,7 @@ function drawChips(){
   }
   $('chips').innerHTML=h;
   $('stepNo').textContent=G.step;
+  { const y=Math.floor((G.step-1)/YEAR_STEPS)+1, m=MONTH_N[(G.step-1)%YEAR_STEPS]; $('calNote').textContent='· año '+y+', '+m; $('stepNo').parentElement.title='Cada paso es un mes; 12 pasos son un año. Paso '+G.step+': año '+y+', '+m+'.'; $('evChips').innerHTML=evChipsHTML(); }
   const rb=$('readyBtn'); rb.textContent=ui.ready[ME]?'Esperando… (cancelar)':'¡Listo!'; rb.disabled=G.over||(G.F[ME].out&&!G.F[ME].ghost);
   tween($('rGold'),Math.floor(G.F[ME].gold)); tween($('rTech'),Math.floor(G.F[ME].tech)); tween($('rZones'),zonesOf(G,ME).length); tween($('rPop'),totalPop(G,ME));
   const vn=victoryConds(G,ME).filter(c=>c.ok).length; const vp=$('vicCnt'); if(vp){ vp.textContent=vn; vp.parentElement.className='cnt vic'+(vn>=1?' on':''); }

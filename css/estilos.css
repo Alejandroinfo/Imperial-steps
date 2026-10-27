@@ -503,3 +503,15 @@ dialog#dlgEnc{position:fixed;left:50%;top:92px;transform:translateX(-50%);margin
 .ofres{display:grid;grid-template-columns:repeat(2,1fr);gap:4px;width:100%}.ofres button{display:flex;flex-direction:column;align-items:center;padding:3px 2px;border:2px solid #2A1B16;border-radius:9px;background:#fff;cursor:pointer;line-height:1.1}.ofres button span{font-size:17px}.ofres button small{font-size:10px;color:var(--muted)}
 .ofres button[aria-pressed=true]{background:#F2CF5B;box-shadow:0 2px 0 #2A1B16}.ofres button:disabled{opacity:.3;cursor:default}
 .enc.trato{border-color:#7CB87C;background:rgba(124,184,124,.14)}
+
+/* ===== calendario, eventos activos y relojes de tribus ===== */
+.evchips{display:inline-flex;gap:5px;flex-wrap:wrap;align-items:center}
+.evchip{display:inline-flex;gap:4px;align-items:center;padding:2px 9px;border:2px solid #2A1B16;border-radius:99px;font-size:12px;background:#FBF6EA;white-space:nowrap}
+.evchip.pos{background:#DDEFC6}.evchip.neg{background:#F4D6CF}.evchip b{font-weight:800}
+.tmbar{height:6px;border-radius:3px;background:rgba(42,27,22,.15);overflow:hidden;margin:3px 0 5px}.tmbar i{display:block;height:100%;background:#C9A24A}.tmbar.war i{background:#C8452F}
+
+/* ===== relación con tribus de −3 a +3 ===== */
+.relb{display:inline-flex;gap:2px;vertical-align:middle;margin:0 4px}
+.relb i{display:inline-block;width:13px;height:9px;border-radius:3px;background:#E3DACA;border:1px solid #B79A6A}
+.relb i.mid{background:#fff;border-color:#2A1B16;width:5px}
+.relb i.pos.on{background:#7CC47F;border-color:#4F8F52}.relb i.neg.on{background:#E0735F;border-color:#A9382B}

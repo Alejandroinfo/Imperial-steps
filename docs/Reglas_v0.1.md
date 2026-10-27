@@ -216,7 +216,7 @@ Cada zona tiene un terreno. Algunos efectos dependen de si la unidad es **atacan
 | **Brea** | Ríos o Bosques | Local | Las máquinas de asedio fabricadas en la zona tienen +1 de fuerza |
 
 - ✅ 🆕 **Recursos disputados (26/10/2026, decidido por Alejandro: que se sientan más importantes):** además de su efecto, cada recurso **rinde más mientras más tiempo lo controles**: 💡 +1 por paso al tomarlo y +1 más cada 5 pasos, hasta +4 (comida o producción en la zona, oro o ciencia global, según el recurso). Si cambia de dueño, el contador vuelve a cero. Se ve en el mapa (con el color de quien lo tiene y su rendimiento) y en el panel Imperio, que lista todos los recursos del mapa. Los bots priorizan atacar zonas con recursos.
-- 💡 **Reparto en el mapa:** por jugador, 1 recurso global y 2 locales, en zonas que no sean la capital y repartidos igual para todos (para mantener la simetría). Las tribus también pueden custodiar recursos: conquistar o anexar la tribu te los da.
+- ~~💡 Reparto en el mapa: por jugador, 1 recurso global y 2 locales.~~ ✅ 🆕 **Plata y oro (27/10/2026, decidido por Alejandro):** ver la sección 24. Casi todas las zonas tienen un depósito de **plata** y 1 de cada 3 tiene además uno de **oro** (efecto doble). Las tribus también custodian recursos: conquistar o anexar la tribu te los da.
 - 💡 Las Maravillas podrían exigir tener cerca una Piedra de cantera; es opcional.
 - ❓ ¿Los recursos se agotan, o duran toda la partida? Se asume que duran.
 - ❓ ¿Los recursos aparecen en los mapas del atlas? Hoy no están; se pueden agregar de forma simétrica.
@@ -255,7 +255,7 @@ Detalles:
   1. **Almacenar** — ✅ 🆕 máximo **10 por punto de tamaño** de la zona, para comida y para producción por separado (antes 10 fijos). Ampliable con el Almacén (ver 15.1).
   2. **Enviar** a otra zona pagando la logística.
   3. **Crecer:** se gasta en progreso hacia un nuevo aldeano. 🆕 **Etapa de fundación:** hasta el paso 12, crecer cuesta la mitad, para que el inicio no sea tan lento (💡 `FOUNDING_STEPS = 12`). ✅ 🆕 **Cada zona elige su prioridad (decidido por Alejandro):** **Crecer** (todo el sobrante del paso, después de alimentar y de los envíos automáticos, va al crecimiento; es lo normal) o **Guardar** (el sobrante va al almacén; solo lo que no cabe va a crecer). Reemplaza la propuesta de repartir mitad y mitad.
-- ✅ Costo del nuevo poblador según el **tamaño de la zona** (número de crecimientos que ha hecho, no la población actual): el 3.º cuesta **6**, el 4.º **10**, el 5.º **15**… (fórmula equivalente: n(n+1)/2).
+- ✅ 🆕 **Costo del nuevo poblador (27/10/2026, decidido por Alejandro):** crecer hasta el tamaño *n* cuesta **n × n**: el 3.º cuesta **9**, el 4.º **16**, el 5.º **25**… el 10.º **100**. ~~Antes: n(n+1)/2 (6, 10, 15…).~~ Se aplica sobre el **tamaño de la zona** (número de crecimientos que ha hecho, no la población actual).
 - ✅ La comida invertida en crecer **se gasta** (a diferencia de almacenarla).
 - ✅ Al inicio de cada ronda se revisa si la ronda anterior alcanzó el costo; si sí, el nuevo aldeano **aparece y trabaja esa misma ronda**.
 - 💡 🆕 El progreso de crecimiento es **por zona** y **se acumula** si no se completa (así funciona el prototipo).
@@ -279,7 +279,7 @@ Detalles:
 ### 8.1 Tamaño de zona y migración
 
 - ✅ **Tamaño de zona** = número de veces que la zona ha crecido. La capital inicial empieza con 4 aldeanos y **tamaño 4**.
-- ✅ El tamaño **determina el costo del siguiente crecimiento** (tamaño 4 → el siguiente cuesta 15).
+- ✅ El tamaño **determina el costo del siguiente crecimiento** (🆕 tamaño 4 → el siguiente cuesta 25; ver arriba).
 - ✅ **La migración no afecta el tamaño ni el costo de crecimiento.**
   - Si llegan 2 migrantes a una ciudad de tamaño 4, el siguiente crecimiento sigue costando 15 y, después de crecer, el tamaño pasa a 5 (no a 7).
   - Si una zona de tamaño 4 pierde 2 personas porque se van, sigue siendo de tamaño 4 y necesita acumular 15 para el siguiente.
@@ -452,7 +452,12 @@ Detalles:
 
 ## 13. Eventos
 
-- ✅ Ocurre un evento **cada 3 rondas**, a partir de la **ronda 6**.
+- ✅ 🆕 **Años (27/10/2026, diseño de Alejandro):** **1 paso = 1 mes, 12 pasos = 1 año.** El **primer año es de fundación** (sin eventos; 💡 mi propuesta). Desde el 2.º, cada año tiene **dos partes que duran los 12 pasos** (los efectos son más claros y uno se acostumbra):
+  - **Parte cierta:** **Prosperidad** (+15 % de comida, producción, oro y tecnología en todas las zonas) o **Escasez** (−15 % de comida y producción). Al azar, nunca tres años seguidos del mismo signo. No se puede evitar y afecta a todos por igual. 💡 El 15 % es estimación mía.
+  - **Parte variable:** un evento de la lista de abajo del **mismo signo** (positivos: cosecha, veta, feria, inspiración, caminos, año fértil; negativos: sequía, plaga, derrumbe, tormenta, fiebre). Por ejemplo, un año de Prosperidad con Inspiración da un extra de tecnología. 💡 Como duran un año, los efectos por trabajador se redujeron a la cuarta parte (+0,5 en vez de +2); *Año fértil* baja el costo de crecer un 30 % (antes la mitad); *Tormenta* sube la logística un 50 % (antes ×2); *Plaga* sube el consumo un 25 % (antes +1 por persona). *Pronóstico* puede evitar la parte variable negativa, no la parte cierta.
+  - ~~Antes: un evento cada 3 rondas desde la ronda 6, de un solo paso.~~
+- ✅ 🆕 **Sucesos de un solo paso:** un evento de tribu al año (Inquietud, Pedido, Éxodo o Furia) en un mes al azar y, en los años malos, con 50 % de probabilidad, una **Inundación** (los almacenes pierden la mitad). Son de un solo paso porque cambian el estado de una vez (crece una tribu, se funda otra, los guerreros se vuelven berserkers, los almacenes pierden la mitad): repetirlos 12 meses seguidos los volvería devastadores. 💡 Pendiente de confirmar con Alejandro si prefiere convertirlos en tipos de año.
+- ✅ 🆕 La interfaz muestra el mes y el año junto al paso y, arriba, **los eventos del año con los pasos que quedan**.
 - ✅ **Positivos:** aumentan la producción de recursos en ciertas zonas, o reducen costos logísticos ese paso.
 - ✅ **Negativos:** aumentan el consumo de recursos para tareas, o la comida consumida.
 - ✅ **Neutrales:** afectan a las tribus.
@@ -489,7 +494,7 @@ Detalles:
 | Tormenta | Negativo | Mover comida y producción cuesta el doble ese paso | Todos |
 | Fiebre | Negativo | Los heridos tardan una ronda más en curarse | Todos |
 | Inquietud tribal | Neutral | Una tribu crece +1 de población | Tribus |
-| Exigencia de tributo | Neutral | Una tribu pide tributo a sus vecinos (ver sección 12) | Tribus |
+| Pedido de tribu (antes «Exigencia de tributo») | Neutral (de un solo paso) | Una tribu pide algo a sus vecinos (ver sección 12); cumplirlo sube la relación e ignorarlo la baja | Tribus |
 | Éxodo tribal | Neutral | Una tribu funda una nueva tribu (ver sección 12) | Tribus |
 | Furia tribal | Neutral | Una tribu se vuelve berserker antes de su próximo combate | Tribus |
 
@@ -503,7 +508,7 @@ Detalles:
 - ✅ 🆕 **Solo oportunidades (decidido por Alejandro):** son ofertas o apuestas que conviene aprovechar si se puede. **Nada negativo** si se rechazan o no se responden: una amenaza que llega sin aviso es demasiado al azar para poder prepararse.
 - ✅ **Entre más avanza la partida, más piden y más dan** (💡 los montos se multiplican por 1 + paso/15; las personas que llegan suben 1 cada 20 pasos).
 - 💡 Frecuencia: uno cada 4 a 7 pasos por jugador, desde el paso 4.
-- 💡 **20 tipos con 43 variantes** de quién llega; algunos dependen del terreno. Dos clases:
+- ✅ 🆕 **40 tipos con 86 variantes** de quién llega (27/10/2026, pedido por Alejandro: antes 20 con 43); algunos dependen del terreno. El catálogo completo está en `docs/encuentros.md`. Dos clases (los primeros 20 que se listan son los originales; los 20 nuevos son cartógrafos, cocineros, domadores, maestros de armas, peregrinos, mineros, tejedoras, carpinteros, escribas, cazadores, fundidores, curtidores, semilleros, postas, ermitaños y emisarios de tribu, más 4 apuestas: dados, vidente, carrera y zahorí):
   - **Ofertas** (pagas y recibes): mercenarios, veteranos, arqueros, jinetes, refugiados, artesanos, mercaderes, sabio, escuela, caravana de hierro, mercado de granos, compradores, herrero, armero, juglares, parteras, pescadores, mineros.
   - **Apuestas** (pagas y puede salir mal): mapa del tesoro, alquimista.
 - ✅ Los bots también reciben encuentros y los deciden con una regla simple.
@@ -535,13 +540,13 @@ Detalles:
 **Pedidos de las tribus vecinas y relación**
 - ✅ Una **tribu neutral que toca tus zonas** te hace pedidos. **Cumplirlos mejora la relación**, hasta que puedes **anexarla pagando recursos**.
 - ✅ **Frecuencia fija y conocida, no al azar**, con pedidos sacados de una lista, igual para todos los vecinos.
-- ✅ 🆕 Un pedido **cada 5 pasos**, en el mismo paso para todos los vecinos, según el oficio de la tribu (💡 la lista: agrícola pide comida 6, comida 10 y oro 6; de producción, producción 6, 10 y oro 6; comercial, oro 6, 10 y comida 8; científica, ciencia 6, 10 y oro 6; las cantidades crecen con la partida). Rechazar no tiene castigo: el pedido caduca.
+- ✅ 🆕 **Menos pedidos y relación de −3 a +3 (27/10/2026, decidido por Alejandro):** un pedido **cada 8 pasos** (antes 5) y, **después de cumplir uno, esa tribu no te pide nada durante 12 pasos** (💡 `TRIBE_REQ_EVERY = 8`, `TRIBE_REQ_COOLDOWN = 12`). **Cumplir un pedido sube la relación 1; ignorarlo (que caduque sin pagar) la baja 1.** La relación va de **−3 a +3**: con +3 (alianza) se puede anexar; en **−3 («insatisfacción 3») la tribu te declara la guerra**: todos los suyos se vuelven guerreros y atacan tus zonas durante 5 pasos, y la relación vuelve a 0. ~~Antes: ignorar no tenía castigo.~~ Cada pedido muestra cuántos pasos quedan para cumplirlo y qué le pasaría a tu relación; la ficha de la tribu dice cuántos pasos faltan para el próximo pedido y la barra de guerra cuántos pasos de guerra quedan. Antes: un pedido **cada 5 pasos**,
 - ✅ 🆕 Relación de **0 a 3** (desconfianza, trato, amistad, alianza) por jugador y por tribu: cada pedido cumplido suma 1; en el nivel 3 se puede anexar (💡 al mismo precio de siempre: 16 + 3 por civil + 5 por guerrero). Atacarla la deja en 0.
 - ✅ Conquistarla sigue siendo posible, pero **atacarla es entrar en guerra** con ella (ver sección 12).
 
 **Historias de 4 capítulos**
 - ✅ Encuentros encadenados: lo que eliges en cada capítulo cambia el siguiente, y la historia vuelve a lo largo de la partida. 🆕 **Hechas en la v0.20 (aprobadas por Alejandro el 27/10/2026):** tres historias, «La caravana perdida», «El maestro del valle» y «El heredero sin trono», con todos sus capítulos en `docs/historias.md`.
-- ✅ 🆕 Una historia por jugador y por partida (al azar entre las 3), con el primer capítulo hacia el paso 10 y los siguientes cada 8 pasos. Cada capítulo es un encuentro con 2 o 3 opciones y siempre un «dejarlo pasar» sin costo ni castigo; si una opción no te alcanza cuenta como dejarlo pasar. El capítulo siguiente depende de la marca de camino de la última opción, y el final (capítulo 4), de la marca que más tomaste (si empatan, la última). Ganancias nuevas de los capítulos: relación con la tribu vecina, poblador extraordinario, una tecnología gratis, un edificio ya construido y un recurso estratégico por 40 pasos.
+- ✅ 🆕 **Varias historias por partida (27/10/2026, pedido por Alejandro):** cada jugador vive **una historia tras otra**, al azar entre las 20 y **sin repetir** dentro de la partida. La primera tiene su primer capítulo hacia el paso 10 y los siguientes cada 8 pasos; al terminar hay un **descanso de 6 a 10 pasos** y empieza la siguiente, hasta **4 por jugador** (💡 `STORY_BREAK_MIN = 6`, `STORY_BREAK_MAX = 10`, `STORY_MAX = 4`). Con esos tiempos, en una partida de 60 a 100 pasos se viven **2 o 3** (la 2.ª empieza hacia el paso 50 y la 3.ª hacia el 80) y en una muy larga **3 o 4** (medido con bots: 2 a los 60 pasos, 3 a los 80, 4 a los 130). Dejar pasar un capítulo no frena la historia. ~~Antes: una sola historia por partida.~~ Cada capítulo es un encuentro con 2 o 3 opciones y siempre un «dejarlo pasar» sin costo ni castigo; si una opción no te alcanza cuenta como dejarlo pasar. El capítulo siguiente depende de la marca de camino de la última opción, y el final (capítulo 4), de la marca que más tomaste (si empatan, la última). Ganancias nuevas de los capítulos: relación con la tribu vecina, poblador extraordinario, una tecnología gratis, un edificio ya construido y un recurso estratégico por 40 pasos.
 - ✅ 🆕 Argumentos y recompensas: ver `docs/historias.md`. ❓ Escribir más historias si estas gustan, y afinar jugando los costos y las recompensas.
 
 ---
@@ -613,7 +618,7 @@ El catálogo completo está en **Tecnologias_v0.2.xlsx** (hojas *Reglas*, *Tecno
 - ✅ Existe la idea de almacenes (+capacidad sobre el almacenamiento base, 🆕 10 por punto de tamaño) y la posibilidad de que las tribus tengan edificios que se destruyen al ser invadidas.
 - ✅ **Cuántos edificios puede tener una zona:** **1 por cada 3 de tamaño**. Con tamaño 4 (la capital al inicio) puede tener 1; con tamaño 9, 3 edificios.
 - ✅ **Operar un edificio requiere trabajadores** en él. El tipo de edificio dice qué unidades necesita: por regla general, **edificios civiles → unidades civiles** y **edificios militares → unidades militares**.
-- ✅ Por defecto, **2 personas por edificio**. La tecnología puede mejorar la **producción** del edificio y **cuántas personas** pueden trabajar ahí.
+- ✅ 🆕 **Puestos de trabajo por nivel (27/10/2026, decidido por Alejandro):** cada edificio tiene **2 puestos por nivel** (nivel 1 = 2, nivel 2 = 4, nivel 3 = 6, nivel 4 = 8, nivel 5 = 10); *Andamios* y *Grúas* suman 1 cada una. ~~Antes: 2 personas por edificio sin importar el nivel.~~ La tecnología sigue pudiendo mejorar la **producción** del edificio.
 - ✅ Los trabajadores **siguen generando** mientras usan el edificio: el edificio es un lugar donde producen **mejor**, no una tarea que reemplaza su trabajo.
 - ✅ **Conquista de una zona controlada por otro jugador:**
   - El tamaño de la zona se reduce a **3**.
@@ -758,7 +763,7 @@ Es la misma idea que los científicos automáticos (sección 14.0), aplicada a l
 - Militar (2 capitales): con 2 jugadores equivale a conquistar la capital rival y conservar la propia. Con 3 o 4 jugadores sigue siendo 2, así que pesa menos cuanto más jugadores haya.
 - 💡 Para escalar con el número de jugadores N, la Militar podría ser "la mitad de las capitales, redondeando hacia arriba, más una" (2, 2 y 3 capitales para N = 2, 3 y 4). Decidir después de simular.
 - Económica (75 de población): son unos 71 crecimientos desde las 4 personas iniciales. Como el costo sube con el tamaño de cada zona (10, 15, 21, 28, 36, 45…), repartir el crecimiento en muchas zonas sale mucho más barato que concentrarlo. Un cálculo muy aproximado, con 12 zonas creciendo unas 6 veces cada una desde tamaño 3, da del orden de 2000 de comida solo en crecimiento. Sigue siendo exigente; la simulación dirá.
-- Desarrollo (20 edificios): cada zona permite 1 edificio por cada 3 de tamaño y cada edificio necesita 2 trabajadores, así que hacen falta unos 40 trabajadores y varias zonas pobladas. Es alcanzable expandiéndose, sin necesidad de zonas enormes.
+- Desarrollo (20 edificios): cada zona permite 1 edificio por cada 3 de tamaño y cada edificio necesita 2 trabajadores por nivel (🆕 27/10: antes eran 2 fijos), así que hacen falta muchos trabajadores y varias zonas pobladas. Es alcanzable expandiéndose, sin necesidad de zonas enormes.
 - 💡 Con 7 condiciones y 2 requeridas hay 21 combinaciones. Hay caminos agresivos (Militar + Territorial), pacíficos (Comercial + Tecnología, Desarrollo + Económica) y mixtos (Maravillas + Militar, por ejemplo). Registrar en la simulación **cuál combinación gana más a menudo** para detectar caminos demasiado fáciles.
 
 ### 16.2 Pendientes de las condiciones
@@ -898,7 +903,7 @@ Es la misma idea que los científicos automáticos (sección 14.0), aplicada a l
 41. ✅ 🆕 **Zonas peligrosas (13.3):** hechas (solo tropas, segunda en mapas de 2, bono +8/+6 que crece 10 % por paso hasta +100 % mientras mantengas la presencia). ❓ Afinar el bono jugando: con la racha completa se duplica, y mover comida cuesta oro y una tropa come 2.
 42. ✅ 🆕 **Subasta (13.3):** hecha en la v0.18 (catálogo de 5, niveles bronce/plata/oro, pago con 4 monedas, anuncio 2 pasos antes). ❓ Afinar jugando los montos de cada nivel y si 20 pasos entre subastas es buen ritmo.
 43. ✅ 🆕 **Tribus amigas (13.3 y 12):** hechas en la v0.17 (pedidos por oficio, relación 0 a 3, precio de anexión igual, guerra de 5 rondas). ❓ Confirmar jugando que cumplir 3 pedidos (unos 15 pasos) no resulte demasiado lento.
-44. ✅ 🆕 **Historias (13.3):** hechas en la v0.20 (3 historias × 4 capítulos, finales según el camino). ❓ Probarlas jugando: ¿se sienten con peso las decisiones? ¿Hace falta una cuarta historia?
+44. ✅ 🆕 **Historias (13.3):** hechas en la v0.20 (3 historias × 4 capítulos, finales según el camino) y 🆕 ampliadas el 27/10/2026 a **20 historias** × 4 capítulos con sus ramas (pedido de Alejandro; catálogo en `docs/historias.md`). ❓ Probarlas jugando: ¿se sienten con peso las decisiones? 💡 Las 17 nuevas rinden un 10 a 20 % más que las originales por unidad de costo (mediana 2,5 contra 2,2 en un puntaje aproximado): vigilar si se sienten demasiado generosas.
 45. ❓ 🆕 **Rasgos de las personas (5.4):** ✅ fases A y B hechas. Falta la fase C (Salud y Fuerza en combate), confirmar jugando las probabilidades y el ±25 %, y mostrar los rasgos en el mapa y el resumen de la zona.
 
 ---
@@ -1025,7 +1030,7 @@ Es la misma idea que los científicos automáticos (sección 14.0), aplicada a l
 
 - **Zonas peligrosas** (antes villas francas): solo cuentan las tropas, bono +8 / +6 que crece un 10 % por paso hasta el doble mientras mantengas la presencia, y los mapas de 2 jugadores tienen 2. Los bots mandan soldados (ya no civiles).
 - **Elegir entre dos:** 6 parejas, uno de cada tres encuentros; los bots eligen una opción que puedan pagar.
-- **Tribus:** pedidos cada 5 pasos, relación 0 a 3, anexar solo con 3, y guerra (5 rondas) si las atacas. Los pedidos vencidos caducan sin castigo (ya no hay invasión por tributo).
+- **Tribus:** pedidos cada 8 pasos (descanso de 12 tras cumplir uno), relación 0 a 3, anexar solo con 3, y guerra (5 rondas) si las atacas. Los pedidos vencidos caducan y bajan la relación 1; con −3 la tribu ataca.
 - **Pruebas:** 10 casos nuevos.
 
 ### 23.10 Subasta (🆕 27/10/2026, v0.18)
@@ -1036,7 +1041,29 @@ Es la misma idea que los científicos automáticos (sección 14.0), aplicada a l
 
 ### 23.11 Historias (🆕 27/10/2026, v0.20)
 
-- Tres historias de 4 capítulos con camino y final según lo que elijas; salen por el mismo sitio que los encuentros (con 2 o 3 opciones y «dejarlo pasar»), y en la pestaña Imperio se ve en qué capítulo vas.
+- 20 historias de 4 capítulos con camino y final según lo que elijas (te toca una al azar por partida); salen por el mismo sitio que los encuentros (con 2 o 3 opciones y «dejarlo pasar»), y en la pestaña Imperio se ve en qué capítulo vas.
 - Con bots: en 24 partidas de 70 pasos hubo 285 capítulos y 70 de 72 historias terminadas, sin errores.
 - 9 casos de prueba nuevos.
 
+---
+
+## 24. 🆕 Cambios del 27 de octubre de 2026 (pedidos por Alejandro)
+
+Todo se aplicó a pedido de Alejandro. Los **valores** marcados 💡 son estimaciones mías para confirmar jugando. Los números están en `js/config/reglas.js`.
+
+- ✅ **Costo de crecer (8):** hasta el tamaño *n* cuesta **n × n** (3.º = 9, 4.º = 16, 10.º = 100). Sigue la mitad de costo durante la fundación (hasta el paso 12). *Efecto medido: la población media de los bots a los 60 pasos baja de 13,5 a 10,5 (−20 %).*
+- ✅ **Puestos de trabajo por edificio (15):** **2 por nivel** (+1 con *Andamios* y +1 con *Grúas*). Sube mucho el rendimiento de los edificios de nivel alto (mejorar un Molino de nivel 1 a 2 da +6 de comida en vez de +2).
+- ✅ regla / 💡 valores **Recursos de plata y oro (6.3):**
+  - **Plata 🥈:** el 90 % de las zonas (todas las capitales) tiene un depósito, del recurso típico de su terreno. Efecto normal. Rinde **+1 por paso y sube +1 cada 5 pasos hasta +2**.
+  - **Oro 🥇:** 1 de cada 3 zonas (nunca las capitales) tiene además un depósito de **otro** recurso, con **efecto doble** (por ejemplo, Piedra −50 % en vez de −25 %; Sal +4 en vez de +2). Rinde **+2 y sube hasta +5**.
+  - Las zonas peligrosas no tienen depósitos. El reparto usa su propio azar: no cambia nada más de la partida.
+  - ~~Antes: un depósito por zona en pocas zonas; rendía +1 y subía hasta +4.~~
+- ✅ **Ofertas entre jugadores (11):** en la pestaña **Imperio → Rivales**, «🤝 Ofrecer» permite dar un recurso (comida, producción, oro o ciencia) y pedir otro. Lo ofrecido queda **en reserva**; al otro le llega como un **encuentro** en ventana emergente («Oferta de …»). Si acepta, se hace el intercambio; si rechaza, no responde o pasan **4 pasos**, se devuelve lo reservado. Máximo **2 ofertas** esperando por jugador. 💡 Los bots aceptan si lo que reciben vale al menos el 90 % de lo que dan (oro y ciencia 1, comida 0,6, producción 0,8), con 85 % de probabilidad. Los bots todavía no hacen ofertas.
+- ✅ **Interfaz:** los encuentros salen en una **ventana emergente** (la decisión queda en la pestaña Órdenes; «Decidir después» deja una pastilla); las pestañas principales ya no se aplastan; la pestaña **Victoria** muestra el avance de los **vecinos** (los rivales más cercanos) con aviso «cerca de ganar»; **escenas** de fin de paso (la cámara visita hasta 3 momentos: batallas, conquistas, obras y maravillas, tus tecnologías); los **recursos** se ven con insignias (plata/oro), ficha al pasar el mouse y tarjeta explicativa en las zonas que exploras.
+- ✅ **Pueblo vivo:** cada persona del mapa tiene su propia rutina según oficio (cultivar, martillar, leer, atender el puesto, charlar, entrenar, patrullar…); el hambre y las heridas se notan. Solo apariencia.
+- ✅ **Rasgos:** insignias con puntitos de nivel, nombre y apodo por persona (💡 propuesta mía, solo visual), ficha emergente y medallas en el resumen de la zona.
+- ✅ **Moverse y enviar sin listas desplegables:** tarjetas de zonas vecinas, selectores ＋/－ por oficio, interruptor Paz/Ataque, y una sola tarjeta de envío («una vez» / «🔁 cada paso»).
+- ❓ **Por definir:** que los bots hagan ofertas; carretas animadas en los envíos; rebalancear el crecimiento si la economía queda lenta; confirmar los valores 💡 de plata y oro jugando.
+- ✅ 🆕 **Eventos con duración y tribus menos insistentes (sección 13 y 12):** ver arriba. Se corrigió además un texto que decía «si nadie paga, invade», cuando la regla es que no pasa nada; el evento «Exigencia de tributo» pasó a llamarse «Pedido de tribu».
+- ✅ 🆕 **Años con parte cierta y variable, y tribus con relación −3 a +3 (sección 13 y 12):** el primer año es de fundación; desde el 2.º, cada año trae Prosperidad o Escasez (±15 %) y un evento del mismo signo, y las dos partes duran 12 pasos. Las tribus piden cada 8 pasos, descansan 12 tras cumplir uno, la relación baja 1 por cada pedido ignorado y en −3 atacan. Se corrigió un texto que decía «si nadie paga, invade» cuando todavía no era así.
+- ✅ 🆕 **Historias (13.3), ampliación:** 20 historias, varias por partida con descanso entre ellas (ver arriba). ❓ Probar jugando si 2 o 3 historias por partida se sienten bien o si los capítulos llegan demasiado seguidos con los encuentros normales.

@@ -11,8 +11,8 @@
   <header class="top">
     <h1>Los Pasos del Imperio</h1>
     <div class="turnbar" aria-label="Turno">
-      <span class="tstep" title="Paso actual y tu tiempo de decisión">Paso <b id="stepNo">1</b> <span class="hint" id="clock">0 s</span></span>
-      <span class="chips" id="chips"></span>
+      <span class="tstep" title="Paso actual y tu tiempo de decisión">Paso <b id="stepNo">1</b> <span class="hint" id="clock">0 s</span> <span class="hint" id="calNote"></span></span>
+      <span class="chips" id="chips"></span><span class="evchips" id="evChips" aria-live="polite"></span>
       <span class="resline" id="resLine"><span title="Oro">🪙 <b id="rGold">0</b></span><span title="Ciencia">🔬 <b id="rTech">0</b></span><span title="Zonas">🏞 <b id="rZones">0</b></span><span title="Población">👥 <b id="rPop">0</b></span></span>
       <button class="btn primary" id="readyBtn" title="El paso avanza cuando todos están listos (Enter)">¡Listo!</button>
     </div>
@@ -145,6 +145,8 @@
 
 <script src="js/datos/mapas.js"></script>
 <script src="js/datos/tecnologias.js"></script>
+<script src="js/datos/historias_extra.js"></script>
+<script src="js/datos/encuentros_extra.js"></script>
 <script src="js/config/reglas.js"></script>
 <script src="js/config/efectos_tecnologias.js"></script>
 <script src="js/motor/estado.js"></script>

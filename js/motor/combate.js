@@ -114,7 +114,9 @@ function fightZone(g,z,facs,att,L){
 }
 /** @param {Partida} g */
 function tributeWave(g,arrivals,L){
-  g.tributes=g.tributes.filter(t=>t.due>=g.step);   // los pedidos vencidos caducan: rechazarlos no tiene castigo
+  // Los pedidos vencidos caducan; a quien no los cumplió, la tribu lo toma a mal: la relación baja 1 (y en insatisfacción 3 ataca).
+  { const vencidos=g.tributes.filter(t=>t.due<g.step); g.tributes=g.tributes.filter(t=>t.due>=g.step);
+    vencidos.forEach(t=>{ const tz=g.zones[t.zone]; if(tz.owner!==TRIBE) return; t.targets.forEach(f=>{ if(!t.paid[f]&&isPl(f)&&!g.F[f].out) tribeIgnored(g,tz,f,L); }); }); }
   g.wars=(g.wars||[]).filter(w=>{
     const tz=g.zones[w.tribe]; if(tz.owner!==TRIBE){ L('La guerra con la tribu de '+zname(tz)+' terminó.'); return false; }
     if(g.F[w.f].out) return false;
@@ -123,6 +125,21 @@ function tributeWave(g,arrivals,L){
     if(cand.length&&us.length){ us.forEach(u=>{ tz.units[TRIBE].splice(tz.units[TRIBE].indexOf(u),1); u.mv=1; }); arrivals.push({f:TRIBE,to:cand[0].id,units:us,st:'ataque'}); L('La tribu de '+zname(tz)+' ataca '+zname(cand[0])+' con todos los suyos.'); }
     w.left--; if(w.left<=0){ L('La guerra con la tribu de '+zname(tz)+' terminó.'); return false; } return true;
   });
+}
+// Ignorar un pedido baja la relación 1 (hasta −3). En insatisfacción 3 la tribu declara la guerra.
+/** @param {Partida} g */
+function tribeIgnored(g,tz,f,L){
+  tz.rel=tz.rel||{}; const r=Math.max(TRIBE_REL_MIN,(tz.rel[f]||0)-1); tz.rel[f]=r;
+  if(r<=TRIBE_REL_MIN){ tribeAttacks(g,tz,f,L); return; }
+  L('La tribu de '+zname(tz)+' se siente ignorada por '+PLN[f].name+': relación '+r+' ('+TRIBE_REL_N[r+3]+')'+(r<0?'; insatisfacción '+(-r)+' de '+(-TRIBE_REL_MIN)+' (con '+(-TRIBE_REL_MIN)+' ataca)':'')+'.');
+}
+/** @param {Partida} g */
+function tribeAttacks(g,tz,f,L){
+  g.wars=g.wars||[]; if(g.wars.some(w=>w.tribe===tz.id&&w.f===f)) return;
+  g.wars.push({tribe:tz.id,f,left:TRIBE_WAR_STEPS}); tz.rel=tz.rel||{}; tz.rel[f]=0;
+  (tz.units[TRIBE]||[]).forEach(u=>{ if(u.t!=='ber'){ u.t='ber'; u.hp=mhp(g,TRIBE,'ber',tz); u.str=2; u.w=0; } });
+  g.tributes=g.tributes.filter(t=>!(t.zone===tz.id&&t.targets.length===1&&t.targets[0]===f));
+  L('¡La tribu de '+zname(tz)+', harta de que '+PLN[f].name+' la ignore, le declara la guerra! Atacará con todos los suyos durante '+TRIBE_WAR_STEPS+' pasos.'); g.fx.push({k:'tribewar',zone:tz.id,f});
 }
 // Atacar a una tribu es entrar en guerra con ella: sus civiles se vuelven guerreros (berserkers) y durante unos pasos
 // atacan con todos los suyos a tus zonas más cercanas. La relación con esa tribu vuelve a 0.

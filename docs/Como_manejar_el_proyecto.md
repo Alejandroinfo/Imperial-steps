@@ -8,17 +8,15 @@ Guía corta de trabajo para *Los Pasos del Imperio*. Las partes entre corchetes 
 
 ## 1. Monta el Proyecto una sola vez
 
-En Claude, crea un Proyecto llamado **Los Pasos del Imperio** y sube como conocimiento del proyecto:
+En Claude, crea un Proyecto llamado **Los Pasos del Imperio** y sube como conocimiento del proyecto **solo** los 3 archivos de `docs/CONTEXTO_PROYECTO/`:
 
 | Archivo | Para qué |
 |---|---|
-| `docs/TRASPASO_Los_Pasos_del_Imperio.md` | El resumen de todo: idea, reglas, decisiones técnicas, qué falta |
-| `docs/Reglas_v0.1.md` | La fuente de verdad de las reglas |
-| `Tecnologias_v0.2.xlsx` | Las 203 tecnologías |
-| `dist/Los_Pasos_del_Imperio.html` | El juego actual en un solo archivo (se genera con `python herramientas/empaquetar.py`) |
-| `atlas_mapas.html` | El atlas de los 12 mapas |
+| `1_TRASPASO_Los_Pasos_del_Imperio.md` | El resumen de todo: idea, decisiones, qué falta, dónde está cada cosa |
+| `2_Reglas_v0.1.md` | La fuente de verdad de las reglas |
+| `3_Como_manejar_el_proyecto.md` | Este documento |
 
-El código completo está en **github.com/Alejandroinfo/Imperial-steps**.
+El código y los datos (incluidas las tecnologías) los lee Claude desde GitHub con el conector; no los subas como archivos.
 
 En las **instrucciones del proyecto** pega esto:
 
@@ -71,7 +69,7 @@ Ese resumen de 5 líneas te sirve para comprobar de un vistazo que no se perdió
 **Cerrar la sesión (hazlo siempre)**
 > Actualiza `Reglas_v0.1.md` y `TRASPASO_Los_Pasos_del_Imperio.md` con lo que decidimos hoy: marca lo nuevo, cierra los pendientes resueltos y agrega los nuevos. Dime en una lista corta qué quedó sin resolver.
 
-Después **reemplaza los archivos** en el conocimiento del proyecto por los actualizados. Es el paso que más se olvida y el que más contexto salva.
+Después corre `python herramientas/generar_contexto.py` y **reemplaza los 3 archivos** en el conocimiento del proyecto por los de `docs/CONTEXTO_PROYECTO/`. Es el paso que más se olvida y el que más contexto salva.
 
 ---
 

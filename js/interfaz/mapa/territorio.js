@@ -290,7 +290,7 @@ function nameplate(z,i){
     if(z.pauseBuild&&z.proj.length) s+=`<g transform="translate(${f1(bx)},-27)"><circle r="11" fill="#2A1B16" stroke="#7FB2E5" stroke-width="2.2"/><path d="M-3.4,-5 V5 M3.4,-5 V5" stroke="#7FB2E5" stroke-width="3" stroke-linecap="round"/><title>Obras en pausa: la producción se guarda</title></g>`; }
   const tr=(G.tributes||[]).find(t=>t.zone===z.id&&!t.paid[ME]&&t.targets.includes(ME));
   const en=G.F[ME].enc; if(en&&en.zone===z.id&&!tr) s+=`<g transform="translate(0,-44)"><rect x="-86" y="-14" width="172" height="26" rx="13" fill="${en.k==='amenaza'?'#C8452F':'#C9A24A'}" stroke="#fff" stroke-width="2.5" class="blink"/><text class="zt" x="0" y="4" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">${en.k==='amenaza'?'⚠':'📜'} Encuentro: decide en el panel</text></g>`;
-  if(tr) s+=`<g transform="translate(0,-44)"><rect x="-92" y="-14" width="184" height="26" rx="13" fill="#C8452F" stroke="#fff" stroke-width="2.5" class="blink"/><text class="zt" x="0" y="4" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">⚠ Exige ${tr.amount} de ${TSPEC_N[tr.res]}</text></g>`;
+  if(tr) s+=`<g transform="translate(0,-44)"><rect x="-104" y="-14" width="208" height="26" rx="13" fill="${tr.due-G.step+1<=2?'#C8452F':'#8A5A3A'}" stroke="#fff" stroke-width="2.5"/><text class="zt" x="0" y="4" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">🤝 Pide ${tr.amount} de ${TSPEC_N[tr.res]} · quedan ${tr.due-G.step+1}</text></g>`;
   return s+`</g>`;
 }
 function tribeVisibleFor(z){ return z.adj.some(a=>(G.zones[a].units[ME]||[]).length>0)||(z.units[ME]||[]).length>0; }

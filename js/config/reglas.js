@@ -82,11 +82,17 @@ const SUPPLY_RANGE = 2;            // zonas de alcance (la tecnología «Suminis
 const HUNGRY_FIGHT = 0.5;          // multiplicador de fuerza de una tropa hambrienta
 // Tribus (13.3 y 12): cada TRIBE_REQ_EVERY pasos piden algo a quien las toca; cumplirlo sube la relación (0 a 3) y con 3 se puede anexar.
 // Si las atacas entran en guerra: sus civiles se vuelven guerreros y te atacan durante TRIBE_WAR_STEPS pasos o hasta que las conquistes.
-const TRIBE_REQ_EVERY = 5, TRIBE_REL_MAX = 3, TRIBE_WAR_STEPS = 5;
+const TRIBE_REQ_EVERY = 8, TRIBE_REL_MAX = 3, TRIBE_WAR_STEPS = 5;
+// Después de cumplir un pedido, esa tribu no te vuelve a pedir nada durante este tiempo (para que no sienta que acabas de dar).
+const TRIBE_REQ_COOLDOWN = 12;
 const TRIBE_REQS = {agr:[['food',6],['food',10],['gold',6]], ing:[['prod',6],['prod',10],['gold',6]], com:[['gold',6],['gold',10],['food',8]], cie:[['tech',6],['tech',10],['gold',6]]};
-const TRIBE_REL_N = ['desconfianza','trato','amistad','alianza'];
-// Historias de 4 capítulos (13.3): una por jugador y por partida; el primer capítulo llega hacia el paso 10 y los demás cada 8 pasos.
-const STORY_FIRST = 10, STORY_GAP = 8;
+// Relación con cada tribu: de −3 (insatisfacción 3: ataca) a +3 (alianza: se puede anexar). Cumplir un pedido sube 1; ignorarlo baja 1.
+const TRIBE_REL_MIN = -3;
+const TRIBE_REL_N = ['furiosa','enojada','molesta','desconfianza','trato','amistad','alianza'];   // índice = relación + 3
+// Historias de 4 capítulos (13.3): el primer capítulo de la primera llega hacia el paso 10 y los demás cada 8 pasos.
+// Al terminar una, pasan de STORY_BREAK_MIN a STORY_BREAK_MAX pasos de descanso y empieza otra (distinta, nunca se repiten en la partida),
+// hasta STORY_MAX por jugador. Con estos tiempos, en una partida de 60 a 100 pasos suelen vivirse 2 o 3; en una muy larga, 3 o 4.
+const STORY_FIRST = 10, STORY_GAP = 8, STORY_BREAK_MIN = 6, STORY_BREAK_MAX = 10, STORY_MAX = 4;
 // Subasta a sobre cerrado (13.3): cada AUCTION_EVERY pasos, anunciada AUCTION_NOTICE pasos antes. Se sabe la moneda, la categoría y el nivel
 // (bronce, plata u oro) de cada objeto, pero no los detalles. Se paga con oro, ciencia, o comida y producción de todo el imperio.
 const AUCTION_EVERY = 20, AUCTION_NOTICE = 2, AUCTION_RES_STEPS = 40;
@@ -193,21 +199,28 @@ const LOCAL_BY_TERR = {mon:'mitril',col:'piedra',pra:'caballos',bos:'brea',rio:'
 const GLOBAL_BY_TERR = {mon:'hierro',col:'hierro',pra:'hierbas',bos:'madera',rio:'sal',lla:'ruinas'};
 // eventos
 const EVENTS = [
-  {id:'cosecha',n:'Buena cosecha',k:'+',terr:['pra','lla'],d:'+2 de comida por agricultor y poblador'},
-  {id:'veta',n:'Veta rica',k:'+',terr:['mon','col'],d:'+2 de producción por ingeniero y poblador'},
-  {id:'feria',n:'Feria',k:'+',terr:['rio','bos'],d:'+2 de oro por comerciante'},
-  {id:'inspira',n:'Inspiración',k:'+',terr:['lla','col'],d:'+2 de tecnología por científico'},
-  {id:'caminos',n:'Caminos despejados',k:'+',terr:['all'],d:'La logística cuesta la mitad este paso'},
-  {id:'fertil',n:'Año fértil',k:'+',terr:['all'],d:'Crecer cuesta la mitad este paso'},
-  {id:'sequia',n:'Sequía',k:'-',terr:['pra','lla'],d:'−1 de comida por agricultor y poblador'},
-  {id:'plaga',n:'Plaga',k:'-',terr:['bos','rio'],d:'+1 de consumo de comida por persona'},
-  {id:'derrumbe',n:'Derrumbe',k:'-',terr:['mon','col'],d:'−1 de producción por ingeniero y poblador'},
-  {id:'inunda',n:'Inundación',k:'-',terr:['rio'],d:'Los almacenes pierden la mitad de sus reservas'},
-  {id:'tormenta',n:'Tormenta',k:'-',terr:['all'],d:'La logística cuesta el doble este paso'},
+  {id:'cosecha',n:'Buena cosecha',k:'+',terr:['pra','lla'],d:'+0,5 de comida por agricultor y poblador'},
+  {id:'veta',n:'Veta rica',k:'+',terr:['mon','col'],d:'+0,5 de producción por ingeniero y poblador'},
+  {id:'feria',n:'Feria',k:'+',terr:['rio','bos'],d:'+0,5 de oro por comerciante'},
+  {id:'inspira',n:'Inspiración',k:'+',terr:['lla','col'],d:'+0,5 de tecnología por científico'},
+  {id:'caminos',n:'Caminos despejados',k:'+',terr:['all'],d:'La logística cuesta la mitad'},
+  {id:'fertil',n:'Año fértil',k:'+',terr:['all'],d:'Crecer cuesta un 30 % menos'},
+  {id:'sequia',n:'Sequía',k:'-',terr:['pra','lla'],d:'−0,5 de comida por agricultor y poblador'},
+  {id:'plaga',n:'Plaga',k:'-',terr:['bos','rio'],d:'+25 % de consumo de comida'},
+  {id:'derrumbe',n:'Derrumbe',k:'-',terr:['mon','col'],d:'−0,5 de producción por ingeniero y poblador'},
+  {id:'inunda',n:'Inundación',k:'-',terr:['rio'],d:'Los almacenes pierden la mitad de sus reservas',inst:1},
+  {id:'tormenta',n:'Tormenta',k:'-',terr:['all'],d:'La logística cuesta un 50 % más'},
   {id:'fiebre',n:'Fiebre',k:'-',terr:['all'],d:'Los heridos tardan una ronda más en curarse'},
+  {id:'prosper',n:'Prosperidad',k:'+',terr:['all'],year:1,d:'+15 % de comida, producción, oro y tecnología',year:1},
+  {id:'escasez',n:'Escasez',k:'-',terr:['all'],d:'−15 % de comida y de producción',year:1},
   {id:'inquietud',n:'Inquietud tribal',k:'t',terr:[],d:'Una tribu crece +1 de población'},
-  {id:'tributo',n:'Exigencia de tributo',k:'t',terr:[],d:'Una tribu exige tributo a sus vecinos'},
+  {id:'tributo',n:'Pedido de tribu',k:'t',terr:[],d:'Una tribu pide algo a sus vecinos (cumplirlo mejora la relación; no hacerlo no tiene castigo)'},
   {id:'exodo',n:'Éxodo tribal',k:'t',terr:[],d:'Una tribu funda una nueva tribu'},
   {id:'furia',n:'Furia tribal',k:'t',terr:[],d:'Una tribu se vuelve berserker'}
 ];
+// Calendario: 1 paso = 1 mes, 12 pasos = 1 año. El primer año (pasos 1 a 12) es de fundación: sin eventos.
+// Desde el año EV_FIRST_YEAR, cada año tiene dos partes que duran los 12 pasos: una CIERTA (Prosperidad o Escasez, +/- EV_BASE_PCT de lo que se produce)
+// y una VARIABLE, un evento de la lista del mismo signo (cosecha, veta, sequía…). Además hay «sucesos» de un solo paso (tribus, inundación).
+const YEAR_STEPS = 12, EV_FIRST_YEAR = 2, EV_BASE_PCT = 0.15, EV_FLOOD_CHANCE = 0.5, EV_FERTIL_FACTOR = 0.7, EV_TORMENTA_MULT = 1.5;
+const MONTH_N = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 const EVT = {}; EVENTS.forEach(e=>{ EVT[e.id]=e; });

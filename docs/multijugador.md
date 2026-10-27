@@ -45,7 +45,7 @@ Para jugar en línea, el juego tiene que abrirse desde una dirección web (`http
 - Hasta **4 jugadores** (son los mapas que hay). El plan gratuito de Realtime Database permite 100 conexiones a la vez, así que la red no es el límite.
 - Cada paso pesa unos 20 a 30 KB. El plan gratuito guarda 1 GB: alcanza para miles de partidas. De vez en cuando se pueden borrar salas viejas desde la consola (Realtime Database → Datos → `salas`).
 - Una sala sirve para **una partida**. Para jugar otra, se crea una sala nueva.
-- Cada pestaña es una persona distinta. Para probar sola, se pueden abrir dos pestañas o dos navegadores.
+- Cada pestaña es una persona distinta. Para probar solo, se pueden abrir dos pestañas o dos navegadores.
 
 ## Para quien programa
 

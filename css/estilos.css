@@ -23,7 +23,7 @@ header.top h1{font-size:20px} header.top small{display:block;font-family:system-
 .btn:hover{border-color:var(--ink)}
 .btn.primary{background:var(--btn);color:var(--btn-ink);border-color:var(--btn);font-weight:700}
 .btn[disabled]{opacity:.45;cursor:not-allowed}
-main{display:grid;grid-template-columns:minmax(0,1fr) 430px;gap:12px;align-items:start}
+main{display:grid;grid-template-columns:minmax(0,1fr) clamp(320px,32vw,430px);gap:12px;align-items:start}
 .stage{min-width:0}
 .frame{border:10px solid #2A1B16;border-radius:6px;background:#2A1B16;box-shadow:0 4px 18px rgba(0,0,0,.35)}
 .panel{background:var(--panel);border:1px solid var(--rule);border-radius:10px;padding:10px;position:sticky;top:6px;max-height:calc(100vh - 12px);display:flex;flex-direction:column;gap:8px;overflow:hidden}
@@ -344,4 +344,4 @@ i.tchip{display:inline-block;font-style:normal;padding:1px 7px}
 .hl{font-size:13px;padding:1px 0 1px 6px;border-left:3px solid transparent}
 .hl.guerra{border-left-color:#C8452F}.hl.tec{border-left-color:#5B7FA6}.hl.obra{border-left-color:#2F7F4F}.hl.dip{border-left-color:#C9A24A}.hl.ev{border-left-color:#8A5A3A;font-weight:600}
 @media (max-width:1100px){ .wikiwrap{grid-template-columns:1fr} .tmwrap{grid-template-columns:1fr} }
-@media (max-width:1100px){ main{grid-template-columns:1fr} .panel{position:static;max-height:none} .gal{grid-template-columns:repeat(3,1fr)} }
+@media (max-width:760px){ main{grid-template-columns:1fr} .panel{position:static;max-height:none} .gal{grid-template-columns:repeat(3,1fr)} }

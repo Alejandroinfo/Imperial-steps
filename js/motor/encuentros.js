@@ -2,7 +2,7 @@
 'use strict';
 // Encuentros: llegan sin aviso a una zona del jugador y se deciden en ese mismo paso.
 // Son siempre oportunidades (ofertas o apuestas): si las aprovechas ganas algo y si las rechazas no pasa nada.
-// Decisión de Pao (26/10/2026): nada de amenazas inesperadas, porque no hay forma de prepararse para ellas.
+// Decisión de Alejandro (26/10/2026): nada de amenazas inesperadas, porque no hay forma de prepararse para ellas.
 // El motor todavía sabe resolver un «rechazo con consecuencias» (refuse), por si sirve para las tribus.
 // Cada tipo tiene un costo (lo que piden) y una recompensa (lo que dan). Los montos crecen con la partida: más adelante piden más y dan más.
 //

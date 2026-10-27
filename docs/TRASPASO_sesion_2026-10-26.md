@@ -18,7 +18,7 @@
 
 Mensaje inicial sugerido para el chat nuevo:
 
-> Estoy desarrollando *Los Pasos del Imperio*. En el conocimiento del proyecto está el traspaso de la última sesión, el traspaso general, las reglas y el prototipo. Léelos antes de responder. Hoy quiero trabajar en **[tema]**. No cambies nada marcado como ✅ decidido sin avisarme.
+> Soy Alejandro y estoy desarrollando *Los Pasos del Imperio*. En el conocimiento del proyecto está el traspaso de la última sesión, el traspaso general, las reglas y el prototipo. Léelos antes de responder. Hoy quiero trabajar en **[tema]**. No cambies nada marcado como ✅ decidido sin avisarme.
 
 ---
 
@@ -26,7 +26,7 @@ Mensaje inicial sugerido para el chat nuevo:
 
 Sin cambios respecto de lo ya documentado: **juego de estrategia de territorios con planificación simultánea por pasos**, para jugar en línea con la familia (2 a 4 jugadores). Todos planean a la vez y, cuando todos presionan **¡Listo!**, el paso se resuelve. Se gana cumpliendo **2 de 7 condiciones al mismo tiempo**.
 
-🆕 **Lo que esta sesión agregó a la identidad del juego** (a partir de un comentario clave de Pao: *«no siento diversión, la agresividad es casi nula, no siento tensión»*):
+🆕 **Lo que esta sesión agregó a la identidad del juego** (a partir de un comentario clave de Alejandro: *«no siento diversión, la agresividad es casi nula, no siento tensión»*):
 
 - **La tensión es ahora el eje del diseño.** Tres sistemas nuevos existen solo para eso: fronteras con dilema del prisionero, encuentros inesperados y cadena de suministros.
 - **Lo repetitivo se automatiza; lo interesante se decide.** La comida se reparte sola, los científicos investigan solos, los envíos pueden ser recurrentes y los recién nacidos se especializan solos. El objetivo explícito es que cada paso tenga decisiones con peso, no mantenimiento.
@@ -36,7 +36,7 @@ Sin cambios respecto de lo ya documentado: **juego de estrategia de territorios 
 
 ## 2. Mecánicas decididas o cambiadas en esta sesión
 
-Todas están en las reglas con su sección. ✅ = decidido por Pao · 💡 = propuesta mía pendiente de confirmar jugando.
+Todas están en las reglas con su sección. ✅ = decidido por Alejandro · 💡 = propuesta mía pendiente de confirmar jugando.
 
 ### 2.1 Tensión y conflicto
 
@@ -45,7 +45,7 @@ Todas están en las reglas con su sección. ✅ = decidido por Pao · 💡 = pro
 | **Fronteras (tierra de nadie)** | Entre cada par de imperios vecinos se genera una zona que **nunca tiene dueño**. El camino que unía sus dos tribus ahora pasa por ella y se conecta con una zona libre de cada lado, así que los vecinos se tocan directamente y las tribus dejan de ser el colchón. | ✅ (4.2, 11) |
 | **Dilema del prisionero** | Quien tiene gente en la frontera no produce y come de su zona más cercana, pero gana oro: **+3 por paso a cada uno** si todos están en paz, **+4** si está solo. Si alguien ataca, ese paso nadie gana y el atacante tiene sorpresa. | ✅ regla / 💡 valores (11) |
 | **Cadena de suministros** | Dentro del territorio propio la comida circula lejos. **Fuera**, las tropas solo comen si hay un camino de **hasta 2 zonas** (3 con *Suministros de campaña*) hasta una zona propia con comida, **sin pasar por zonas enemigas**. Sin eso pasan hambre; con hambre pelean con **la mitad de los dados** y luego mueren. Una zona propia rodeada queda sitiada (solo sus reservas). | ✅ (8.0) |
-| **Encuentros** | Llegan **sin aviso** a una zona (de preferencia de frontera) cada 4 a 7 pasos desde el paso 4, y se deciden en ese mismo paso. 20 tipos con 43 variantes; los montos crecen con la partida. **Solo oportunidades:** ofertas y apuestas. Rechazar o no responder **no tiene consecuencias** (Pao descartó explícitamente las amenazas: «demasiado inesperado y random para estar preparado»). | ✅ (13.2) |
+| **Encuentros** | Llegan **sin aviso** a una zona (de preferencia de frontera) cada 4 a 7 pasos desde el paso 4, y se deciden en ese mismo paso. 20 tipos con 43 variantes; los montos crecen con la partida. **Solo oportunidades:** ofertas y apuestas. Rechazar o no responder **no tiene consecuencias** (Alejandro descartó explícitamente las amenazas: «demasiado inesperado y random para estar preparado»). | ✅ (13.2) |
 | **Recursos disputados** | Cada recurso estratégico **rinde más mientras más tiempo se controla**: +1 por paso al tomarlo y +1 más cada 5 pasos, hasta +4. Al cambiar de dueño, el contador vuelve a cero. | ✅ regla / 💡 valores (6.3) |
 | **Postura entre jugadores** | La postura **Paz / Alerta** es de un jugador hacia otro, **no de una zona**. En Alerta, las tropas atacan a las de ese jugador en cualquier zona donde coincidan. Reemplaza la «postura de zona» y cierra el pendiente de la «segunda ventana de decisión». | ✅ (2, 11) |
 | **Entrenar sin Cuartel** | Se puede entrenar en cualquier zona propia. El Cuartel conserva sus ventajas (sus militares no comen, movimiento extra, especializaciones). Motivo: el Cuartel frenaba el inicio y la agresividad. | ✅ (9) |
@@ -77,7 +77,7 @@ Todas están en las reglas con su sección. ✅ = decidido por Pao · 💡 = pro
 
 ## 3. Interfaz: lo que cambió en esta sesión
 
-Casi toda la interfaz se rehízo a partir del juego real de Pao. Lo principal:
+Casi toda la interfaz se rehízo a partir de las partidas de Alejandro contra los bots. Lo principal:
 
 - **Mapa como valle continuo.** Las zonas son parcelas que se tocan: **cerca baja** donde hay camino, **barranco con rocas** donde no se puede pasar, campo silvestre entre medio y bosque espeso alrededor. Antes eran islas sobre fondo marrón, que se sentía «un problema de redes, no un pueblo».
 - **Placa de zona:** nombre corto de una palabra (Adrianópolis, Saucedo, Brasca…), nivel de la zona (I, II, III), comida y producción con su tope, y pasos hasta el próximo poblador.
@@ -108,7 +108,7 @@ Casi toda la interfaz se rehízo a partir del juego real de Pao. Lo principal:
 
 ## 5. Comienzo guiado (tutorial)
 
-Decisión de Pao: **no un tutorial corto, sino una forma de empezar a jugar**. Son los primeros 20 pasos de una partida real (mapa Anillo, contra un bot, semilla fija 777) y al terminar la partida sigue normal, con encuentros.
+Decisión de Alejandro: **no un tutorial corto, sino una forma de empezar a jugar**. Son los primeros 20 pasos de una partida real (mapa Anillo, contra un bot, semilla fija 777) y al terminar la partida sigue normal, con encuentros.
 
 - Una tarjeta sobre el mapa presenta **un sistema por paso** y **resalta con brillo el botón exacto**. Los objetivos se cumplen al hacerlos; las etapas que dependen de la partida tienen «Saltar».
 - Recorrido: 1 oficios · 2 tecnología · 3 Molino y constructor · 4 frontera y victoria · 5 expansión y sugerencias · 6 eventos · 7 oficio al nacer · 8 primer encuentro (siempre refugiados) · 9 crecer o guardar · 10 Cuartel · 11 cola de investigación · 12 recursos · 13 tribus · 14 postura · 15 envíos automáticos · 16 soldados · 17 historial · 18 mejorar edificios · 19 combates · 20 despedida.
@@ -122,7 +122,7 @@ Decisión de Pao: **no un tutorial corto, sino una forma de empezar a jugar**. S
 ### 6.1 Motor y lenguaje
 
 - **Hoy:** aplicación web sin dependencias. HTML y **SVG** para dibujar, JavaScript puro para la lógica, cargado con `<script>` normales. Se abre con doble clic, sin servidor ni compilación.
-- 🆕 **Comparación de motores de dibujo** (se hizo una demo real con la misma escena en SVG, PixiJS y Phaser, con medidor de FPS y prueba de esfuerzo). **Decisión de Pao: seguir con SVG**, porque funcionó bien en su computadora y PixiJS se ve prácticamente igual. **PixiJS queda como la opción elegida** si algún día el mapa necesita más fluidez: se cambiaría solo el dibujo del mapa y los paneles HTML quedarían intactos. Phaser solo tendría sentido si se rehace todo el cliente.
+- 🆕 **Comparación de motores de dibujo** (se hizo una demo real con la misma escena en SVG, PixiJS y Phaser, con medidor de FPS y prueba de esfuerzo). **Decisión de Alejandro: seguir con SVG**, porque funcionó bien en su computadora y PixiJS se ve prácticamente igual. **PixiJS queda como la opción elegida** si algún día el mapa necesita más fluidez: se cambiaría solo el dibujo del mapa y los paneles HTML quedarían intactos. Phaser solo tendría sentido si se rehace todo el cliente.
 - **Futuro (sin cambios):** motor en **Python** con pytest y simulador de balance; multijugador con **FastAPI + WebSockets**. Para el primer playtest se propuso además una alternativa rápida: conexión directa entre navegadores (WebRTC con PeerJS), que funcionaría desde GitHub Pages sin servidor propio.
 
 ### 6.2 Arquitectura por capas
@@ -206,9 +206,9 @@ Los informes quedan en `docs/balance_economia.md` y `docs/balance_tecnologias.md
 ## 8. Qué falta (por prioridad)
 
 ### Alta
-1. **Playtest con personas.** Todo lo medido es con bots, que juegan distinto. Pao quiere **multijugador en tiempo real, cada uno en su computadora, en videollamada**; no le molesta que la partida dure muchos pasos.
+1. **Playtest con personas.** Todo lo medido es con bots, que juegan distinto. Alejandro quiere **multijugador en tiempo real, cada uno en su computadora, en videollamada**; no le molesta que la partida dure muchos pasos.
 2. **Multijugador.** Propuesta pendiente: WebRTC con PeerJS (uno crea la sala, los demás entran con un código, funciona desde GitHub Pages). Alternativa de fondo: FastAPI + WebSockets.
-3. **Tribus como amenaza latente y tributo negociado** (lo que sigue en el orden que eligió Pao): barra de inquietud visible que sube con el tiempo y con tropas cerca, precio de anexión más alto, y tributo con ofertas secretas donde la tribu ataca al que dio menos.
+3. **Tribus como amenaza latente y tributo negociado** (lo que sigue en el orden que eligió Alejandro): barra de inquietud visible que sube con el tiempo y con tropas cerca, precio de anexión más alto, y tributo con ofertas secretas donde la tribu ataca al que dio menos.
 4. **Confirmar jugando las propuestas 💡** de esta sesión: bonos de frontera, alcance del suministro, etapa de fundación, valores del equipo, costo del segundo edificio.
 5. **Ritmo y balance:** la población de los bots se estanca cerca de 10 y casi nadie gana antes del paso 60 (pendientes 28 y 32).
 6. **19 de 203 tecnologías** siguen sin efecto simulado (lista en la sección 23.2 de las reglas).
@@ -248,7 +248,7 @@ Los informes quedan en `docs/balance_economia.md` y `docs/balance_tecnologias.md
 ### Diseño
 1. **`docs/Reglas_v0.1.md` es la fuente de verdad.** Toda decisión se escribe ahí con ✅ decidido, 💡 propuesta, ❓ por definir y 🆕 nuevo de la sesión; al cerrar un pendiente, mencionarlo por su número.
 2. **No cambiar nada marcado ✅ sin avisar antes.**
-3. **Distinguir siempre** lo decidido por Pao de lo propuesto por mí, y decirlo cuando una cifra es una estimación.
+3. **Distinguir siempre** lo decidido por Alejandro de lo propuesto por mí, y decirlo cuando una cifra es una estimación.
 4. **La vara es la sencillez con tensión:** si una propuesta agrega complejidad sin agregar decisiones interesantes, decirlo.
 5. **Nada negativo que llegue sin aviso.** Los encuentros son oportunidades; las amenazas inesperadas se descartaron.
 6. **Automatizar lo repetitivo** y dejar al jugador las decisiones con peso.
@@ -266,4 +266,4 @@ Los informes quedan en `docs/balance_economia.md` y `docs/balance_tecnologias.md
 14. **El juego y los documentos de diseño, en español**, incluidos los nombres de reglas y tecnologías. **README, CONTRIBUTING, CHANGELOG y commits, en inglés** (con versiones en español de los dos primeros).
 15. **Interfaz clara antes que detallada:** el juego se decide en segundos; íconos antes que párrafos; la explicación larga al pasar el mouse.
 16. **Estilo visual:** colores planos, formas duras, vista desde arriba, humor pequeño, inspirado en la Nueva Objetividad alemana de los años 20. Arte original.
-17. **Con Pao:** tono cálido y cercano, respuestas concisas, decir primero lo que se hizo y después lo que falta; marcar con 💡 lo que es propuesta mía para que ella decida.
+17. **Con Alejandro:** tono cálido y cercano, respuestas concisas, decir primero lo que se hizo y después lo que falta; marcar con 💡 lo que es propuesta mía para que él decida.

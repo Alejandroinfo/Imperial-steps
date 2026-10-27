@@ -14,12 +14,11 @@ Si un cambio de código cambia una regla, el mismo cambio actualiza el documento
 
 ## Flujo de trabajo
 
-Se trabaja directo en `main`, sin ramas ni *pull requests*: el proyecto es chico y lo lleva sobre todo una persona.
-
-1. Si quieres, abre un *issue* para anotar un problema o una idea (qué pasa, qué esperabas, en qué mapa).
-2. Haz commits pequeños con mensajes que digan qué cambia: «Panel de zona: nombre y presencia en una línea».
-3. Antes de subir, corre `npm test` y `npm run check` (tipos), y abre `index.html` para probar lo que cambiaste.
-4. Sube a `main`. Si algo se rompe, se arregla con un commit nuevo.
+1. Abre un *issue* que describa el problema o la idea (qué pasa, qué esperabas, en qué mapa).
+2. Crea una rama desde `main` con un nombre corto: `interfaz/panel-tecnologias`, `motor/licenciar-tropas`, `reglas/pendiente-26`.
+3. Haz commits pequeños con mensajes en español que digan qué cambia: «Panel de zona: nombre y presencia en una línea».
+4. Antes de subir, corre `npm test` y `npm run check` (tipos), y abre `index.html` para probar lo que cambiaste.
+5. Abre un *pull request* hacia `main`, enlaza el *issue* y explica qué probaste.
 
 ## Dónde va cada cosa
 

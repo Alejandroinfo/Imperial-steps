@@ -2,11 +2,6 @@
 
 All notable changes, newest first. The game and the design documents are in Spanish; this log is in English.
 
-## Unreleased
-- **Online multiplayer with Firebase Realtime Database**: one player creates a room and shares a 4-letter code or a link; 2 to 4 people can join and empty seats are played by bots. The host's browser runs the engine and, once everyone is ready, resolves the step and publishes the full game state, so every screen stays in sync. Anyone, including the host, can reload the page and rejoin their seat. The Firebase SDK is loaded only when playing online; games against bots still work offline. Setup guide in `docs/multijugador.md` (Spanish); security rules in `firebase/reglas_base_datos.json`.
-- The seeded random generator exposes `state()`, so a game can be sent over the network and continued exactly.
-- New tests: `pruebas/probar_red.js` (a game state sent over the network stays identical, 18 cases, part of `npm test`) and `pruebas/probar_en_linea.py` (a two-browser online game against a fake Firebase, no internet needed).
-
 ## 0.13
 - **Supply lines**: outside your own territory, troops only eat if there is a safe path of at most 2 zones to a zone of yours with food. Hungry troops fight with half their dice. Supply lines are drawn on the map (green, red, or a "no supply" warning), so cutting an enemy's route is now a real tactic.
 - Training no longer requires barracks, so armies can appear earlier.

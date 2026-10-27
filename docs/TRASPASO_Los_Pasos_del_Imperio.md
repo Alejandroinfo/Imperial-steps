@@ -3,8 +3,10 @@
 **Para qué sirve este documento:** permite retomar el proyecto en una conversación nueva (o con otra persona) sin tener que volver a explicar nada. Está escrito para leerse de arriba abajo en 10 minutos.
 
 **Última actualización:** 27 de octubre de 2026 (reglas de maravillas únicas, botín e ingenieros automáticos; multijugador con Firebase)
-**Autores del diseño:** Pao (idea inicial) y Alejandro.
-**Estado:** diseño en papel bastante cerrado; prototipo jugable v0.13 en el navegador, organizado como proyecto en GitHub con pruebas automáticas. 🆕 Multijugador en línea con Firebase hecho y probado (rama `online/firebase`); falta configurar Firebase y jugar la primera partida real.
+**Autor del diseño:** Alejandro.
+
+⚠ **Quién escribe:** en este proyecto escribe siempre **Alejandro**, autor único del diseño y del código. Las preferencias de la cuenta de Claude están a nombre de otra persona (Pao); no la confundas con él, no le atribuyas ideas, decisiones ni partidas de prueba, y háblale a Alejandro en masculino.
+**Estado:** diseño en papel bastante cerrado; prototipo jugable v0.13 en el navegador, organizado como proyecto en GitHub con pruebas automáticas. 🆕 Multijugador en línea con Firebase hecho, probado y en `main`; falta configurar Firebase y jugar la primera partida real.
 
 ---
 
@@ -142,14 +144,14 @@
 ## 6. Qué falta (por prioridad)
 
 ### Alta
-0. 🆕 **La sensación de Pao jugando (26/10/2026): no se siente diversión.** Los bots casi no atacan, no hay tensión para invertir en lo militar, las tribus se compran baratas y los recursos pasan desapercibidos. Las simulaciones lo confirman: 0 a 3 combates por partida y población estancada cerca de 10 (`docs/balance_economia.md`). **Esto es lo primero a resolver.**
-1. 🆕 **Orden elegido por Pao para dar tensión:** (1) ✅ encuentros sorpresa y recursos disputados; (2) ✅ mapas más conectados con dilema del prisionero en zonas de frontera; (3) tribus como amenaza latente y tributo negociado (ofertas secretas; atacan al que dio menos); (4) multijugador.
-1a. ✅ 🆕 **Multijugador para el primer playtest:** cada uno en su computadora, en videollamada. Decidido por Pao (27/10/2026): **Firebase Realtime Database** en vez de PeerJS o un servidor propio (ver 3c).
+0. 🆕 **La sensación de Alejandro jugando contra bots (26/10/2026): no se siente diversión.** Los bots casi no atacan, no hay tensión para invertir en lo militar, las tribus se compran baratas y los recursos pasan desapercibidos. Las simulaciones lo confirman: 0 a 3 combates por partida y población estancada cerca de 10 (`docs/balance_economia.md`). **Esto es lo primero a resolver.**
+1. 🆕 **Orden elegido por Alejandro para dar tensión:** (1) ✅ encuentros sorpresa y recursos disputados; (2) ✅ mapas más conectados con dilema del prisionero en zonas de frontera; (3) tribus como amenaza latente y tributo negociado (ofertas secretas; atacan al que dio menos); (4) multijugador.
+1a. ✅ 🆕 **Multijugador para el primer playtest:** cada uno en su computadora, en videollamada. Decidido por Alejandro (27/10/2026): **Firebase Realtime Database** en vez de PeerJS o un servidor propio (ver 3c).
 1b. **Jugarlo con la familia.** 🆕 Ya se trabajó lo que se sentía mal al jugar sola (opciones de partida, tecnologías, zona, mapa, edificios, combate). Falta probarlo con más personas.
 2. 🆕 **Ritmo y balance después de los cambios de hoy:** con la capital a +2 y el equipo más caro, casi nadie gana antes del paso 60 en las simulaciones (pendientes 26 y 28). Revisar los umbrales del modo prueba.
 3. 🆕 **Confirmar las propuestas 💡 de hoy:** reparto del sobrante de comida (pendiente 29), costo del segundo edificio (30) y valores del equipo (31). 🆕 Y las nuevas: maravillas únicas (38), ingenieros automáticos (39) y botín (40).
 3b. 🆕 **Pasar al juego** las reglas de maravillas, botín e ingenieros automáticos (Reglas 23.5) y simular el ritmo con la capital a +2.
-3c. 🆕 **Multijugador con Firebase (decidido por Pao):** hecho sobre la v0.13 en la rama `online/firebase` (guía en `docs/multijugador.md`), probado con dos navegadores y un Firebase falso. Falta: unir la rama a `main`, configurar Firebase (unos 10 minutos), publicar el juego y jugar la primera partida real. La rama `red/multijugador-salas` (servidor propio sobre la v0.4) queda descartada y se puede borrar.
+3c. 🆕 **Multijugador con Firebase (decidido por Alejandro):** hecho sobre la v0.13 y ya en `main` (guía en `docs/multijugador.md`), probado con dos navegadores y un Firebase falso. Falta: configurar Firebase (unos 10 minutos), publicar el juego y jugar la primera partida real.
 4. **19 de 203 tecnologías no tienen efecto simulado** (lista en la sección 23.2 de las reglas).
 5. **Pasar el motor a Python** con pytest y tablas de configuración; después, el simulador de balance. 🆕 La separación por capas ya lo deja preparado.
 6. ✅ 🆕 ~~Multijugador real~~ hecho con Firebase (salas con código y reconexión), ver 3c.
@@ -194,7 +196,7 @@
 7. **Idioma:** todo en español, incluidos los nombres de reglas y de tecnologías.
 8. **Estilo visual:** colores planos, formas duras, vista desde arriba, humor pequeño; la claridad por encima del detalle, porque el juego se decide en segundos.
 9. **Sin reloj por ahora:** el paso avanza cuando todos están listos; primero se mide cuánto tarda la gente.
-10. 🆕 **Trabajo en equipo:** ramas, *issues* y *pull requests* como dice `CONTRIBUTING.md`; el motor nunca toca la pantalla.
+10. 🆕 **Se trabaja directo en `main`, sin ramas (27/10/2026, decidido por Alejandro):** commits pequeños que digan qué cambia, y `npm test` antes de subir (ver `CONTRIBUTING.md`); el motor nunca toca la pantalla.
 11. 🆕 **Idioma del repositorio:** el juego, las reglas y el traspaso van en español; lo que ve un visitante o reclutador va en **inglés** (`README.md`, `CONTRIBUTING.md`, descripción del proyecto), con versión en español (`README.es.md`, `CONTRIBUTING.es.md`). Los mensajes de commit pueden ir en inglés.
 
 ---
@@ -214,7 +216,7 @@ Sube a un **Proyecto de Claude** como conocimiento del proyecto:
 
 Y abre un chat por tema. Mensaje inicial sugerido:
 
-> Estoy desarrollando *Los Pasos del Imperio*. En el conocimiento del proyecto está el documento de traspaso, las reglas, el catálogo de tecnologías y el prototipo. Léelos antes de responder. Hoy quiero trabajar en **[tema]**. No cambies nada que esté marcado como ✅ decidido sin avisarme.
+> Soy Alejandro y estoy desarrollando *Los Pasos del Imperio*. En el conocimiento del proyecto está el documento de traspaso, las reglas, el catálogo de tecnologías y el prototipo. Léelos antes de responder. Hoy quiero trabajar en **[tema]**. No cambies nada que esté marcado como ✅ decidido sin avisarme.
 
 Al cerrar cada sesión:
 
@@ -262,4 +264,5 @@ Al cerrar cada sesión:
 | 🆕 Fronteras sin dueño entre imperios vecinos (dilema del prisionero) | Las tribus eran el único colchón y no había tensión entre vecinos |
 | 🆕 Tipos con TypeScript sobre el motor, sin compilar | Detectan órdenes sin atender y campos mal escritos; documentan las reglas |
 | 🆕 Seguir con SVG para dibujar; PixiJS como opción si hace falta más fluidez | En la comparación, PixiJS se ve igual y SVG funcionó bien en una computadora normal |
+| 🆕 Trabajar directo en `main`, sin ramas | Las ramas confundían más de lo que ayudaban en un proyecto que lleva sobre todo una persona |
 | 🆕 Multijugador con Firebase Realtime Database, con el anfitrión como autoridad | Más estable que PeerJS entre casas distintas y sin servidor propio; con una sola pantalla resolviendo, nadie se desincroniza |

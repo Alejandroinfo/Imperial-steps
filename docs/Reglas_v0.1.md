@@ -9,7 +9,7 @@ Documento de trabajo para corregir y construir encima. Reúne todo lo conversado
 - ❓ **Por definir** — falta una decisión o hay ambigüedad.
 - 🆕 **Nuevo en la última sesión** (26 de octubre de 2026). Junto a ✅ o 💡 indica si lo decidieron ustedes o si es una propuesta mía.
 
-**Última actualización:** 26 de octubre de 2026 (prototipo v0.13). 🆕 Más tarde ese mismo día se escribieron las reglas de **maravillas únicas**, **botín** e **ingenieros automáticos** (secciones 15.2 y 15.3); el prototipo todavía no las tiene (ver 23.5).
+**Última actualización:** 26 de octubre de 2026 (prototipo v0.13). 🆕 El 27 de octubre de 2026 se escribieron las reglas de **maravillas únicas**, **botín** e **ingenieros automáticos** (secciones 15.2 y 15.3); el prototipo todavía no las tiene (ver 23.5).
 
 Cómo usarlo: cambien el emoji de estado cuando decidan algo, tachen lo que no les guste y escriban encima.
 
@@ -54,7 +54,7 @@ Propuesta de versión extendida (lo que sería `resolver_paso`):
 10. 💡 Curación
 
 ~~❓ **Problema de ritmo:** la fase "decisiones sobre zonas en tensión" era una segunda ventana de decisión dentro del mismo paso.~~
-✅ 🆕 **Resuelto (26/10/2026, decidido por Pao):** la postura es **de un jugador hacia otro**, no de una zona (ver sección 11). Cada movimiento elige además paz o ataque al entrar. Ya no hay segunda ventana de decisión.
+✅ 🆕 **Resuelto (26/10/2026, decidido por Alejandro):** la postura es **de un jugador hacia otro**, no de una zona (ver sección 11). Cada movimiento elige además paz o ataque al entrar. Ya no hay segunda ventana de decisión.
 
 ---
 
@@ -121,7 +121,7 @@ Cada zona tiene un terreno. Algunos efectos dependen de si la unidad es **atacan
 | 11 | Frontera ancha | Dos pasos paralelos entre vecinos | 3 |
 | 12 | Rueda | Todo pasa por un centro compartido | 7 |
 
-- ✅ 🆕 **Fronteras (26/10/2026, decidido por Pao: mapas más conectados y que las tribus no sean el colchón entre imperios):** entre cada par de imperios vecinos se agrega una **zona de frontera** («tierra de nadie»). El camino que unía las dos tribus ahora pasa por ella, y además se une con la zona libre más cercana de cada imperio, así que los vecinos se tocan directamente. 💡 Se ubica con un criterio geométrico para que sus caminos no pasen por encima de otras zonas; en 25 de los 36 mapas no hay ningún cruce (los mapas originales tenían 30 de 36). Ver la regla en la sección 11.
+- ✅ 🆕 **Fronteras (26/10/2026, decidido por Alejandro: mapas más conectados y que las tribus no sean el colchón entre imperios):** entre cada par de imperios vecinos se agrega una **zona de frontera** («tierra de nadie»). El camino que unía las dos tribus ahora pasa por ella, y además se une con la zona libre más cercana de cada imperio, así que los vecinos se tocan directamente. 💡 Se ubica con un criterio geométrico para que sus caminos no pasen por encima de otras zonas; en 25 de los 36 mapas no hay ningún cruce (los mapas originales tenían 30 de 36). Ver la regla en la sección 11.
 - 💡 Para la primera partida de mesa, probar un mapa de ritmo medio (por ejemplo 1, 4 o 10) con 3 jugadores, y comparar después con uno rápido (8) y uno lento (7).
 - ❓ Especialización y tamaño de población de cada tribu en cada mapa.
 
@@ -148,7 +148,7 @@ Cada zona tiene un terreno. Algunos efectos dependen de si la unidad es **atacan
   - ✅ 🆕 Se hace con la orden **Licenciar** de la pestaña Militar; la tecnología *Reservistas* lo deja gratis.
   - 💡 🆕 Se puede licenciar en cualquier zona propia (sin Cuartel); las tropas heridas esperan a curarse; las máquinas de asedio no se licencian (ver pendiente 23).
 - ✅ Moverlos cuesta **1 de oro por unidad por espacio** movido. 🆕 El formulario de «Ir» y la flecha del mapa muestran el costo exacto, y recuerdan que los civiles se mueven gratis pero ese paso no producen.
-- ✅ 🆕 **Entrenar no necesita Cuartel (26/10/2026, decidido por Pao: el Cuartel frenaba el inicio y la agresividad):** se puede entrenar en cualquier zona propia. El Cuartel mantiene sus ventajas: sus militares no comen, dan movimiento extra y permite sus especializaciones.
+- ✅ 🆕 **Entrenar no necesita Cuartel (26/10/2026, decidido por Alejandro: el Cuartel frenaba el inicio y la agresividad):** se puede entrenar en cualquier zona propia. El Cuartel mantiene sus ventajas: sus militares no comen, dan movimiento extra y permite sus especializaciones.
 
 ### 5.3 Estados de una unidad
 
@@ -202,7 +202,7 @@ Cada zona tiene un terreno. Algunos efectos dependen de si la unidad es **atacan
 | **Gemas** | Montañas | Local | El Mercado de la zona da +1 de oro adicional por trabajador |
 | **Brea** | Ríos o Bosques | Local | Las máquinas de asedio fabricadas en la zona tienen +1 de fuerza |
 
-- ✅ 🆕 **Recursos disputados (26/10/2026, decidido por Pao: que se sientan más importantes):** además de su efecto, cada recurso **rinde más mientras más tiempo lo controles**: 💡 +1 por paso al tomarlo y +1 más cada 5 pasos, hasta +4 (comida o producción en la zona, oro o ciencia global, según el recurso). Si cambia de dueño, el contador vuelve a cero. Se ve en el mapa (con el color de quien lo tiene y su rendimiento) y en el panel Imperio, que lista todos los recursos del mapa. Los bots priorizan atacar zonas con recursos.
+- ✅ 🆕 **Recursos disputados (26/10/2026, decidido por Alejandro: que se sientan más importantes):** además de su efecto, cada recurso **rinde más mientras más tiempo lo controles**: 💡 +1 por paso al tomarlo y +1 más cada 5 pasos, hasta +4 (comida o producción en la zona, oro o ciencia global, según el recurso). Si cambia de dueño, el contador vuelve a cero. Se ve en el mapa (con el color de quien lo tiene y su rendimiento) y en el panel Imperio, que lista todos los recursos del mapa. Los bots priorizan atacar zonas con recursos.
 - 💡 **Reparto en el mapa:** por jugador, 1 recurso global y 2 locales, en zonas que no sean la capital y repartidos igual para todos (para mantener la simetría). Las tribus también pueden custodiar recursos: conquistar o anexar la tribu te los da.
 - 💡 Las Maravillas podrían exigir tener cerca una Piedra de cantera; es opcional.
 - ❓ ¿Los recursos se agotan, o duran toda la partida? Se asume que duran.
@@ -220,7 +220,7 @@ Cada zona tiene un terreno. Algunos efectos dependen de si la unidad es **atacan
 |---|---|---|---|
 | **Básica** | Pobladores | 1 comida y 1 producción por poblador; autosuficiente | — |
 | **Producción** | Ingenieros | Ingeniero: **genera 2 de producción o usa 2 para construir** (normal: 1) | +4 / +8 / +12 producción (🆕 o de capacidad de obra mientras sus ingenieros construyen; ver 15.2) |
-| ~~Industrial~~ | ~~Constructores~~ | ✅ 🆕 **Desaparece (26/10/2026, decidido por Pao):** se fusiona con la zona de Producción | — |
+| ~~Industrial~~ | ~~Constructores~~ | ✅ 🆕 **Desaparece (27/10/2026, decidido por Alejandro):** se fusiona con la zona de Producción | — |
 | **Agricultura** | Agricultores | Agricultor: 2 de comida (normal: 1) | +4 / +8 / +12 comida |
 | **Tecnología** | Científicos | Científico: genera 2 o usa 2 de tecnología (solo ellos pueden) | 4 / 8 / 12 de tecnología |
 | **Comercial** | Comerciantes | Comerciante: 2 de oro por paso | +4 / +8 / +12 oro |
@@ -230,7 +230,7 @@ Detalles:
 - ✅ **Zona básica:** especializar es barato, **1 de producción por persona** que se especializa.
 - ~~**Zona industrial:** usa producción local y, si no alcanza, la de la vecina.~~ ✅ 🆕 **Obras con producción de zonas vecinas:** una obra gasta la producción guardada de su zona y, si no alcanza, trae la de las zonas vecinas. Cada espacio de distancia cuesta **1 de oro por unidad de producción** movida (la regla es la misma de antes, pero ya no depende de una zona industrial).
 - ✅ **Agricultura:** civiles no militares consumen 1 de comida, militares 2. El consumo es **local**.
-- ✅ 🆕 **Capital (26/10/2026, decidido por Pao: la mitad de antes):** atributo de la zona inicial de cada jugador. Genera **+2 de producción, +2 de comida, +2 de tecnología y +2 de oro**, adicional a cualquier especialización. *Capital próspera* lo sube a **+3**. (Antes: +4 y +6.)
+- ✅ 🆕 **Capital (26/10/2026, decidido por Alejandro: la mitad de antes):** atributo de la zona inicial de cada jugador. Genera **+2 de producción, +2 de comida, +2 de tecnología y +2 de oro**, adicional a cualquier especialización. *Capital próspera* lo sube a **+3**. (Antes: +4 y +6.)
 - ✅ El atributo de capital **se mantiene en la zona aunque sea conquistada** (son zonas muy especiales y perderlas debe doler). Se entiende que sus bonos pasan al conquistador. ❓ Confirmar esa interpretación.
 - ❓ ¿Qué pasa con un bono de zona si la mayoría deja de ser de esa especialización?
 
@@ -238,17 +238,17 @@ Detalles:
 
 ## 8. Comida y crecimiento
 
-- ✅ 🆕 **Alimentación automática (26/10/2026, decidido por Pao):** cada zona come primero de lo suyo; lo que falte sale **sin costo** de la zona propia más cercana que tenga comida (guardada o producida), y luego de la siguiente. Vale igual para militares fuera de casa y para civiles de zonas que no producen comida. **Evitar el hambre va antes que crecer.** Después de alimentar a todos, el **excedente** se puede:
+- ✅ 🆕 **Alimentación automática (26/10/2026, decidido por Alejandro):** cada zona come primero de lo suyo; lo que falte sale **sin costo** de la zona propia más cercana que tenga comida (guardada o producida), y luego de la siguiente. Vale igual para militares fuera de casa y para civiles de zonas que no producen comida. **Evitar el hambre va antes que crecer.** Después de alimentar a todos, el **excedente** se puede:
   1. **Almacenar** — ✅ 🆕 máximo **10 por punto de tamaño** de la zona, para comida y para producción por separado (antes 10 fijos). Ampliable con el Almacén (ver 15.1).
   2. **Enviar** a otra zona pagando la logística.
-  3. **Crecer:** se gasta en progreso hacia un nuevo aldeano. 🆕 **Etapa de fundación:** hasta el paso 12, crecer cuesta la mitad, para que el inicio no sea tan lento (💡 `FOUNDING_STEPS = 12`). ✅ 🆕 **Cada zona elige su prioridad (decidido por Pao):** **Crecer** (todo el sobrante del paso, después de alimentar y de los envíos automáticos, va al crecimiento; es lo normal) o **Guardar** (el sobrante va al almacén; solo lo que no cabe va a crecer). Reemplaza la propuesta de repartir mitad y mitad.
+  3. **Crecer:** se gasta en progreso hacia un nuevo aldeano. 🆕 **Etapa de fundación:** hasta el paso 12, crecer cuesta la mitad, para que el inicio no sea tan lento (💡 `FOUNDING_STEPS = 12`). ✅ 🆕 **Cada zona elige su prioridad (decidido por Alejandro):** **Crecer** (todo el sobrante del paso, después de alimentar y de los envíos automáticos, va al crecimiento; es lo normal) o **Guardar** (el sobrante va al almacén; solo lo que no cabe va a crecer). Reemplaza la propuesta de repartir mitad y mitad.
 - ✅ Costo del nuevo poblador según el **tamaño de la zona** (número de crecimientos que ha hecho, no la población actual): el 3.º cuesta **6**, el 4.º **10**, el 5.º **15**… (fórmula equivalente: n(n+1)/2).
 - ✅ La comida invertida en crecer **se gasta** (a diferencia de almacenarla).
 - ✅ Al inicio de cada ronda se revisa si la ronda anterior alcanzó el costo; si sí, el nuevo aldeano **aparece y trabaja esa misma ronda**.
 - 💡 🆕 El progreso de crecimiento es **por zona** y **se acumula** si no se completa (así funciona el prototipo).
 - 💡 🆕 Con la capital a +2: 4 pobladores producen unos 6 de comida y consumen 4 (+2 por paso). Especializando 2 agricultores sube a +4. En la prueba el primer poblador nació a los 6 pasos. La placa de cada zona muestra en cuántos pasos nace el siguiente.
 
-### 8.0 Cadena de suministros (🆕 26/10/2026, decidido por Pao)
+### 8.0 Cadena de suministros (🆕 26/10/2026, decidido por Alejandro)
 
 - ✅ **Dentro de tu territorio** (y en las fronteras) la comida circula por tus caminos y llega lejos.
 - ✅ **Fuera**, tus tropas solo comen si hay una **línea de suministro**: un camino de como máximo 💡 **2 zonas** (3 con *Suministros de campaña*) hasta una zona tuya con comida, **sin pasar por zonas de un enemigo**.
@@ -257,7 +257,7 @@ Detalles:
 - ✅ En el mapa se dibuja la línea de suministro (verde si llega, roja si hay hambre) y un aviso **⚠ Sin suministros** si está cortada; la pestaña Militar dice desde dónde viene.
 - 💡 Consecuencia buscada: **elegir dónde pelear** importa. Cortarle el camino al enemigo tomando una zona intermedia puede valer más que vencerlo de frente, y guardar comida (Recursos → Guardar) permite resistir un asedio.
 
-### 8.0b Automatizaciones (🆕 26/10/2026, decididas por Pao)
+### 8.0b Automatizaciones (🆕 26/10/2026, decididas por Alejandro)
 
 - ✅ **Envíos automáticos:** una zona puede mandar cada paso comida o producción a otra zona propia (una cantidad fija o todo su sobrante), pagando la logística en oro como un envío normal. Se hace después de alimentar y antes de crecer.
 - ✅ **Oficio de los que nacen:** cada zona puede elegir que los nuevos pobladores se especialicen al nacer (agricultor, ingeniero, etc.) si hay producción para pagarlo; si no, quedan como pobladores.
@@ -293,7 +293,7 @@ Detalles:
 | Berserker | Melé | 3 | 2 (sube hasta 4) | 3 | 0 | 6 |
 
 - ✅ **Al crear la unidad:** sin arma es soldado básico. Con **arco** → arquero. **Caballo** → caballero. **Escudo** → escudero. **Hacha** → berserker.
-- ✅ 🆕 **Costo con equipo (26/10/2026, decidido por Pao):** las tropas especializadas pagan su equipo además del soldado. 💡 🆕 Valores bajados porque los militares salían muy caros: soldado **1**; equipo = **2 × el nivel de su tecnología** (arco 2, escudo 4, caballo 6, hacha 6). Arquero 3, escudero 5, caballero y berserker 7. Equipar a un soldado existente paga solo el equipo.
+- ✅ 🆕 **Costo con equipo (26/10/2026, decidido por Alejandro):** las tropas especializadas pagan su equipo además del soldado. 💡 🆕 Valores bajados porque los militares salían muy caros: soldado **1**; equipo = **2 × el nivel de su tecnología** (arco 2, escudo 4, caballo 6, hacha 6). Arquero 3, escudero 5, caballero y berserker 7. Equipar a un soldado existente paga solo el equipo.
 - ✅ 🆕 **Equipo recuperable:** si una tropa con equipo muere **en tu territorio**, su arma queda guardada en la zona; cuando la zona deja de estar en conflicto, se puede usar para entrenar otra pagando solo el soldado. 💡 Si conquistan la zona, el equipo guardado se pierde.
 - ✅ **Berserker:** iniciativa **6** (antes 4). Actúa después del soldado básico (5) y antes del escudero (8) y el aldeano (10).
 - ✅ Las tecnologías y sus efectos sobre estas unidades se definen **después**, y recién ahí se hace el simulador de balance.
@@ -398,8 +398,8 @@ Detalles:
   - Ambos atacan → pelean sin ventaja.
 - ✅ La zona queda **en tensión**. Si hay conflicto en cualquier lugar del mapa entre esos dos jugadores, **todas las zonas en tensión** que tengan entre ellos pasan a conflicto. Los beneficios de la zona los sigue teniendo quien la controlaba.
 - ✅ **Zona en conflicto:** si alguien ataca y al terminar la ronda de combate quedan tropas de ambos sin retirarse, sigue en conflicto el siguiente paso.
-- ✅ 🆕 **Dilema del prisionero en la frontera (26/10/2026, decidido por Pao):** la frontera **nunca tiene dueño**; cualquiera puede entrar con civiles o tropas. Quien tiene gente ahí no produce y come de su zona más cercana, pero gana oro: 💡 **+3 por paso a cada uno** mientras todos los presentes estén en paz, o **+4** si está solo. Si alguien ataca, ese paso nadie gana, y el atacante tiene sorpresa si el otro estaba en Paz. Cooperar conviene a los dos; traicionar conviene a uno.
-- ✅ 🆕 **Postura entre jugadores (26/10/2026, decidido por Pao):** cada jugador tiene una postura **hacia cada rival**: **Paz** (por defecto) o **Alerta**. Con Alerta, sus tropas atacan a las de ese jugador **en cualquier zona donde coincidan**, con sorpresa si el otro está en Paz. Se elige en Imperio → Relaciones o en la pestaña Militar. Reemplaza la «postura de zona».
+- ✅ 🆕 **Dilema del prisionero en la frontera (26/10/2026, decidido por Alejandro):** la frontera **nunca tiene dueño**; cualquiera puede entrar con civiles o tropas. Quien tiene gente ahí no produce y come de su zona más cercana, pero gana oro: 💡 **+3 por paso a cada uno** mientras todos los presentes estén en paz, o **+4** si está solo. Si alguien ataca, ese paso nadie gana, y el atacante tiene sorpresa si el otro estaba en Paz. Cooperar conviene a los dos; traicionar conviene a uno.
+- ✅ 🆕 **Postura entre jugadores (26/10/2026, decidido por Alejandro):** cada jugador tiene una postura **hacia cada rival**: **Paz** (por defecto) o **Alerta**. Con Alerta, sus tropas atacan a las de ese jugador **en cualquier zona donde coincidan**, con sorpresa si el otro está en Paz. Se elige en Imperio → Relaciones o en la pestaña Militar. Reemplaza la «postura de zona».
 
 ---
 
@@ -479,10 +479,10 @@ Detalles:
 - 💡 Conexión con las tecnologías: *Calendario*, *Astronomía* y *Pronóstico* (ver con más anticipación y evitar), *Semillas resistentes*, *Reservas de emergencia*, *Fortuna del temerario* y *Resistencia climática*.
 - ❓ ¿El evento afecta a todas las zonas del terreno indicado o solo a algunas sorteadas? Se asume que a todas, para que sea justo con el mapa simétrico.
 
-### 13.2 Encuentros (🆕 26/10/2026, decididos por Pao)
+### 13.2 Encuentros (🆕 26/10/2026, decididos por Alejandro)
 
 - ✅ Llegan **sin aviso** a una zona del jugador (de preferencia de frontera) y se deciden **en ese mismo paso**; no hay que prepararse, hay que jugar alrededor de ellos.
-- ✅ 🆕 **Solo oportunidades (decidido por Pao):** son ofertas o apuestas que conviene aprovechar si se puede. **Nada negativo** si se rechazan o no se responden: una amenaza que llega sin aviso es demasiado al azar para poder prepararse.
+- ✅ 🆕 **Solo oportunidades (decidido por Alejandro):** son ofertas o apuestas que conviene aprovechar si se puede. **Nada negativo** si se rechazan o no se responden: una amenaza que llega sin aviso es demasiado al azar para poder prepararse.
 - ✅ **Entre más avanza la partida, más piden y más dan** (💡 los montos se multiplican por 1 + paso/15; las personas que llegan suben 1 cada 20 pasos).
 - 💡 Frecuencia: uno cada 4 a 7 pasos por jugador, desde el paso 4.
 - 💡 **20 tipos con 43 variantes** de quién llega; algunos dependen del terreno. Dos clases:
@@ -509,7 +509,7 @@ Detalles:
 ### 14.0 Cómo se investiga (científicos)
 
 - ✅ **Investigar no es instantáneo ni gratuito en personas:** hace falta tener **científicos**.
-- ✅ 🆕 **Científicos automáticos (26/10/2026, decidido por Pao):** si hay una tecnología en cola, **todos los científicos investigan solos**, cada uno usando 2 de la ciencia guardada. Si la ciencia guardada no alcanza para todos, investigan los que alcance y **el resto genera ciencia** (ej.: con 4 guardados y 3 científicos, 2 investigan y 1 genera). Sin nada en cola, todos generan. **Ya no existe la orden de asignar.** Un científico genera 2 **o** usa 2, no ambas cosas.
+- ✅ 🆕 **Científicos automáticos (26/10/2026, decidido por Alejandro):** si hay una tecnología en cola, **todos los científicos investigan solos**, cada uno usando 2 de la ciencia guardada. Si la ciencia guardada no alcanza para todos, investigan los que alcance y **el resto genera ciencia** (ej.: con 4 guardados y 3 científicos, 2 investigan y 1 genera). Sin nada en cola, todos generan. **Ya no existe la orden de asignar.** Un científico genera 2 **o** usa 2, no ambas cosas.
 - ✅ Una zona de tecnología suma además su bono (4, 8 o 12) **como capacidad de investigación** mientras sus científicos investigan (también limitado por la ciencia guardada).
 - ✅ Una tecnología cuesta su nivel × 20 y **avanza cada paso hasta la capacidad de los científicos que investigan**, gastando de la ciencia guardada (que producen los científicos libres, las bibliotecas y la capital).
 - ✅ Se puede tener una **cola de hasta 4** tecnologías en investigación.
@@ -566,7 +566,7 @@ El catálogo completo está en **Tecnologias_v0.2.xlsx** (hojas *Reglas*, *Tecno
   - Conserva como máximo **1 edificio** (consecuencia directa de la regla 1 edificio por cada 3 de tamaño).
   - Los **edificios extra se retiran** y se recupera **la mitad de la producción** que costó construirlos.
 - ✅ La mitad de la producción recuperada se la lleva **el conquistador**, si el dueño anterior ya se fue de la zona.
-- ✅ 🆕 **Botín (26/10/2026, decidido por Pao):** al **conquistar** una zona, el atacante se lleva **la mitad de la producción que el dueño tuviera guardada en ella**. Así guardar mucho en una zona de frontera es un riesgo, producir de más ya no es solo desperdicio, y las guerras tienen premio (pendientes 26 y 28).
+- ✅ 🆕 **Botín (27/10/2026, decidido por Alejandro):** al **conquistar** una zona, el atacante se lleva **la mitad de la producción que el dueño tuviera guardada en ella**. Así guardar mucho en una zona de frontera es un riesgo, producir de más ya no es solo desperdicio, y las guerras tienen premio (pendientes 26 y 28).
   - ❓ 🆕 ¿Solo la producción, o también la comida guardada? (💡 solo producción: la comida ya tiene su propio costo si la zona cambia de manos.)
   - ❓ 🆕 ¿Solo al conquistar, o también al ganar un combate sin quedarse con la zona?
 - ✅ El atributo de **capital se mantiene** en la zona conquistada (ver sección 7).
@@ -577,8 +577,8 @@ El catálogo completo está en **Tecnologias_v0.2.xlsx** (hojas *Reglas*, *Tecno
 - ✅ **Los 9 edificios básicos vienen desbloqueados desde el inicio**, como si su tecnología de nivel 1 ya estuviera desarrollada: Almacén, Camino, Hospital, Cuartel, Fortificación, Molino, Taller, Mercado y Biblioteca. Esas 9 tecnologías cuentan como ya tuyas (para los mínimos del nivel 1 y la columna vertebral). La **Maravilla** sigue requiriendo una tecnología de nivel 5.
 - ✅ **Cada edificio se mejora con las tecnologías de niveles superiores** (la Maravilla, con una de nivel 5). Con tecnologías de niveles superiores se **mejora** a nivel 2, 3, etc. o se **especializa** ("Esp.").
 - ✅ **Costo por nivel (en producción):** nivel 1 = **20**, nivel 2 = **40**, nivel 3 = **60**… (20 por nivel, igual que las tecnologías).
-- ✅ 🆕 **Se construye en el nivel más alto desbloqueado (26/10/2026, decidido por Pao):** un edificio nuevo nace directamente en el máximo nivel que permiten tus tecnologías, en una sola obra que cuesta 20 por nivel (lo mismo que construir y mejorar). Si ya tienes especializaciones para él, **eliges con cuál nace** (o sin especializar).
-- ✅ 🆕 **Segundo edificio del mismo tipo (26/10/2026, decidido por Pao):** cada zona tiene uno de cada tipo; con una tecnología de **nivel 3** de ese edificio se puede tener **un segundo**, con la misma especialización (doble efecto) o con otra. 💡 Balance: el segundo cuesta **50 % más** (al construirlo y al mejorarlo), necesita sus propios trabajadores y ocupa otro espacio.
+- ✅ 🆕 **Se construye en el nivel más alto desbloqueado (26/10/2026, decidido por Alejandro):** un edificio nuevo nace directamente en el máximo nivel que permiten tus tecnologías, en una sola obra que cuesta 20 por nivel (lo mismo que construir y mejorar). Si ya tienes especializaciones para él, **eliges con cuál nace** (o sin especializar).
+- ✅ 🆕 **Segundo edificio del mismo tipo (26/10/2026, decidido por Alejandro):** cada zona tiene uno de cada tipo; con una tecnología de **nivel 3** de ese edificio se puede tener **un segundo**, con la misma especialización (doble efecto) o con otra. 💡 Balance: el segundo cuesta **50 % más** (al construirlo y al mejorarlo), necesita sus propios trabajadores y ocupa otro espacio.
 - 💡 🆕 Con dos hospitales, cada uno puede tener su especialización (civil y militar) y ambas cuentan.
 - ✅ **Mejorar un edificio** cuesta **solo la diferencia**: si tienes un granero de nivel 2 y sacas la tecnología de nivel 3, pagas los 20 que faltan.
 - ✅ **Destruir un edificio** que ya no necesitas devuelve **la mitad de su costo**. (Es la misma proporción que se recupera al retirar edificios en una conquista.)
@@ -625,12 +625,12 @@ El catálogo completo está en **Tecnologias_v0.2.xlsx** (hojas *Reglas*, *Tecno
 - ❓ ¿Cada edificio cuenta como 1 para la condición "Desarrollo" sin importar su nivel? Se asume que sí. ¿Y la Maravilla cuenta como edificio?
 - ❓ Si una zona tiene una maravilla y otros edificios, ¿cuál se conserva al conquistarla? Se asume que siempre la maravilla, que pasa al conquistador.
 
-### 15.2 Producción y obras: ingenieros automáticos (🆕 26/10/2026)
+### 15.2 Producción y obras: ingenieros automáticos (🆕 27/10/2026)
 
 Es la misma idea que los científicos automáticos (sección 14.0), aplicada a la producción.
 
-- ✅ 🆕 **Fusión de constructores en ingenieros (decidido por Pao):** desaparece el oficio de constructor (de **6 a 5 oficios**) y la zona Industrial se junta con la de Producción. Se acaba la «capacidad de obra» como un número aparte de la producción guardada.
-- ✅ 🆕 **Ingenieros automáticos (decidido por Pao: «si no está construyendo nada, está produciendo»):** si la zona tiene una obra en cola, sus ingenieros **construyen solos**, cada uno usando 2 de la producción guardada de la zona. Si la producción guardada no alcanza para todos, construyen los que alcance y **el resto produce** (ej.: con 4 guardados y 3 ingenieros, 2 construyen y 1 produce). Sin obra en cola, todos producen. Un ingeniero produce 2 **o** usa 2, no ambas cosas. **No existe orden de asignar.**
+- ✅ 🆕 **Fusión de constructores en ingenieros (decidido por Alejandro):** desaparece el oficio de constructor (de **6 a 5 oficios**) y la zona Industrial se junta con la de Producción. Se acaba la «capacidad de obra» como un número aparte de la producción guardada.
+- ✅ 🆕 **Ingenieros automáticos (decidido por Alejandro: «si no está construyendo nada, está produciendo»):** si la zona tiene una obra en cola, sus ingenieros **construyen solos**, cada uno usando 2 de la producción guardada de la zona. Si la producción guardada no alcanza para todos, construyen los que alcance y **el resto produce** (ej.: con 4 guardados y 3 ingenieros, 2 construyen y 1 produce). Sin obra en cola, todos producen. Un ingeniero produce 2 **o** usa 2, no ambas cosas. **No existe orden de asignar.**
 - ✅ 🆕 **Zona de Producción:** su bono (4, 8 o 12) cuenta **como capacidad de obra** mientras sus ingenieros construyen (también limitado por la producción guardada); si no hay obra, cuenta como producción de siempre.
 - ✅ Una obra cuesta 20 por nivel y **avanza cada paso hasta la capacidad de los ingenieros que construyen**, gastando de la producción guardada de la zona (la que producen los pobladores, los ingenieros libres, los talleres y la capital).
 - 💡 🆕 **Los pobladores ya no construyen** (antes sumaban 1 de capacidad). Consecuencia: al inicio nadie construye; hay que especializar ingenieros (1 de producción cada uno), igual que con los científicos. La apertura compite ahora entre crecer, ciencia y obras.
@@ -638,19 +638,19 @@ Es la misma idea que los científicos automáticos (sección 14.0), aplicada a l
 - ❓ 🆕 **Costo real de construir:** como el ingeniero que construye deja de producir, construir cuesta más en la práctica que antes. Medir en el simulador; si queda caro, compensar con Taller, zona de Producción y tecnologías.
 - ❓ 🆕 **Tecnologías a retocar** (hoy hablan de constructores o de zona industrial): *Cuadrillas de obra*, *Línea de ensamblaje*, *Gremios de constructores*, *Grandes obras*, *Logística de obra* y *Canteras de colina*. 💡 Casi todas solo cambian de palabra («ingeniero que construye» en vez de «constructor»; «zona de Producción» en vez de «zona industrial»), pero falta decidir qué tecnologías abren los niveles 2 y 3 de la zona de Producción.
 
-### 15.3 Maravillas únicas ligadas a las ramas (🆕 26/10/2026)
+### 15.3 Maravillas únicas ligadas a las ramas (🆕 27/10/2026)
 
-- ✅ 🆕 **12 maravillas, una por rama, únicas en toda la partida (decidido por Pao).**
-- ✅ 🆕 **La vertebral de nivel 5 desbloquea la maravilla (decidido por Pao):** se paga como siempre (ciencia: 100), pero **por sí sola no da su efecto**: desbloquea la construcción de la maravilla de esa rama. **El efecto lo da la maravilla** mientras la controles; si te conquistan la zona, el efecto pasa al conquistador (ya decidido en 16.3).
+- ✅ 🆕 **12 maravillas, una por rama, únicas en toda la partida (decidido por Alejandro).**
+- ✅ 🆕 **La vertebral de nivel 5 desbloquea la maravilla (decidido por Alejandro):** se paga como siempre (ciencia: 100), pero **por sí sola no da su efecto**: desbloquea la construcción de la maravilla de esa rama. **El efecto lo da la maravilla** mientras la controles; si te conquistan la zona, el efecto pasa al conquistador (ya decidido en 16.3).
 - ✅ 🆕 **Solo se puede investigar esa tecnología si su maravilla todavía no se ha construido** (por nadie).
-- ✅ 🆕 **Si pierdes la carrera (decidido por Pao):** si otro jugador termina la maravilla antes que tú, tu obra se cancela y pierdes la tecnología que la desbloqueaba, y **recuperas la mitad de la ciencia y la mitad de la producción** que habías puesto (por ejemplo, 50 de los 100 de ciencia). Si la tecnología aún estaba en la cola, se cancela y recuperas la mitad de la ciencia ya gastada.
+- ✅ 🆕 **Si pierdes la carrera (decidido por Alejandro):** si otro jugador termina la maravilla antes que tú, tu obra se cancela y pierdes la tecnología que la desbloqueaba, y **recuperas la mitad de la ciencia y la mitad de la producción** que habías puesto (por ejemplo, 50 de los 100 de ciencia). Si la tecnología aún estaba en la cola, se cancela y recuperas la mitad de la ciencia ya gastada.
 - 💡 🆕 La obra se **anuncia a todos al empezar**, para que la carrera se vea.
 - 💡 🆕 **Empate:** si dos jugadores terminan la misma maravilla en el mismo paso, **nadie la logra** y a cada uno le cuesta el doble lo que le falte (el mismo empate que las tribus).
 - 💡 🆕 Las maravillas **no se pueden demoler** (sí conquistar), para que nadie reabra la carrera por capricho.
 - 💡 🆕 Defensa solo tiene una tecnología de nivel 5 (la vertebral): quien construye esa maravilla cierra la rama a los demás. Es un detalle estratégico, no un error.
 - 💡 🆕 *Canteras reales* (maravillas a 400) y *Guardianes de la maravilla* (+2 de defensa), de Urbanismo, siguen valiendo y pesan más ahora.
 
-- ✅ 🆕 **Nombres y efectos de las 12 (26/10/2026, decidido por Pao):**
+- ✅ 🆕 **Nombres y efectos de las 12 (27/10/2026, decidido por Alejandro):**
 
 | Rama | Maravilla | Efecto mientras la controles | Nota |
 |---|---|---|---|
@@ -771,7 +771,7 @@ Es la misma idea que los científicos automáticos (sección 14.0), aplicada a l
 - 💡 **Configuración en tablas** (unidades, zonas, costos) en un archivo que el simulador lee; cambiar un número no requiere cambiar código.
 - 💡 **Simulaciones masivas** con bots (miles de partidas) para balancear: victorias por posición inicial, ventajas de unidades, duración de partida.
 - 💡 **Telemetría** de partidas reales guardada en una base (SQL): órdenes por paso, tiempo de decisión, condiciones de victoria alcanzadas.
-- ~~💡 **Servidor** con FastAPI + WebSockets; cliente simple en HTML/JavaScript (D3 para el mapa).~~ ✅ 🆕 **Multijugador con Firebase Realtime Database** (27/10/2026, decidido por Pao), sin servidor propio: ver pendiente 35 y `docs/multijugador.md`.
+- ~~💡 **Servidor** con FastAPI + WebSockets; cliente simple en HTML/JavaScript (D3 para el mapa).~~ ✅ 🆕 **Multijugador con Firebase Realtime Database** (27/10/2026, decidido por Alejandro), sin servidor propio: ver pendiente 35 y `docs/multijugador.md`.
 - 💡 La animación del combate **no frena el timer**: el estado ya está calculado.
 - 💡 Un **notebook final** que cuente la historia del balance (para el portafolio).
 
@@ -831,10 +831,10 @@ Es la misma idea que los científicos automáticos (sección 14.0), aplicada a l
 31. ❓ 🆕 **Valores del equipo** (💡 ahora 2 × nivel de la tecnología y soldado 1) y si el equipo guardado lo toma el conquistador en vez de perderse.
 32. ❓ 🆕 **Economía estancada** (sigue abierta, aunque mejoró con la etapa de fundación y las fronteras): en las simulaciones la población se queda cerca de 10 hasta el paso 60 (ver `docs/balance_economia.md`). Decidir si se cambia el costo de crecer, lo que da el agricultor o el poblador, o si basta con que los jugadores se expandan.
 33. ❓ 🆕 **Tecnologías muy fuertes según la simulación** (`docs/balance_tecnologias.md`): *Arado* y *Moneda* se pagan en 2 o 3 pasos; la línea de *Fortificación* sube hasta +51 puntos el % de victorias al defender; *Armaduras ligeras* +28 y +30.
-34. ❓ 🆕 **Diseño para más tensión**, en el orden que eligió Pao: ✅ encuentros sorpresa y recursos disputados (secciones 13.2 y 6.3) → ✅ mapas más conectados con dilema del prisionero en la frontera (secciones 4.2 y 11) → tribus como amenaza latente y tributo negociado → multijugador por videollamada.
+34. ❓ 🆕 **Diseño para más tensión**, en el orden que eligió Alejandro: ✅ encuentros sorpresa y recursos disputados (secciones 13.2 y 6.3) → ✅ mapas más conectados con dilema del prisionero en la frontera (secciones 4.2 y 11) → tribus como amenaza latente y tributo negociado → multijugador por videollamada.
 36. ❓ 🆕 **Fronteras:** confirmar los bonos (+3 / +4) jugando, y revisar los 11 mapas donde un camino todavía pasa por encima de otra zona (sobre todo Espiral y Dientes de sierra).
 37. ✅ 🆕 **Maravillas:** no se podían construir (la orden no se atendía); corregido al agregar la revisión de tipos.
-35. ❓ 🆕 **Multijugador para el primer playtest** por videollamada, cada uno en su computadora. ✅ 🆕 **Con Firebase Realtime Database (27/10/2026, decidido por Pao: más estable que PeerJS y nadie tiene que dejar su compu prendida como servidor).** Salas con código de 4 letras; el anfitrión resuelve cada paso y escribe el estado completo; cualquiera puede recargar y volver a su asiento. Hecho sobre la v0.13 (rama `online/firebase`) y probado con dos navegadores y un Firebase falso (ver `docs/multijugador.md`). ❓ Falta la primera partida con el Firebase real. La versión anterior con servidor propio (rama `red/multijugador-salas`, sobre la v0.4) queda descartada.
+35. ❓ 🆕 **Multijugador para el primer playtest** por videollamada, cada uno en su computadora. ✅ 🆕 **Con Firebase Realtime Database (27/10/2026, decidido por Alejandro: más estable que PeerJS y nadie tiene que dejar su compu prendida como servidor).** Salas con código de 4 letras; el anfitrión resuelve cada paso y escribe el estado completo; cualquiera puede recargar y volver a su asiento. Hecho sobre la v0.13 (ya en `main`) y probado con dos navegadores y un Firebase falso (ver `docs/multijugador.md`). ❓ Falta la primera partida con el Firebase real. La versión anterior con servidor propio (rama `red/multijugador-salas`, sobre la v0.4) queda descartada.
 38. ❓ 🆕 **Maravillas únicas (15.3):** ✅ nombres y efectos ya decididos; falta pasarlos al Excel, decidir si cuentan como «nivel 5» para la victoria tecnológica, y confirmar las propuestas 💡 (empate, no demoler, anuncio de la obra).
 39. ❓ 🆕 **Ingenieros automáticos (15.2):** costo real de construir, tecnologías a retocar y qué tecnologías abren los niveles 2 y 3 de la zona de Producción.
 40. ❓ 🆕 **Botín (sección 15):** solo producción o también comida, y si aplica solo al conquistar.
@@ -905,7 +905,7 @@ Es la misma idea que los científicos automáticos (sección 14.0), aplicada a l
 - **Tributos:** aviso rojo en el mapa y recuadro con botones de pago en la zona de la tribu.
 - **Visor de batallas:** cada combate se puede repetir golpe por golpe, oleada por oleada en orden de iniciativa: quién ataca, dados, aciertos, defensa absorbida, caídos y heridos, y un resultado final. Se abre desde el aviso, la zona o el Historial.
 - La partida empieza con tu capital elegida.
-- **Comienzo guiado (v0.12, decidido por Pao: 20 pasos y luego partida normal):** partida en el mapa Anillo contra un bot. Una tarjeta sobre el mapa presenta un sistema por paso y resalta el botón exacto; cada objetivo se cumple al hacerlo y las etapas que dependen de la partida se pueden saltar. Pasos 1 a 5: oficios (2 agricultores y 1 científico), tecnología, Molino y un constructor (sin pobladores ni constructores las obras no avanzan), frontera y victoria, y expansión; 6 eventos; 7 oficio al nacer; 8 primer encuentro (siempre el mismo: refugiados); 9 crecer o guardar; 10 Cuartel; 11 cola de investigación; 12 recursos estratégicos; 13 tribus; 14 postura; 15 envíos automáticos; 16 soldados; 17 historial; 18 mejorar edificios; 19 combates; 20 despedida. Los encuentros sorpresa se activan al terminar.
+- **Comienzo guiado (v0.12, decidido por Alejandro: 20 pasos y luego partida normal):** partida en el mapa Anillo contra un bot. Una tarjeta sobre el mapa presenta un sistema por paso y resalta el botón exacto; cada objetivo se cumple al hacerlo y las etapas que dependen de la partida se pueden saltar. Pasos 1 a 5: oficios (2 agricultores y 1 científico), tecnología, Molino y un constructor (sin pobladores ni constructores las obras no avanzan), frontera y victoria, y expansión; 6 eventos; 7 oficio al nacer; 8 primer encuentro (siempre el mismo: refugiados); 9 crecer o guardar; 10 Cuartel; 11 cola de investigación; 12 recursos estratégicos; 13 tribus; 14 postura; 15 envíos automáticos; 16 soldados; 17 historial; 18 mejorar edificios; 19 combates; 20 despedida. Los encuentros sorpresa se activan al terminar.
 - **Sonido y efectos:** sonidos generados por código (sin archivos): clic, ¡Listo!, resolución del paso, obras, tecnologías, monedas, nacimientos, combates golpe a golpe en el visor, conquistas, eventos buenos y malos, victoria y derrota; ambiente de viento y pájaros. Efectos nuevos: temblor en los combates, polvo al terminar una obra, destellos y confeti al ganar. Se controlan en el Menú (sonido, volumen, ambiente).
 
 **Reglas** (detalle en cada sección): licenciar tropas (5.2), capital +2 (7), almacén 10 × tamaño y alimentación automática (8), equipo con costo y recuperable (9), postura entre jugadores (11), científicos automáticos (14.0), construir en el nivel máximo con especialización y segundo edificio del mismo tipo (15).
@@ -925,7 +925,7 @@ Es la misma idea que los científicos automáticos (sección 14.0), aplicada a l
 - El motor no tiene errores ni cantidades inválidas en los 12 mapas con 2, 3 y 4 jugadores.
 - 🆕 Antes de los cambios de hoy, en modo prueba se ganaba casi siempre por **Comercial + Desarrollo**. Después de bajar la capital a +2 y encarecer el equipo, casi nadie gana antes del paso 60 (pendiente 28).
 
-### 23.5 Reglas decididas que el prototipo todavía no tiene (🆕 26/10/2026)
+### 23.5 Reglas decididas que el prototipo todavía no tiene (🆕 27/10/2026)
 
 - **Maravillas únicas** ligadas a las ramas (15.3).
 - **Botín** al conquistar (sección 15).

@@ -114,4 +114,4 @@ La lista completa está en [`docs/TRASPASO_Los_Pasos_del_Imperio.md`](docs/TRASP
 
 ## Equipo
 
-Diseño de **Pao** (idea inicial) y **Alejandro**. Cómo colaborar: [`CONTRIBUTING.es.md`](CONTRIBUTING.es.md).
+Diseño y desarrollo de **Alejandro**. Cómo colaborar: [`CONTRIBUTING.es.md`](CONTRIBUTING.es.md).

@@ -120,4 +120,4 @@ How one step resolves: births → event → orders (research, specialize, train,
 
 ## Team
 
-Designed by **Pao** (original idea) and **Alejandro**. How to contribute: [`CONTRIBUTING.md`](CONTRIBUTING.md).
+Designed and built by **Alejandro**. How to contribute: [`CONTRIBUTING.md`](CONTRIBUTING.md).

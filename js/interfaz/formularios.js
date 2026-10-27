@@ -8,7 +8,7 @@ function selHTML(key,opts,def){
 }
 function numHTML(key,def,max){ return `<input type="number" min="0" max="${max}" value="${fv(key,def)}" data-f="${key}" class="n">`; }
 function btnHTML(act,label,extra,cls){ return `<button class="btn ${cls||''}" data-act="${act}" ${extra||''}>${label}</button>`; }
-let ME=0;   // asiento de quien juega en esta pantalla (en línea lo fija la sala)
+const ME=0;
 // Íconos de los recursos y una cantidad con su ícono (menos texto en la interfaz)
 const RI={food:'🌾',prod:'⚒',gold:'🪙',tech:'🔬'};
 const RN={food:'comida',prod:'producción',gold:'oro',tech:'ciencia'};

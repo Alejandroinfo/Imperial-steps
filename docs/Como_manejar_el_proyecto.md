@@ -2,6 +2,8 @@
 
 Guía corta de trabajo para *Los Pasos del Imperio*. Las partes entre corchetes se reemplazan.
 
+⚠ **Quién escribe:** en este proyecto escribe siempre **Alejandro**, autor único del diseño y del código. Las preferencias de la cuenta de Claude están a nombre de otra persona (Pao); no la confundas con él, no le atribuyas ideas, decisiones ni partidas de prueba, y háblale a Alejandro en masculino.
+
 ---
 
 ## 1. Monta el Proyecto una sola vez

@@ -7,7 +7,7 @@ Este documento explica cómo funciona el multijugador, cómo conectar el juego c
 - Una persona crea una **sala** y recibe un código de 4 letras y un enlace. Los demás entran con el código o el enlace. Juegan de 2 a 4 personas; los asientos libres los juega un bot.
 - Quien crea la sala es el **anfitrión**. Su navegador corre el motor como siempre, también los bots. Los demás planean y, al dar **¡Listo!**, escriben sus órdenes en la sala.
 - Cuando todos están listos, el anfitrión resuelve el paso y escribe el **estado completo** de la partida, que les llega a todos al instante. Como solo una pantalla resuelve, nadie se desincroniza.
-- Firebase guarda el último paso. Si alguien recarga la página o se le corta internet, vuelve solo a su asiento, también el anfitrión. Lo único que no puede pasar es que el anfitrión cierre la pestaña **para siempre**: sin él, nadie resuelve los pasos.
+- Firebase guarda el último paso. Si alguien recarga la página o se le corta internet, vuelve solo a su asiento, también el anfitrión. 🆕 Si cierra el navegador (o cambia de aparato), vuelve entrando a la sala con **el mismo nombre**: recupera su asiento si está desconectado. Nadie puede quitarle el asiento a alguien que sigue conectado. Lo único que no puede pasar es que el anfitrión cierre la pestaña **para siempre**: sin él, nadie resuelve los pasos.
 - Contra bots, el juego no necesita internet ni Firebase: Firebase se carga solo al usar «Jugar en línea».
 
 ## Configurar Firebase (una sola vez, unos 10 minutos)
@@ -17,7 +17,7 @@ Todo se hace en la [consola de Firebase](https://console.firebase.google.com) co
 1. **Crear el proyecto.** «Crear un proyecto» → un nombre (por ejemplo, `pasos-del-imperio`). Google Analytics no hace falta.
 2. **Registrar la app web.** En la página del proyecto, el ícono **`</>`** (Web) → un apodo → «Registrar app». Firebase Hosting no hace falta en este paso.
 3. **Crear la base de datos.** Menú → Compilación → **Realtime Database** → «Crear base de datos» → una ubicación → empezar en **modo bloqueado**.
-4. **Pegar las reglas.** En Realtime Database, pestaña **Reglas**: borrar lo que haya, pegar el contenido de `firebase/reglas_base_datos.json` y presionar **Publicar**. Las reglas hacen que solo puedan entrar personas con el juego abierto, que cada quien escriba solo sus propias órdenes y que solo el anfitrión escriba el resultado de cada paso.
+4. **Pegar las reglas.** En Realtime Database, pestaña **Reglas**: borrar lo que haya, pegar el contenido de `firebase/reglas_base_datos.json` y presionar **Publicar**. 🆕 Cada vez que cambie ese archivo hay que volver a pegarlo y publicarlo. Las reglas hacen que solo puedan entrar personas con el juego abierto, que cada quien escriba solo sus propias órdenes y que solo el anfitrión escriba el resultado de cada paso.
 5. **Activar el acceso anónimo.** Menú → Compilación → **Authentication** → «Comenzar» → pestaña «Método de acceso» → **Anónimo** → Habilitar → Guardar. Así nadie tiene que crear una cuenta ni escribir una contraseña.
 6. **Copiar la configuración al juego.** ⚙ Configuración del proyecto → «Tus apps» → la app web → «Configuración del SDK» → opción **Config**. Copiar los valores a `js/red/config_firebase.js`, reemplazando cada `PEGAR_AQUI`. Si no aparece `databaseURL`, se copia la dirección que muestra arriba la página de Realtime Database (empieza con `https://` y termina en `firebaseio.com` o `firebasedatabase.app`).
 7. **Autorizar la dirección donde se publique el juego.** Authentication → Configuración → **Dominios autorizados** → «Agregar dominio» (por ejemplo, `pasos-del-imperio.pages.dev`). `localhost` ya viene autorizado, para probar en la propia compu.
@@ -35,8 +35,8 @@ Para jugar en línea, el juego tiene que abrirse desde una dirección web (`http
 ## Cómo se juega
 
 1. El anfitrión abre el juego → **🌐 Jugar en línea…** → escribe su nombre → **Crear sala**.
-2. Comparte el código o el enlace por la videollamada o por WhatsApp.
-3. Los demás abren el enlace → escriben su nombre → **Unirme**.
+2. Presiona **📋 Copiar enlace de invitación** y lo pega en la videollamada o en WhatsApp.
+3. Los demás abren el enlace: solo escriben su nombre y presionan **Entrar a la sala**.
 4. El anfitrión elige mapa, número de jugadores y victoria → **Empezar partida**.
 5. Cada paso, todos planean y dan **¡Listo!**. El paso avanza cuando están todos.
 

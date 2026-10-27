@@ -5,10 +5,10 @@
 function newMods(){
   return {
     agrFood:0,pobFood:0,ingProd:0,pobProd:0,comGold:0,cieTech:0,
-    zl:{agr:1,ing:1,com:1,cie:1,con:1},
+    zl:{agr:1,ing:1,com:1,cie:1},
     zFoodLvl:0,zProdLvl:0,ruta:0,revol:0,
     tx:{mon:0,pra:0,bos:0,rio:0,col:0,lla:0},terrDouble:0,
-    conUse:0,wk:2,bSub:0,refund:0.5,slotBonus:0,pullDist:1,
+    conUse:0,bPct:1,upgRebate:0,wk:2,bSub:0,refund:0.5,slotBonus:0,pullDist:1,
     growSub:0,growHalf:0,hungerSteps:2,specSub:0,specFree:0,buyCost:3,caravan:0,logiRefund:0,
     foresight:2,avoidNeg:0,evNegFood:1,evNegCons:1,evPosRisk:1,evNegRisk:1,
     imp:0,monop:0,capExtra:0,capDef:0,corte:0,
@@ -35,7 +35,7 @@ const FX = {
   'Herramientas':M=>{M.ingProd+=1;}, 'Carretillas':M=>{M.pobProd+=1;}, 'Ingeniería básica':M=>{M.zl.ing=Math.max(M.zl.ing,2);},
   'Minería':M=>{M.zProdLvl+=2;}, 'Ingeniería avanzada':M=>{M.zl.ing=3;}, 'Maquinaria':M=>{M.ingProd+=1;},
   'Cuadrillas de obra':M=>{M.conUse+=1;}, 'Línea de ensamblaje':M=>{M.conUse+=1;}, 'Aprendices':M=>{M.specFree=1;},
-  'Logística de obra':M=>{M.pullDist=2;}, 'Gremios de constructores':M=>{M.zl.con=2;}, 'Grandes obras':M=>{M.zl.con=3;},
+  'Logística de obra':M=>{M.pullDist=2;}, 'Gremios de ingenieros':M=>{M.bPct=0.9;}, 'Grandes obras':M=>{M.upgRebate=10;},
   'Andamios':M=>{M.wk+=1;}, 'Grúas':M=>{M.wk+=1;}, 'Reciclaje':M=>{M.refund=0.75;}, 'Estandarización':M=>{M.bSub=10;},
   'Canteras reales':M=>{M.wonderCost=400;}, 'Guardianes de la maravilla':M=>{M.wonderDef=2;}, 'Planificación urbana':M=>{M.slotBonus+=1;},
   // --- comercio ---

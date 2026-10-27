@@ -70,13 +70,38 @@
   </div>
   <p class="hint" id="mapShort"></p>
   <p class="warn" id="setupWarn" hidden>Se termina la partida actual.</p>
-  <div class="dactions"><button class="btn" id="setupCancel">Volver a la partida</button><button class="btn" id="btnTut" title="Los primeros 20 pasos guiados en el mapa Anillo, contra un bot; después sigues jugando normal">🎓 Comienzo guiado</button><button class="btn primary" id="btnStart">Empezar</button></div>
+  <div class="dactions"><button class="btn" id="setupCancel">Volver a la partida</button><button class="btn" id="btnTut" title="Los primeros 20 pasos guiados en el mapa Anillo, contra un bot; después sigues jugando normal">🎓 Comienzo guiado</button><button class="btn" id="btnOnline2">🌐 Jugar en línea…</button><button class="btn primary" id="btnStart">Empezar</button></div>
   <p class="hint">¿Primera vez? El <b>comienzo guiado</b> te acompaña los primeros 20 pasos y después sigues jugando esa misma partida.</p>
+</dialog>
+<dialog id="dlgRed" class="setup" aria-labelledby="redTitle">
+  <h2 id="redTitle">Jugar en línea</h2>
+  <p class="warn" id="redOff" hidden></p>
+  <div id="redForm">
+    <div class="sform"><label>Tu nombre<input id="redName" maxlength="14" placeholder="Pao" autocomplete="nickname"></label></div>
+    <p class="hint">Crea una sala y comparte el código, o escribe el código que te pasaron.</p>
+    <div class="dactions"><button class="btn primary" id="redCreate">Crear sala</button></div>
+    <div class="sform"><label>Código de sala<input id="redCode" maxlength="4" placeholder="ABCD" autocapitalize="characters"></label></div>
+    <div class="dactions"><button class="btn" id="redJoin">Unirme</button></div>
+  </div>
+  <div id="redLobby" hidden>
+    <p>Código de la sala: <b id="redCodeShow"></b></p>
+    <p class="hint">O comparte este enlace: <a id="redLink" target="_blank" rel="noopener"></a></p>
+    <ul id="redPlayers"></ul>
+    <div class="sform" id="redHost">
+      <label>Mapa<select id="redMap"></select></label>
+      <label>Jugadores (los asientos libres los juega un bot)<select id="redN"><option>2</option><option>3</option><option>4</option></select></label>
+      <label>Victoria<select id="redThr"></select></label>
+    </div>
+    <p class="hint" id="redWait">Esperando a que el anfitrión empiece la partida…</p>
+  </div>
+  <p class="warn" id="redMsg" hidden></p>
+  <div class="dactions"><button class="btn" id="redClose">Cerrar</button><button class="btn primary" id="redStart" hidden>Empezar partida</button></div>
 </dialog>
 <dialog id="dlgMenu" class="menu" aria-labelledby="menuTitle">
   <h2 id="menuTitle">Menú</h2>
   <div class="mgrid">
     <button class="btn" id="btnNew">Partida nueva…</button>
+    <button class="btn" id="btnOnline">🌐 Jugar en línea…</button>
     <button class="btn" id="btnTut2">🎓 Comienzo guiado (20 pasos)</button>
     <button class="btn" id="btnAuto" title="El bot toma tus decisiones durante 5 pasos">Bot por mí (5 pasos)</button>
     <button class="btn" id="btnGallery">Galería de estilo</button>
@@ -145,6 +170,8 @@
 <script src="js/interfaz/render.js"></script>
 <script src="js/interfaz/acciones.js"></script>
 <script src="js/interfaz/flujo.js"></script>
+<script src="js/red/config_firebase.js"></script>
+<script src="js/red/multijugador.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>

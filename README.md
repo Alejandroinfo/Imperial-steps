@@ -121,3 +121,7 @@ How one step resolves: births → event → orders (research, specialize, train,
 ## Team
 
 Designed and built by **Alejandro**. How to contribute: [`CONTRIBUTING.md`](CONTRIBUTING.md).
+
+## Audio credits
+
+Sound effects are generated in code. The background music was generated with Suno (free plan, personal non-commercial use) and is **not licensed for reuse**; see `docs/audio.md`.

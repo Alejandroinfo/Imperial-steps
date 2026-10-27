@@ -173,8 +173,8 @@ Cada zona tiene un terreno. Algunos efectos dependen de si la unidad es **atacan
 - 💡 **Probabilidades** por rasgo: muy malo 8 %, malo 32 %, bueno 43 %, muy bueno 17 % (promedio de unos +7 %). **Efecto**: ±25 % por nivel (±50 % en los extremos). Estimaciones mías; hay que jugarlas y simularlas.
 - 💡 Los rasgos **no cambian** y viajan con la persona al cambiar de oficio, ser capturada o licenciada. Las tribus también tienen gente con rasgos, y se conservan al anexarlas o conquistarlas. Los bots eligen a los de mejor rasgo para cada oficio.
 - 💡 Apetito: las fracciones se suman por zona y se redondean hacia arriba.
-- ❓ **Fase C (sin hacer):** ❤ Salud (vida) y ⚔ Fuerza (dados) para el combate; son valores enteros (vida 3, fuerza 2) y hay que decidir y simular cuánto valen (💡 ±1 y ±2).
-- ❓ Mostrar los rasgos también en el mapa y en el resumen de la zona, no solo en Población.
+- ✅ **Fase C (27/10/2026, decidido por Alejandro: se mantienen como enteros):** ❤ **Salud** (+1 / +2 o −1 / −2 de vida) y ⚔ **Fuerza** (+1 / +2 o −1 / −2 dados) para el combate. 💡 La vida nunca baja de 1 y un militar nunca pelea con menos de 1 dado. Los rasgos son ahora 7 (🌾 ⚒ 🪙 🔬 🍽 ❤ ⚔): con 2 por persona, unos 3 de cada 10 tienen algo que importa para un oficio concreto. Falta simular el efecto en batallas.
+- ✅ Los rasgos también se ven en el mapa (aro dorado o plateado alrededor de la figura) y en el resumen de la zona (🥇 muy buenos · 🥈 buenos por oficio), además de Población.
 
 ## 6. Recursos
 
@@ -691,12 +691,15 @@ Es la misma idea que los científicos automáticos (sección 14.0), aplicada a l
 - ✅ 🆕 **12 maravillas, una por rama, únicas en toda la partida (decidido por Alejandro).**
 - ✅ 🆕 **La vertebral de nivel 5 desbloquea la maravilla (decidido por Alejandro):** se paga como siempre (ciencia: 100), pero **por sí sola no da su efecto**: desbloquea la construcción de la maravilla de esa rama. **El efecto lo da la maravilla** mientras la controles; si te conquistan la zona, el efecto pasa al conquistador (ya decidido en 16.3).
 - ✅ 🆕 **Solo se puede investigar esa tecnología si su maravilla todavía no se ha construido** (por nadie).
-- ✅ 🆕 **Si pierdes la carrera (decidido por Alejandro):** si otro jugador termina la maravilla antes que tú, tu obra se cancela y pierdes la tecnología que la desbloqueaba, y **recuperas la mitad de la ciencia y la mitad de la producción** que habías puesto (por ejemplo, 50 de los 100 de ciencia). Si la tecnología aún estaba en la cola, se cancela y recuperas la mitad de la ciencia ya gastada.
-- 💡 🆕 La obra se **anuncia a todos al empezar**, para que la carrera se vea.
-- 💡 🆕 **Empate:** si dos jugadores terminan la misma maravilla en el mismo paso, **nadie la logra** y a cada uno le cuesta el doble lo que le falte (el mismo empate que las tribus).
-- 💡 🆕 Las maravillas **no se pueden demoler** (sí conquistar), para que nadie reabra la carrera por capricho.
+- ✅ 🆕 **Si pierdes la carrera (decidido por Alejandro; corregido el 27/10/2026):** si otro jugador termina la maravilla antes que tú, tu obra se cancela y **recuperas la mitad de la producción** que habías puesto (hasta donde quepa en tus almacenes). ~~Pierdes la tecnología y recuperas la mitad de la ciencia.~~ **La tecnología de nivel 5 no se pierde ni devuelve ciencia**, porque cuenta para la victoria tecnológica. Si la tecnología aún estaba en la cola, se cancela y recuperas la mitad de la ciencia ya gastada (todavía no la tenías, y ya no se puede investigar).
+- ✅ 🆕 La obra se **anuncia a todos al empezar** (en el juego: aviso «¡Carrera!» y la lista de las 12 en la pestaña Imperio, con el avance de quien la construye).
+- ✅ 🆕 **Empate (27/10/2026, decidido por Alejandro):** si dos jugadores llegan al 100 % de la misma maravilla en el mismo paso, **la logra quien podía destinar más producción a terminarla en ese paso** (sin contar producción traída de zonas ajenas más allá de lo que ya está en sus órdenes). Quien pierde sufre lo de siempre en la carrera (pierde la obra y recupera la mitad de la producción, pero conserva la tecnología). 💡 Si empatan exactamente, nadie la logra: se deshace el último paso de obra y a cada uno le falta el doble.
+- ✅ 🆕 Las maravillas **no se pueden demoler** (sí conquistar), para que nadie reabra la carrera por capricho.
 - 💡 🆕 Defensa solo tiene una tecnología de nivel 5 (la vertebral): quien construye esa maravilla cierra la rama a los demás. Es un detalle estratégico, no un error.
 - 💡 🆕 *Canteras reales* (maravillas a 400) y *Guardianes de la maravilla* (+2 de defensa), de Urbanismo, siguen valiendo y pesan más ahora.
+
+- ✅ 🆕 **Nadie pierde una tecnología ya investigada (decidido por Alejandro):** quien la tenía, con la obra empezada o sin empezar, la conserva (sin efecto, porque el efecto lo da la maravilla). Consecuencia: la primera maravilla de una rama cierra esa tecnología a quienes aún no la tienen.
+- 💡 🆕 **Detalles de la v0.16:** (1) *Red de caminos II*, *Hospital imperial* y *Ciudadela* daban su efecto como **nivel 5 del edificio** (Camino, Hospital, Fortificación); ahora esos edificios llegan solo hasta el **nivel 4** y el nivel 5 viene con su maravilla. (2) Lo recuperado de la producción se guarda en tus almacenes **hasta donde quepa** (10 por tamaño de zona, más Almacén); el resto se pierde. (3) La Calzada sin Fin vale para los envíos que pasan por la zona de la maravilla. (4) Los bots empiezan una maravilla si tienen la tecnología, un espacio libre y 60 de producción. (5) Los efectos de las tecnologías *Granjas modelo*, *Maquinaria*, *Gran compañía*, *Corte imperial*, *Arsenal*, *Veteranos*, *Ciudadela*, *Contraataque* y *Enciclopedia* pasaron a sus maravillas.
 
 - ✅ 🆕 **Nombres y efectos de las 12 (27/10/2026, decidido por Alejandro):**
 
@@ -717,9 +720,9 @@ Es la misma idea que los científicos automáticos (sección 14.0), aplicada a l
 
 - 💡 🆕 Se revisó que ningún nombre choque con una tecnología del catálogo.
 - 💡 🆕 Alternativas que se descartaron: +1 espacio de edificio por zona para Urbanismo (empujaba demasiado la victoria de Desarrollo) y botín completo para Guerra.
-- ❓ 🆕 **Excel:** cambiar el texto de las vertebrales de nivel 5 de las 12 ramas a «Desbloquea [maravilla]», y el efecto de *Enciclopedia*, *Maravillas* y *Contraataque* por los nuevos.
-- ❓ 🆕 **Victoria tecnológica:** ¿una maravilla controlada cuenta como «nivel 5» para la condición de Tecnología? 💡 Yo diría que sí, porque da el efecto, pero un mismo logro alimentaría dos condiciones.
-- ❓ 🆕 **Ritmo:** con la capital a +2, ¿cuántos pasos tarda una maravilla típica y cuántos las 3 de la condición de victoria? Simular antes de dar los números por buenos.
+- ✅ 🆕 **Excel:** los textos de las 12 vertebrales de nivel 5 ya dicen «Desbloquea [maravilla]» (`Tecnologias_v0.2.xlsx`, 27/10/2026).
+- ✅ 🆕 **Victoria tecnológica (decidido por Alejandro):** una maravilla controlada **no** cuenta como «nivel 5» para esa condición; solo cuentan las tecnologías que tienes. Cuenta, en cambio, para la condición de las 3 maravillas.
+- 🆕 **Ritmo (medido el 27/10/2026, simulación de una zona productiva):** una maravilla de 500 tarda **77 pasos con 4 ingenieros, 43 con 6, 32 con 8 y 23–25 con 12** (zona de tamaño 12 con Producción nivel 3). Con los bots nadie llega a la vertebral de nivel 5 en 150 pasos (46 de 48 partidas terminan antes por otras victorias), así que las maravillas son cosa de partidas muy largas o de humanos concentrados. ❓ Revisar si el costo de 500 o la condición de 3 maravillas son demasiado lejanos.
 
 ---
 
@@ -883,7 +886,7 @@ Es la misma idea que los científicos automáticos (sección 14.0), aplicada a l
 36. ❓ 🆕 **Fronteras:** confirmar los bonos (+3 / +4) jugando, y revisar los 11 mapas donde un camino todavía pasa por encima de otra zona (sobre todo Espiral y Dientes de sierra).
 37. ✅ 🆕 **Maravillas:** no se podían construir (la orden no se atendía); corregido al agregar la revisión de tipos.
 35. ❓ 🆕 **Multijugador para el primer playtest** por videollamada, cada uno en su computadora. ✅ 🆕 **Con Firebase Realtime Database (27/10/2026, decidido por Alejandro: más estable que PeerJS y nadie tiene que dejar su compu prendida como servidor).** Salas con código de 4 letras; el anfitrión resuelve cada paso y escribe el estado completo; cualquiera puede recargar y volver a su asiento. Hecho sobre la v0.13 (ya en `main`) y probado con dos navegadores y un Firebase falso (ver `docs/multijugador.md`). ❓ Falta la primera partida con el Firebase real. La versión anterior con servidor propio (rama `red/multijugador-salas`, sobre la v0.4) queda descartada.
-38. ❓ 🆕 **Maravillas únicas (15.3):** ✅ nombres y efectos ya decididos; falta pasarlos al Excel, decidir si cuentan como «nivel 5» para la victoria tecnológica, y confirmar las propuestas 💡 (empate, no demoler, anuncio de la obra).
+38. ✅ 🆕 **Maravillas únicas (15.3):** programadas en la v0.16. Decididos: empate (más producción destinable), la maravilla no cuenta como nivel 5, y nadie pierde la tecnología ya investigada. Pendiente ❓ el ritmo (ver 15.3) y confirmar jugando los 💡.
 39. ✅ 🆕 **Ingenieros automáticos (15.2):** ya están en el juego (v0.14) y los pobladores también construyen solos. Quedan ❓ confirmar jugando el costo real de construir, las cifras 💡 de *Gremios de ingenieros* y *Grandes obras*, (los textos nuevos de esas cinco tecnologías ya están en `Tecnologias_v0.2.xlsx`).
 40. ✅ 🆕 **Botín (sección 15):** toda la comida y la producción guardadas, más los civiles capturados, al ganar el control por conquista o anexión. Ya funciona así en el juego.
 41. ❓ 🆕 **Villas francas (13.3):** segunda villa en los mapas de 2 jugadores, y confirmar que solo cuenten las tropas.
@@ -980,7 +983,7 @@ Es la misma idea que los científicos automáticos (sección 14.0), aplicada a l
 
 ### 23.5 Reglas decididas que el prototipo todavía no tiene (🆕 27/10/2026)
 
-- **Maravillas únicas** ligadas a las ramas (15.3).
+- ~~**Maravillas únicas** ligadas a las ramas (15.3).~~ ✅ Hechas en la v0.16.
 - ~~**Botín** al conquistar (sección 15).~~ Ya funciona: las reservas y los civiles capturados pasan al nuevo dueño.
 - **Villas francas** (nombre nuevo, solo tropas, segunda villa en mapas de 2), **subastas**, **encuentros de elegir entre dos**, **pedidos de las tribus y anexión por relación**, **guerra con las tribus** e **historias** (13.3 y 12).
 - ~~**Ingenieros automáticos** y fusión de constructores en ingenieros (15.2).~~ ✅ **Hecho en v0.14 (27/10/2026):** 5 oficios, obras automáticas, la zona Industrial se fusiona con la de Producción y los números nuevos están en `js/config/efectos_tecnologias.js`.
@@ -997,3 +1000,17 @@ Es la misma idea que los científicos automáticos (sección 14.0), aplicada a l
 - **La comida que se mueve de otra zona cuesta oro** (8). Con 48 partidas de bots las muertes por hambre no empeoran (425 contra 457 antes), pero conviene confirmarlo jugando.
 - **Pruebas:** 4 casos nuevos (pausa, acumulación con pausa, cobro de oro, hambre sin oro) y 3 del reparto mitad y mitad.
 - **Rasgos de las personas (fases A y B, 5.4):** identificador y 2 rasgos por civil, producción, ciencia, oro y comida por persona, elegir a quién especializar (tocar o arrastrar), fichas con íconos y bordes en Población. 11 casos de prueba nuevos.
+
+### 23.7 Sonido y vida en las zonas (🆕 27/10/2026)
+
+- **Música** (decidido por Alejandro: opción B): 6 pistas de Suno (plan gratis, uso personal no comercial) recomprimidas, normalizadas y recortadas en `audio/`, en el repositorio y con crédito a Suno; ver `docs/audio.md` y su advertencia de licencia. Menú, 2 piezas de planificación que se turnan con cruce de 2 s, combate en el visor de batalla, y remates al resolver el paso y al terminar la partida. Volumen propio (30 % por defecto), se pausa si la pestaña no se ve, el juego funciona igual sin los archivos. Falta `derrota.mp3`.
+- **Vida en las zonas:** partículas del color de lo que produce la zona, chispas en las obras activas, ⏸ cuando están en pausa, aviso de hambre en la placa, y aros de rasgos en las figuras.
+- ✅ **Comida cara a propósito:** que mover comida de otra zona cueste oro empuja a producir comida en zonas cercanas o a abaratar la logística (Caminos, tecnologías).
+- **Salud y Fuerza** (fase C de los rasgos): 2 casos de prueba nuevos.
+
+### 23.8 Maravillas únicas (🆕 27/10/2026, v0.16)
+
+- 12 maravillas, una por rama, con nombre, efecto propio y un solo ejemplar en toda la partida. La vertebral de nivel 5 solo las desbloquea; el efecto va con la zona (si te la conquistan, pasa al conquistador).
+- Carrera: aviso a todos al empezar, lista de las 12 en Imperio con el avance, quien termina primero se la queda, los demás pierden la obra y recuperan la mitad de la producción, conservando la tecnología. Empate por producción destinable.
+- 14 casos de prueba nuevos (carrera, reembolsos, empate, efectos, topes de nivel 4).
+

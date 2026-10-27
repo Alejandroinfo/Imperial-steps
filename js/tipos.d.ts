@@ -8,7 +8,7 @@ type Jugador = number;
 /** Índice de una zona en `Partida.zones`. */
 type ZonaId = number;
 type Terreno = 'mon' | 'pra' | 'bos' | 'rio' | 'col' | 'lla';
-type Civil = 'pob' | 'agr' | 'ing' | 'con' | 'cie' | 'com';
+type Civil = 'pob' | 'agr' | 'ing' | 'cie' | 'com';
 type Militar = 'sol' | 'arq' | 'cab' | 'esc' | 'ber' | 'ari' | 'lan';
 type TipoUnidad = Civil | Militar;
 type Recurso = 'food' | 'prod' | 'gold' | 'tech';
@@ -45,7 +45,7 @@ interface Zona {
   ev: { [k: string]: number };
   // economía de la zona
   growMode?: 'crecer' | 'guardar'; autoSpec?: Civil | null; routes?: EnvioAuto[];
-  resN?: number; resBonus?: number; rcap?: number; nres?: number;
+  bplan?: {ing:number; pob:number; bonus:number; cap:number; work:number; stock:number} | null; resN?: number; resBonus?: number; rcap?: number; nres?: number;
   f0?: number; p0?: number; feedOut?: number;
   feed?: { [f: number]: { need: number; local: number; from: { [z: number]: number }; short: number; line: ZonaId | null } };
   last?: { food: number; prod: number; gold: number; tech: number };

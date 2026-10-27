@@ -182,6 +182,7 @@ function zoneSig(z,i){
   if((z.units[ME]||[]).some(u=>!UT[u.t].civ)&&z.owner!==ME) s+='|sup'+(((z.feed||{})[ME]||{}).line)+((z.units[ME]||[]).some(u=>u.hg>0)?'!':'');
   if((G.tributes||[]).some(t=>t.zone===z.id&&!t.paid[ME])) s+='|tr';
   if(G.F[ME].enc&&G.F[ME].enc.zone===z.id) s+='|enc'+G.F[ME].enc.step;
+  { let hg=0; for(const f in z.units) z.units[f].forEach(u=>{ if(u.hg>0) hg++; }); if(hg) s+='|hg'+hg; }
   if(z.res) s+='|rh'+resBonus(z)+(z.owner);
   if(z.role==='frontera') s+='|fg'+JSON.stringify(z.frontGain||{});
   return s+'|'+slotsOf(G,z);
@@ -191,7 +192,7 @@ function updateTerritory(){
   Z.forEach((z,i)=>{
     const e=ZG[i]; if(!e) return; const sig=zoneSig(z,i);
     if(e.sig!==sig){
-      e.sig=sig; e.dyn.innerHTML=zoneContent(z,i);
+      e.sig=sig; e.dyn.innerHTML=zoneContent(z,i); lifeBind(i,e.dyn);
       e.own.innerHTML=z.role==='frontera'?`<polygon points="${ptsStr(WORLD.poly[i],0.955)}" fill="#E9C46A" fill-opacity=".10" stroke="#C9A24A" stroke-width="5" stroke-dasharray="18 10" stroke-linejoin="round"/>`:isPl(z.owner)?`<polygon points="${ptsStr(WORLD.poly[i],0.955)}" fill="${PLN[z.owner].col}" fill-opacity=".10" stroke="${PLN[z.owner].col}" stroke-width="6" stroke-linejoin="round" opacity=".95"/>`:(z.owner===TRIBE?`<polygon points="${ptsStr(WORLD.poly[i],0.955)}" fill="none" stroke="#5E3B24" stroke-width="4" stroke-dasharray="14 10" stroke-linejoin="round"/>`:'');
       const rn=z.role==='capital'?'Capital':z.role==='tribu'?'Tribu':'Zona libre';
       e.g.setAttribute('aria-label',`${zname(z)}, ${rn}, ${TERRN[z.terrain]}, dueño: ${z.owner===null?'sin dueño':PLN[z.owner].name}`);
@@ -202,20 +203,42 @@ function updateTerritory(){
   });
   drawOrderPreview();
 }
+// Cosas del suelo donde trabaja la gente del pueblo vivo: campo de cultivo, pila de leña y piedra, blanco de tiro.
+function groundDecor(z,stg,fo){
+  const n=t=>fo.filter(u=>u.t===t).length; let h='';
+  const near=(bt,dx,dy,fb)=>{ const b=stg.bld[bt]; const p=b?[b[0]+dx,b[1]+dy]:fb; return [Math.max(-150,Math.min(150,p[0])),Math.max(70,Math.min(165,p[1]))]; };
+  if(n('agr')>0){
+    const a=near('molino',-40,38,[-150,104]); const rows=Math.min(4,1+Math.ceil(n('agr')/2)); const w=84, hgt=rows*10+6; stg.field=[a[0],a[1],w,hgt];
+    h+=`<g class="field"><rect x="${f1(a[0])}" y="${f1(a[1])}" width="${w}" height="${hgt}" rx="6" fill="#8C6A3E" opacity=".55" stroke="${INK}" stroke-width=".8" stroke-opacity=".5"/>`;
+    for(let r=0;r<rows;r++){ const y=a[1]+8+r*10; h+=`<path d="M${f1(a[0]+5)},${f1(y)} H${f1(a[0]+w-5)}" stroke="#5E3E29" stroke-width="1.2" opacity=".7"/>`; for(let c=0;c<8;c++){ const x=a[0]+9+c*10; h+=`<path d="M${f1(x)},${f1(y)} v-5 M${f1(x-2)},${f1(y)} l-1.6,-3.6 M${f1(x+2)},${f1(y)} l1.6,-3.6" stroke="#8DB04A" stroke-width="1.3" stroke-linecap="round"/>`; } }
+    h+=`</g>`; }
+  if(n('ing')>0){
+    const p=near('taller',-42,26,[150,110]); stg.pile=[p[0],p[1]];
+    h+=`<g transform="translate(${f1(p[0])},${f1(p[1])})"><ellipse cy="3" rx="16" ry="4" fill="rgba(0,0,0,.2)"/><rect x="-14" y="-3" width="22" height="5" rx="2.2" fill="#8A5A3A" stroke="${INK}" stroke-width=".7"/><rect x="-11" y="-8" width="20" height="5" rx="2.2" fill="#A06A42" stroke="${INK}" stroke-width=".7"/><rect x="-7" y="-13" width="14" height="5" rx="2.2" fill="#8A5A3A" stroke="${INK}" stroke-width=".7"/><path d="M10,2 L12,-5 L18,-7 L22,-2 L21,3 Z" fill="#9A9285" stroke="${INK}" stroke-width=".7"/></g>`; }
+  if(MIL.some(t=>n(t)>0&&t!=='ari'&&t!=='lan')){
+    const p=near('cuartel',46,40,[148,128]); stg.target=[p[0],p[1]];
+    h+=`<g transform="translate(${f1(p[0])},${f1(p[1])})"><ellipse cy="3" rx="12" ry="3" fill="rgba(0,0,0,.2)"/><path d="M-6,2 L-1,-14 M6,2 L1,-14" stroke="#6B4528" stroke-width="2.2" stroke-linecap="round"/><circle cy="-20" r="10" fill="#F3EEDF" stroke="${INK}" stroke-width="1"/><circle cy="-20" r="6.6" fill="#C8452F"/><circle cy="-20" r="3.4" fill="#F3EEDF"/><circle cy="-20" r="1.3" fill="#C8452F"/></g>`; }
+  return h;
+}
 function zoneContent(z,i){
   const owner=z.owner; const roof=isPl(owner)?PLN[owner].col:(owner===TRIBE?PLN[TRIBE].col:'#8B7B6B'); const wall=WALLS[i%4];
   const fo=(owner!==null)?(z.units[owner]||[]):[]; const civ=fo.filter(u=>UT[u.t].civ).length;
   let d='';
-  if(z.role==='capital'){ d+=`<g transform="scale(2.1)">${church(-6,6,roof)}</g><g transform="scale(1.6)">${house(-52,34,roof,wall,15)}${house(52,30,roof,WALLS[(i+1)%4],14)}</g>`; }
-  else if(z.role==='tribu'){ const cloth=(owner===TRIBE||owner===null)?PLN[TRIBE].col:PLN[owner].col; d+=`<g transform="scale(1.7)">${tent(-30,12,cloth)}${tent(26,10,cloth)}${tent(-2,26,cloth)}${totem(0,-6)}</g><g transform="translate(0,52)"><ellipse rx="9" ry="4" fill="#3a2418"/><path class="flame" d="M-4,0 Q0,-18 4,0 Z" fill="#E8765F"/><path class="flame f2" d="M-2,0 Q0,-11 2,0 Z" fill="#FFE27A"/></g>`; }
+  const stg=LIFE_STAGE[i]={houses:[],bld:{},blocks:[]};   // escenario del pueblo vivo (vida.js)
+  if(isPl(owner)){ z.b.forEach((b,k)=>{ const p=SLOT_POS[k%SLOT_POS.length]; if(!stg.bld[b.t]) stg.bld[b.t]=[p[0],p[1]]; stg.blocks.push([p[0]-24,p[1]-64,p[0]+24,p[1]+3]); });
+    z.proj.forEach((p,k)=>{ const sl=SLOT_POS[(z.b.length+k)%SLOT_POS.length]; stg.blocks.push([sl[0]-24,sl[1]-64,sl[0]+24,sl[1]+3]); }); }
+  d+=groundDecor(z,stg,fo);
+  if(z.role==='capital'){ d+=`<g transform="scale(2.1)">${church(-6,6,roof)}</g><g transform="scale(1.6)">${house(-52,34,roof,wall,15)}${house(52,30,roof,WALLS[(i+1)%4],14)}</g>`; stg.houses.push([-83,54],[83,48]); stg.blocks.push([-46,-74,22,16],[-96,24,-70,56],[70,20,96,50]); }
+  else if(z.role==='tribu'){ stg.blocks.push([-82,-26,-22,24],[18,-30,72,22],[-34,-8,32,52]); const cloth=(owner===TRIBE||owner===null)?PLN[TRIBE].col:PLN[owner].col; d+=`<g transform="scale(1.7)">${tent(-30,12,cloth)}${tent(26,10,cloth)}${tent(-2,26,cloth)}${totem(0,-6)}</g><g transform="translate(0,52)"><ellipse rx="9" ry="4" fill="#3a2418"/><path class="flame" d="M-4,0 Q0,-18 4,0 Z" fill="#E8765F"/><path class="flame f2" d="M-2,0 Q0,-11 2,0 Z" fill="#FFE27A"/></g>`; }
   else if(z.role==='frontera'){
     const here=presentF(z).filter(isPl); const cols=here.length?here.map(f=>PLN[f].col):['#B8A58C'];
     d+=`<g transform="translate(0,-10)"><rect x="-9" y="-44" width="18" height="46" rx="3" fill="#A9A59C" stroke="${INK}" stroke-width="2"/><path d="M-9,-30 H9 M-9,-16 H9" stroke="#8C857C" stroke-width="2"/></g>`;
     cols.forEach((c,k)=>{ const x=-70+k*140/(Math.max(1,cols.length-1)||1)*(cols.length>1?1:0)+(cols.length===1?70:0); d+=`<g transform="translate(${f1(cols.length===1?-48:x)},20)"><path d="M0,0 V-64" stroke="#5E3E29" stroke-width="3"/><path class="flag" d="M0,-64 L34,-54 L0,-44 Z" fill="${c}" stroke="${INK}" stroke-width="1.5"/></g>`; });
     d+=`<g transform="scale(1.6)">${tent(-34,34,'#C9A24A')}${tent(30,36,'#B8433A')}</g>`;
+    stg.blocks.push([-84,-8,-26,58],[28,-6,86,60],[-12,-62,12,2]);
     if(z.frontGain){ const fs=Object.keys(z.frontGain); if(fs.length) d+=`<g class="lbl" style="transform:translate(0px,-84px) scale(var(--inv,1))"><rect x="-80" y="-14" width="160" height="26" rx="13" fill="#2A1B16" stroke="#E9C46A" stroke-width="2"/><text class="zt" x="0" y="4" text-anchor="middle" font-size="13" font-weight="700" fill="#E9C46A">🪙 +${z.frontGain[fs[0]]} ${fs.length>1?'a cada uno':'para uno'}</text></g>`; }
   }
-  else if(isPl(owner)&&civ>0){ const hN=Math.min(5,Math.ceil(civ/2)); const P=[[-40,-4],[46,-8],[0,16],[-80,20],[84,16]]; d+=`<g transform="scale(1.7)">`; for(let k=0;k<hN;k++) d+=house(P[k][0]/1.7,P[k][1]/1.7,roof,WALLS[(i+k)%4],13); d+=`</g>`; }
+  else if(isPl(owner)&&civ>0){ const hN=Math.min(5,Math.ceil(civ/2)); const P=[[-40,-4],[46,-8],[0,16],[-80,20],[84,16]]; d+=`<g transform="scale(1.7)">`; for(let k=0;k<hN;k++){ d+=house(P[k][0]/1.7,P[k][1]/1.7,roof,WALLS[(i+k)%4],13); stg.houses.push([P[k][0],P[k][1]]); stg.blocks.push([P[k][0]-14,P[k][1]-26,P[k][0]+14,P[k][1]+3]); } d+=`</g>`; }
   if(isPl(owner)){
     z.b.forEach((b,k)=>{ const p=SLOT_POS[k%SLOT_POS.length]; d+=`<g transform="translate(${p[0]},${p[1]}) scale(1.35)">${bGlyph(b.t,b.l,true)}</g>`; });
     z.proj.forEach((p,k)=>{ const sl=SLOT_POS[(z.b.length+k)%SLOT_POS.length]; const pc=Math.round(100*(p.tot-p.left)/p.tot); const nm=p.k==='b'?p.bt:p.k==='w'?'mar':(z.b[p.bi]?z.b[p.bi].t:'almacen'); d+=`<g transform="translate(${sl[0]},${sl[1]})"><g opacity=".38" transform="scale(1.35)">${bGlyph(nm,0,false)}</g><rect x="-28" y="-62" width="56" height="9" rx="4" fill="#2A1B16" stroke="#fff" stroke-width="1"/><rect x="-26" y="-60" width="${(52*pc/100).toFixed(1)}" height="5" rx="2.5" fill="#7CE0A0"/><text class="zt" x="0" y="-67" text-anchor="middle" font-size="12" font-weight="700" fill="#2A1B16" stroke="#fff" stroke-width="3" paint-order="stroke">${p.k==='u'?'mejora':'obra'} ${pc}%</text></g>`; });

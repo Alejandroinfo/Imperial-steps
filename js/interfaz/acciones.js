@@ -50,6 +50,16 @@ function act(a,d){
     case 'cancelres': addOrder({t:'cancelres',name:d.name}); break;
     case 'del': ui.orders.splice(Number(d.i),1); break;
     case 'mvst': ui.mv.st=d.v; break;
+    case 'mvstep': { const t=d.k.slice(3); const mx=availQ(ui.mv.from,t); ui.form[d.k]=Math.max(0,Math.min(mx,(Number(fv(d.k,0))||0)+Number(d.d))); break; }
+    case 'mvquick': { CIV.concat(MIL).forEach(t=>{ const mx=availQ(ui.mv.from,t); const hostile=G.zones[ui.mv.to].owner!==null&&G.zones[ui.mv.to].owner!==ME&&!allied(G,ME,G.zones[ui.mv.to].owner);
+        ui.form['mv_'+t]=d.v==='none'?0:(d.v==='mil'?(MIL.includes(t)&&t!=='ari'&&t!=='lan'?mx:0):(CIV.includes(t)&&hostile?0:mx)); }); break; }
+    case 'mvvia': ui.form.mv_via=d.v; break;
+    case 'sdset': ui.form[d.k]=d.k==='sd_q'&&d.v!=='sobrante'?Number(d.v):d.v; if(d.k==='sd_mode'&&d.v==='each'&&ui.form.sd_q!=='sobrante'&&![1,2,5,10].includes(Number(ui.form.sd_q))) ui.form.sd_q=5; break;
+    case 'sdq': { const cur=fv('sd_q',5); const base=cur==='sobrante'?5:Number(cur)||0; const mx=fv('sd_mode','once')==='each'?99:Math.floor(z[fv('sd_res','food')==='prod'?'prod':'food']); ui.form.sd_q=Math.max(0,Math.min(mx,base+Number(d.d))); break; }
+    case 'sendgo': { const others=G.zones.filter(a=>a.owner===ME&&a.id!==z.id); const to=others.some(a=>String(a.id)===String(fv('sd_to','')))?Number(fv('sd_to','')):others[0].id; const res=fv('sd_res','food')==='prod'?'prod':'food'; const q=fv('sd_q',5);
+      if(fv('sd_mode','once')==='each'){ ui.orders=ui.orders.filter(o=>!(o.t==='route'&&o.from===z.id&&o.to===to&&o.res===res)); addOrder({t:'route',from:z.id,to,res,q:q==='sobrante'?'sobrante':Number(q)}); }
+      else { const n=Math.min(Number(q)||0,Math.floor(z[res])); if(n>0) addOrder({t:'send',from:z.id,to,res,q:n}); }
+      break; }
     case 'mvcancel': ui.mv=null; break;
     case 'mvgo': {
       const u={}; CIV.concat(MIL).forEach(t=>{ const n=Math.min(Number(fv('mv_'+t,0))||0,availQ(ui.mv.from,t)); if(n>0) u[t]=n; });

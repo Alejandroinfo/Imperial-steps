@@ -50,22 +50,35 @@ const FIG_MAX=6;
 function figRows(z,f,col){
   const us=z.units[f]||[]; const by={}; us.forEach(u=>{ const k=by[u.t]||(by[u.t]={n:0,w:0}); k.n++; if(u.w>0) k.w++; });
   const types=CIV.concat(MIL).filter(t=>by[t]); const anchor={}, used={};
-  const ppl={}; if(f===ME) CIV.forEach(t=>{ ppl[t]=us.filter(u=>u.t===t).sort((a,b)=>traitScore(b)-traitScore(a)); });   // aro dorado o plateado para los de buen rasgo
+  // las personas de cada tipo; las tuyas, de mejor a peor rasgo (aro dorado o plateado para los de buen rasgo)
+  const ppl={}; types.forEach(t=>{ ppl[t]=us.filter(u=>u.t===t); if(f===ME&&CIV.includes(t)) ppl[t].sort((a,b)=>traitScore(b)-traitScore(a)); });
+  const stg=LIFE_STAGE[z.id]||(LIFE_STAGE[z.id]={houses:[],bld:{},blocks:[]});
+  stg.builders={}; stg.site=null; stg.conflict=!!z.conflict;
   if(z.owner===f){
     types.forEach(t=>{
       let k=-1; if(JOB_BLD[t]) k=z.b.findIndex(b=>b.t===JOB_BLD[t]);
-      if((t==='ing'||t==='pob')&&z.proj.length&&z.bplan&&z.bplan[t]>0) k=z.b.length;   // quienes construyen, junto a la obra
+      if((t==='ing'||t==='pob')&&z.proj.length&&z.bplan&&z.bplan[t]>0){ k=z.b.length; stg.builders[t]=true; }   // quienes construyen, junto a la obra
       if(k>=0){ const p=SLOT_POS[k%SLOT_POS.length]; const off=(used[k]||0); used[k]=off+1; anchor[t]=[p[0]+(off?34:0)*(off%2?1:-1),p[1]+30+off*22]; }
     });
+    if(z.proj.length&&!z.pauseBuild){ const sl=SLOT_POS[z.b.length%SLOT_POS.length]; stg.site=[sl[0],sl[1]]; }
   }
   const rest={civ:types.filter(t=>!anchor[t]&&CIV.includes(t)),mil:types.filter(t=>!anchor[t]&&MIL.includes(t))};
   const place=(list,y)=>{ const gw=Math.min(70,340/Math.max(1,list.length)); const x0=-(list.length-1)*gw/2; list.forEach((t,i)=>{ anchor[t]=[x0+i*gw,y]; }); };
   place(rest.civ,100); place(rest.mil,142);
-  let s='';
+  stg.anchor=anchor;
+  let s='<g class="pps">';
   types.forEach(t=>{
     const k=by[t], [cx,cy]=anchor[t], big=(t==='ari'||t==='lan'); const n=Math.min(FIG_MAX,k.n);
     const per=big?2:3, sp=big?26:12;
-    for(let j=0;j<n;j++){ const r=Math.floor(j/per), c=j%per, inRow=Math.min(per,n-r*per); s+=fig(t,cx+(c-(inRow-1)/2)*sp,cy+r*13,col,big?1.5:1.8,false,(ppl[t]&&ppl[t][j])?traitBorder(ppl[t][j]):''); }
+    for(let j=0;j<n;j++){
+      const r=Math.floor(j/per), c=j%per, inRow=Math.min(per,n-r*per); const hx=cx+(c-(inRow-1)/2)*sp, hy=cy+r*13; const u=ppl[t][j];
+      // cada persona es un grupo propio («pp») para que el pueblo vivo (vida.js) pueda moverla y animarla
+      s+=`<g class="pp" data-u="${u.id}" data-t="${t}" data-hx="${f1(hx)}" data-hy="${f1(hy)}" data-hg="${u.hg>0?1:0}" data-w="${u.w>0?1:0}" style="transform:translate(${f1(hx)}px,${f1(hy)}px)"><g class="bob"><g class="act"><g class="fl">${fig(t,0,0,col,big?1.5:1.8,false,(f===ME&&CIV.includes(t))?traitBorder(u):'')}<g class="prop"></g></g></g></g><g class="fx"></g></g>`;
+    }
+  });
+  s+='</g>';
+  types.forEach(t=>{
+    const k=by[t], [cx,cy]=anchor[t];
     if(k.n>FIG_MAX) s+=`<g transform="translate(${f1(cx+26)},${f1(cy-6)})"><rect x="-13" y="-9" width="26" height="17" rx="8.5" fill="#2A1B16" stroke="${col}" stroke-width="2"/><text class="zt" text-anchor="middle" y="4" font-size="11" font-weight="700" fill="#FBF8F2">+${k.n-FIG_MAX}</text></g>`;
     if(k.w) s+=`<g transform="translate(${f1(cx-26)},${f1(cy-6)})"><circle r="7" fill="#C8452F" stroke="#fff" stroke-width="1.6"/><path d="M-3,0 h6 M0,-3 v6" stroke="#fff" stroke-width="1.8"/><text class="zt" x="10" y="4" font-size="10" font-weight="700" fill="#fff" stroke="#2A1B16" stroke-width="2.5" paint-order="stroke">${k.w}</text></g>`;
   });

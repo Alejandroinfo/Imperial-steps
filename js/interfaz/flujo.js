@@ -10,7 +10,7 @@ function startGame(cfg){
     mi=Number($('selMap').value); N=Number($('selN').value); thr=$('selThr').value;
     const q=new URLSearchParams(location.search).get('seed'); seed=q?Number(q):Math.floor(Math.random()*1e9);
   }
-  G=newGame(mi,N,seed,thr); G.mapIdx=mi; layoutBoard(); ui=newUI(); tele={ready:[],orders:[]};
+  G=newGame(mi,N,seed,thr); G.mapIdx=mi; layoutBoard(); ui=newUI(); tele={ready:[],orders:[]}; lifeReset(); lifeStart();
   if($('dlgEnd').open) $('dlgEnd').close();
   buildWorld(); buildTerritoryDOM(); setViewMode('terr',true);
   const mc=myCapital(); ui.sel=mc; ui.zsub='resumen';

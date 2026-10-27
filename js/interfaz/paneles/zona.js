@@ -104,30 +104,33 @@ function buildCardsHTML(z){
     h+=`<div class="bpick"><b>${esc(BT[k].n)} de nivel ${buildLevel(G,ME,k)}</b> · ¿con qué especialización nace?<div class="row">${btnHTML('build','Sin especializar',`data-zone="${z.id}" data-bt="${k}"`)}${ops.map(o=>btnHTML('build',esc(SPEC_NAMES[o]),`data-zone="${z.id}" data-bt="${k}" data-spec="${o}"`,'primary')).join('')}</div><div class="hint">Puedes cambiarla después desde el edificio.</div></div>`; }
   return h;
 }
+function stepperHTML(act,key,t,n,mx,dis){
+  return `<div class="stp ${n>0?'on':''} ${dis?'dis':''}">${uIcon(t,34)}<span class="sn"><b>${n}</b><small>de ${mx}</small></span><span class="sb"><button data-act="${act}" data-k="${key}" data-d="1" ${dis||n>=mx?'disabled':''} aria-label="Uno más">＋</button><button data-act="${act}" data-k="${key}" data-d="-1" ${n<=0?'disabled':''} aria-label="Uno menos">－</button></span></div>`;
+}
+function zoneMini(a){ const col=a.owner===null?'#B8A58C':PLN[a.owner].col; return `<div class="zmini"><span class="nband" style="background:${TCOL[a.terrain]}"><span class="nown" style="background:${col}"></span></span><b>${esc(zname(a))}</b><small>${TERRN[a.terrain]}</small></div>`; }
 function moveFormHTML(){
   const mv=ui.mv; const from=G.zones[mv.from], to=G.zones[mv.to]; const M=G.M[ME];
   const hostile=(to.owner!==null&&to.owner!==ME&&!allied(G,ME,to.owner));
-  let h=`<div class="box"><h4>Mover: ${zname(from)} → ${zname(to)}</h4><div class="hint">${TERRN[to.terrain]} · ${to.owner===null?'sin dueño':PLN[to.owner].name}</div>`;
+  let h=`<div class="box mvbox"><div class="mvroute">${zoneMini(from)}<span class="mvarr">➜</span>${zoneMini(to)}</div>`;
   h+=unitsTable(to);
   if(to.owner===TRIBE) h+=annexHTML(to);
   const types=CIV.concat(MIL).filter(t=>availQ(from.id,t)>0);
-  h+='<div class="mvgrid">';
-  types.forEach(t=>{
-    const mx=availQ(from.id,t), civ=CIV.includes(t), dis=civ&&hostile;
-    h+=`<label>${UNP[t]}<small> (${mx})</small></label>${numHTML('mv_'+t,fv('mv_'+t,0),dis?0:mx)}`;
-  });
+  h+=`<div class="row mvq"><button class="btn" data-act="mvquick" data-v="all">Todos</button><button class="btn" data-act="mvquick" data-v="mil">Solo tropas</button><button class="btn" data-act="mvquick" data-v="none">Nadie</button></div>`;
+  h+='<div class="stps">';
+  types.forEach(t=>{ const mx=availQ(from.id,t), civ=CIV.includes(t), dis=civ&&hostile; h+=stepperHTML('mvstep','mv_'+t,t,dis?0:Math.min(mx,Number(fv('mv_'+t,0))||0),mx,dis); });
   h+='</div>';
   if(hostile) h+='<div class="warn">Los civiles no pueden entrar a zonas de otro jugador ni de tribus.</div>';
   const needSt=hostile||presentF(to).some(f=>f!==ME);
-  if(needSt) h+=`<div class="row">Al entrar <span class="seg"><button data-act="mvst" data-v="paz" aria-pressed="${ui.mv.st==='paz'}">Paz</button><button data-act="mvst" data-v="ataque" aria-pressed="${ui.mv.st==='ataque'}">Ataque</button></span></div>`;
+  if(needSt) h+=`<div class="stance2"><button data-act="mvst" data-v="paz" aria-pressed="${ui.mv.st==='paz'}"><span>☮</span><b>Paz</b></button><button data-act="mvst" data-v="ataque" aria-pressed="${ui.mv.st==='ataque'}"><span>⚔</span><b>Ataque</b></button></div>`;
   const extra=from.b.some(b=>b.t==='cuartel')?M.cuartelExtra:0;
-  if(extra>0){ const opts=[['','No seguir']].concat(to.adj.filter(a=>a!==from.id).map(a=>[a,zname(G.zones[a])])); h+=`<div class="row">Seguir a otra zona (Cuartel) ${selHTML('mv_via',opts,'')}</div>`; }
+  if(extra>0){ const nxt=to.adj.filter(a=>a!==from.id); const cur=String(fv('mv_via',''));
+    h+=`<div class="viabox"><small>Con el Cuartel puedes seguir un paso más:</small><div class="row"><button class="chip ${cur===''?'on':''}" data-act="mvvia" data-v="">Quedarse</button>${nxt.map(a=>`<button class="chip ${cur===String(a)?'on':''}" data-act="mvvia" data-v="${a}">➜ ${esc(zname(G.zones[a]))}</button>`).join('')}</div></div>`; }
   const sel={}; CIV.concat(MIL).forEach(t=>{ const n=Number(fv('mv_'+t,0))||0; if(n>0) sel[t]=n; });
   const hops=fv('mv_via','')===''?1:2; const gold=moveGold(sel,hops);
   const nmil=Object.keys(sel).filter(t=>MIL.includes(t)).reduce((a,t)=>a+sel[t],0);
   const nciv=Object.keys(sel).filter(t=>CIV.includes(t)).reduce((a,t)=>a+sel[t],0);
-  h+=`<div class="cost ${gold>G.F[ME].gold?'bad':''}"><b>${gold?rq('gold',gold):'Gratis'}</b><small>${nmil?`${nmil} militar${nmil>1?'es':''} × ${hops} zona${hops>1?'s':''} × 🪙 1${M.milMoveHalf?' ÷ 2':''}`:''}${nmil&&nciv?' · ':''}${nciv?`${nciv} civil${nciv>1?'es':''} gratis (no producen este paso)`:''}${gold?` · tienes ${rq('gold',Math.floor(G.F[ME].gold))}`:''}</small></div>`;
-  h+=`<div class="row">${btnHTML('mvgo','Mandar'+(gold?' · 🪙 '+gold:''),'','primary')}${btnHTML('mvcancel','Cancelar')}</div></div>`;
+  h+=`<div class="cost ${gold>G.F[ME].gold?'bad':''}"><b>${gold?rq('gold',gold):'Gratis'}</b><small>${nmil?`${nmil} tropa${nmil>1?'s':''} × ${hops} zona${hops>1?'s':''}${M.milMoveHalf?' ÷ 2':''}`:''}${nmil&&nciv?' · ':''}${nciv?`${nciv} civil${nciv>1?'es':''} gratis (no producen)`:''}${gold?` · tienes ${rq('gold',Math.floor(G.F[ME].gold))}`:''}</small></div>`;
+  h+=`<div class="row">${btnHTML('mvgo','Mandar'+(gold?' · 🪙 '+gold:''),(nmil+nciv)?'':'disabled','primary')}${btnHTML('mvcancel','Cancelar')}</div></div>`;
   return h;
 }
 const ZSUBS=[['resumen','Resumen'],['poblacion','Población'],['edificios','Edificios'],['militar','Militar'],['recursos','Recursos'],['mover','Moverse']];
@@ -157,9 +160,12 @@ function zoneStatus(a){
   return `<span class="tag" style="background:${PLN[a.owner].col}">${esc(PLN[a.owner].name)}</span>`;
 }
 function neighborsHTML(z){
-  const can=hasUnitsHere(z); let h='<div class="nbs">';
-  z.adj.forEach(id=>{ const a=G.zones[id]; const pres=presentF(a).filter(f=>f!==TRIBE||tribeVisibleFor(a)).map(f=>`${a.units[f].length} ${PLN[f].name}`).join(', ');
-    h+=`<div class="nb"><div><b>${esc(zname(a))}</b> ${zoneStatus(a)}<div class="hint">${TERRN[a.terrain]} · tamaño ${a.size}${pres?' · '+esc(pres):' · vacía'}</div></div>${can?btnHTML('openmv','Ir',`data-from="${z.id}" data-to="${a.id}"`,'primary'):''}</div>`; });
+  const can=hasUnitsHere(z); let h='<div class="ntiles">';
+  z.adj.forEach(id=>{ const a=G.zones[id]; const pres=presentF(a).filter(f=>f!==TRIBE||tribeVisibleFor(a));
+    const col=a.owner===null?'#B8A58C':PLN[a.owner].col;
+    const chips=pres.map(f=>`<span class="npr" style="--c:${PLN[f].col}" title="${esc(PLN[f].name)}"><i></i>${a.units[f].length}</span>`).join('');
+    const inner=`<span class="nband" style="background:${TCOL[a.terrain]}"><span class="nown" style="background:${col}"></span></span><b>${esc(zname(a))}</b><small>${TERRN[a.terrain]} · ${zoneStatus(a)}</small><span class="nrow">${chips||'<em>vacía</em>'}</span>${can?'<span class="ngo">➜</span>':''}`;
+    h+=can?`<button class="ntile" data-act="openmv" data-from="${z.id}" data-to="${a.id}" aria-label="Ir a ${esc(zname(a))}">${inner}</button>`:`<div class="ntile off">${inner}</div>`; });
   return h+'</div>';
 }
 const RIC={food:'🌾',prod:'⚒',gold:'🪙',tech:'🔬'};
@@ -190,9 +196,9 @@ function zoneOverview(z){
     let note='';
     if((t==='ing'||t==='pob')&&L&&L.building&&L.building[t]>0){ const pr=z.proj[0]; note=`${L.building[t]} construye${L.building[t]===1?'':'n'}${pr?': '+projName(z,pr)+' ('+Math.round(100*(pr.tot-pr.left)/pr.tot)+' %)':''}`; }
     if(t==='cie') note=G.F[ME].rq.length?`${pl.n} investiga${pl.n===1?'':'n'}${pl.sci-pl.n>0?`, ${pl.sci-pl.n} genera${pl.sci-pl.n===1?'':'n'} ciencia`:''}`:'generan ciencia (no hay nada en cola)';
-    { const ug=(z.units[ME]||[]).filter(u=>u.t===t), ng=ug.filter(u=>traitBorder(u)==='tg').length, ns=ug.filter(u=>traitBorder(u)==='ts').length; if(ng||ns) note=[note,(ng?'🥇 '+ng+' muy buenos':'')+(ng&&ns?' · ':'')+(ns?'🥈 '+ns+' buenos':'')].filter(Boolean).join(' · '); }
+    const medals=medalsHTML((z.units[ME]||[]).filter(u=>u.t===t));
     const free=cnt[t]-where.reduce((a,w)=>a+parseInt(w),0); if(where.length&&free>0) where.push(`${free} ${t==='pob'?'en casa':'en el campo'}`);
-    rows+=`<div class="wrow">${uIcon(t,30)}<div class="wtx"><b>${cnt[t]} ${(cnt[t]>1?UNP[t]:UN[t]).toLowerCase()}</b><small>${esc([where.join(' · '),note].filter(Boolean).join(' · ')||(t==='pob'?'en casa: un poco de comida y producción':'trabajando en el campo'))}</small></div><div class="wout">${outChips(out)}</div></div>`;
+    rows+=`<div class="wrow">${uIcon(t,30)}<div class="wtx"><b>${cnt[t]} ${(cnt[t]>1?UNP[t]:UN[t]).toLowerCase()}</b><small>${esc([where.join(' · '),note].filter(Boolean).join(' · ')||(t==='pob'?'en casa: un poco de comida y producción':'trabajando en el campo'))} ${medals}</small></div><div class="wout">${outChips(out)}</div></div>`;
   });
   if(L&&L.idle&&(L.idle.busy||L.idle.moving)) rows+=`<div class="hint">${L.idle.busy?L.idle.busy+' cambiando de oficio (no producen este paso)':''}${L.idle.busy&&L.idle.moving?' · ':''}${L.idle.moving?L.idle.moving+' recién llegados':''}</div>`;
   const extra=[]; if(L&&L.cap) extra.push(`<div class="wrow"><span class="wico">★</span><div class="wtx"><b>Capital</b><small>bono fijo de la capital</small></div><div class="wout">${outChips({food:L.cap,prod:L.cap,gold:L.cap,tech:L.cap})}</div></div>`);
@@ -307,14 +313,31 @@ function growModeHTML(z){
   const ST=cur==='crecer'?'Después de alimentar a todos y de los envíos automáticos, <b>todo el sobrante va a crecer</b>. Las reservas no aumentan.':'Después de alimentar a todos y de los envíos, <b>el sobrante se guarda</b> en el almacén; solo lo que no cabe va a crecer. Útil para juntar comida para una tribu, un tributo o una guerra.';
   return `<h4>Comida que sobra${infoBtn('sobra',ST)}</h4><div class="row"><span class="seg"><button data-act="growmode" data-v="crecer" aria-pressed="${cur==='crecer'}">👶 Crecer</button><button data-act="growmode" data-v="guardar" aria-pressed="${cur==='guardar'}">⏸ Pausar crecimiento (guardar)</button></span></div>`+infoBody('sobra',ST)+``;
 }
-// Envíos que se repiten cada paso.
-function routesHTML(z){
-  const others=G.zones.filter(a=>a.owner===ME&&a.id!==z.id); if(!others.length) return '';
+// Envíos: una sola tarjeta para mandar una vez o cada paso. Todo con toques: recurso, destino y cantidad.
+function routeListHTML(z){
   const routes=(z.routes||[]).slice(); ui.orders.filter(o=>o.t==='route'&&o.from===z.id).forEach(o=>{ const i=routes.findIndex(r=>r.to===o.to&&r.res===o.res); if(i>=0) routes.splice(i,1); if(o.q) routes.push({to:o.to,res:o.res,q:o.q,pend:1}); });
-  let h='<h4>Envíos automáticos (cada paso)</h4>';
-  h+=routes.length?routes.map(r=>{ const p=ownPath(G,ME,z.id,r.to,12); const fac=p?shipFactor(G,p):0; return `<div class="rel">🔁 <span>${r.res==='food'?'🌾 Comida':'⚒ Producción'} → <b>${esc(zname(G.zones[r.to]))}</b>: ${r.q==='sobrante'?'todo el sobrante':r.q+' por paso'} <small class="hint">(${fm(fac)} de oro por unidad${r.pend?' · empieza al presionar ¡Listo!':''})</small></span>${btnHTML('route','Quitar',`data-to="${r.to}" data-res="${r.res}" data-q="0"`)}</div>`; }).join(''):'<div class="hint">Ninguno. Sirve para mantener abastecida una zona que no produce lo que necesita.</div>';
-  const dsel=others.some(a=>String(a.id)===String(fv('rt_to','')))?fv('rt_to',''):others[0].id;
-  h+=`<div class="row">${selHTML('rt_res',[['food','🌾 Comida'],['prod','⚒ Producción']],'food')} → ${selHTML('rt_to',others.map(a=>[a.id,zname(a)]),dsel)} ${selHTML('rt_q',[['sobrante','todo el sobrante'],['2','2 por paso'],['5','5 por paso'],['10','10 por paso']],'sobrante')} ${btnHTML('route','Enviar cada paso',`data-from="${z.id}"`)}</div><div class="hint">Se hace después de alimentar a la gente y antes de crecer, pagando la logística en oro.</div>`;
+  if(!routes.length) return '';
+  return `<h4>Envíos que se repiten</h4><div class="rts">`+routes.map(r=>{ const p=ownPath(G,ME,z.id,r.to,12); const fac=p?shipFactor(G,p):0; return `<div class="rtc"><span class="rti">${RI[r.res]}</span><div><b>➜ ${esc(zname(G.zones[r.to]))}</b><small>${r.q==='sobrante'?'todo el sobrante':r.q+' por paso'} · ${fm(fac)} 🪙 c/u${r.pend?' · empieza al presionar ¡Listo!':''}</small></div>${btnHTML('route','✕',`data-to="${r.to}" data-res="${r.res}" data-q="0" aria-label="Quitar"`)}</div>`; }).join('')+'</div>';
+}
+function sendCardHTML(z){
+  const others=G.zones.filter(a=>a.owner===ME&&a.id!==z.id);
+  if(!others.length) return '<div class="hint">Necesitas otra zona tuya para enviar recursos.</div>';
+  const res=fv('sd_res','food')==='prod'?'prod':'food'; const mode=fv('sd_mode','once')==='each'?'each':'once';
+  const dsel=others.some(a=>String(a.id)===String(fv('sd_to','')))?Number(fv('sd_to','')):others[0].id;
+  const stock=Math.floor(z[res]); const to=G.zones[dsel];
+  const path=ownPath(G,ME,z.id,dsel,12); const fac=path?shipFactor(G,path):0;
+  let q=fv('sd_q',5); if(q!=='sobrante') q=Math.max(0,Math.min(Number(q)||0,mode==='once'?stock:99));
+  let h=`<h4>Enviar</h4><div class="sendcard">`;
+  h+=`<div class="sdmode"><button data-act="sdset" data-k="sd_mode" data-v="once" aria-pressed="${mode==='once'}">Una vez</button><button data-act="sdset" data-k="sd_mode" data-v="each" aria-pressed="${mode==='each'}">🔁 Cada paso</button></div>`;
+  h+=`<div class="sdres">${['food','prod'].map(r=>`<button data-act="sdset" data-k="sd_res" data-v="${r}" aria-pressed="${res===r}"><span>${RI[r]}</span><b>${Math.floor(z[r])}</b><small>${RN[r]}</small></button>`).join('')}</div>`;
+  h+=`<div class="sddest">${others.map(a=>{ const pa=ownPath(G,ME,z.id,a.id,12); const f2=pa?shipFactor(G,pa):null; return `<button class="dtile" data-act="sdset" data-k="sd_to" data-v="${a.id}" aria-pressed="${a.id===dsel}" ${pa?'':'disabled'}><span class="nband" style="background:${TCOL[a.terrain]}"></span><b>${esc(zname(a))}</b><span class="dbars"><i style="--v:${Math.min(100,100*a.food/Math.max(1,capStore(G,a,'food')))}%;--c:#9DC764"></i><i style="--v:${Math.min(100,100*a.prod/Math.max(1,capStore(G,a,'prod')))}%;--c:#C9A878"></i></span><small>${pa?(f2?fm(f2)+' 🪙 c/u':'gratis'):'sin camino'}</small></button>`; }).join('')}</div>`;
+  const quick=mode==='once'?[1,5,10,Math.floor(stock/2),stock].filter((v,i,a)=>v>0&&a.indexOf(v)===i):[1,2,5,10,'sobrante'];
+  h+=`<div class="sdq"><button class="qs" data-act="sdq" data-d="-1" aria-label="Menos">－</button><span class="qn">${q==='sobrante'?'todo el sobrante':'<b>'+q+'</b> '+RI[res]}</span><button class="qs" data-act="sdq" data-d="1" aria-label="Más">＋</button></div>`;
+  h+=`<div class="row sdchips">${quick.map(v=>`<button class="chip ${String(q)===String(v)?'on':''}" data-act="sdset" data-k="sd_q" data-v="${v}">${v==='sobrante'?'todo el sobrante':(mode==='once'&&v===stock&&stock>5?'todo':(mode==='once'&&v===Math.floor(stock/2)&&stock>5?'mitad':v))}</button>`).join('')}</div>`;
+  const cst=q==='sobrante'?0:Math.ceil((Number(q)||0)*fac);
+  h+=path?`<div class="cost ${cst>G.F[ME].gold?'bad':''}"><b>${q==='sobrante'||!cst?(q==='sobrante'?'🪙 según lo enviado':'Gratis'):rq('gold',cst)}</b><small>${esc(zname(z))} ➜ ${esc(zname(to))} · ${path.length} zona${path.length>1?'s':''}${path.some(i=>G.zones[i].b.some(b=>b.t==='camino'))?' (el Camino abarata)':''}${mode==='each'?' · se repite cada paso, después de alimentar y antes de crecer':''}</small></div>`:'<div class="warn">No hay camino de zonas tuyas hasta ahí.</div>';
+  const can=path&&(q==='sobrante'||Number(q)>0);
+  h+=`<div class="row">${btnHTML('sendgo',mode==='each'?'🔁 Enviar cada paso':'Enviar'+(cst?' · 🪙 '+cst:''),can?'':'disabled','primary')}</div></div>`;
   return h;
 }
 // Encabezado que se abre y se cierra (el panel recuerda cómo lo dejaste).
@@ -325,17 +348,7 @@ function fold(key,title,extra){
 function subRecursos(z){
   if(!mine(z)) return '<div class="hint">Solo puedes enviar recursos desde tus propias zonas.</div>';
   let h=`<div class="zres3"><div><span>🌾</span><b>${Math.floor(z.food)}/${capStore(G,z,'food')}</b>${barHTML(z.food,capStore(G,z,'food'),'#9DC764')}</div><div><span>⚒</span><b>${Math.floor(z.prod)}/${capStore(G,z,'prod')}</b>${barHTML(z.prod,capStore(G,z,'prod'),'#C9A878')}</div><div></div></div>`;
-  h+=growModeHTML(z)+routesHTML(z);
-  const others=G.zones.filter(a=>a.owner===ME&&a.id!==z.id);
-  if(others.length){
-    const dest=others.map(a=>[a.id,zname(a)]); const dsel=others.some(a=>String(a.id)===String(fv('sd_to','')))?fv('sd_to',''):others[0].id;
-    const path=ownPath(G,ME,z.id,Number(dsel),12); const fac=path?shipFactor(G,path):0; const q=Number(fv('sd_q',5))||0;
-    const cst=Math.ceil(q*fac);
-    h+=fold('send1','Enviar ahora (una vez)');
-    if(!(ui.det&&ui.det.send1)) return h;
-    h+=`<div class="row">${selHTML('sd_res',[['food','🌾 Comida'],['prod','⚒ Producción']],'food')} → ${selHTML('sd_to',dest,dsel)} ${numHTML('sd_q',5,50)}</div>`;
-    h+=path?`<div class="cost ${cst>G.F[ME].gold?'bad':''}"><b>${cst?rq('gold',cst):'Gratis'}</b><small>${q} × ${fm(fac)} 🪙 por unidad · ${path.length} zona${path.length>1?'s':''}${path.some(i=>G.zones[i].b.some(b=>b.t==='camino'))?' (con Camino cuesta menos)':''}${cst?` · tienes ${rq('gold',Math.floor(G.F[ME].gold))}`:''}</small></div><div class="row">${btnHTML('send','Enviar'+(cst?' · 🪙 '+cst:''))}</div>`:'<div class="warn">No hay camino de zonas tuyas hasta ahí.</div>';
-  } else h+='<div class="hint">Necesitas otra zona tuya para enviar recursos.</div>';
+  h+=growModeHTML(z)+sendCardHTML(z)+routeListHTML(z);
   return h;
 }
 function subMover(z){

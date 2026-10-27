@@ -38,15 +38,51 @@ function queuedUnits(zid,t){ // unidades de ese tipo que ya tienen una orden de 
   return n;
 }
 // ---- Personas con rasgos: fichas, íconos y bordes ----
-function traitText(x){
-  const I=TRAIT_INFO[x.k]; const pct=Math.round(TRAIT_STEP*x.l*100);
-  const ef=x.k==='apt'?(x.l>0?'come un '+pct+' % menos':'come un '+(-pct)+' % más'):x.k==='sal'?((x.l>0?'+':'')+x.l+' de vida'):x.k==='fue'?((x.l>0?'+':'')+x.l+(Math.abs(x.l)===1?' dado':' dados')):((pct>0?'+':'')+pct+' %');
-  return I.n+' ('+TRAIT_LV[x.l]+', '+ef+'): afecta '+I.d;
+function traitEffect(x){
+  const pct=Math.round(TRAIT_STEP*x.l*100);
+  return x.k==='apt'?(x.l>0?'come '+pct+' % menos':'come '+(-pct)+' % más'):x.k==='sal'?((x.l>0?'+':'')+x.l+' ❤'):x.k==='fue'?((x.l>0?'+':'')+x.l+' ⚔'):((pct>0?'+':'')+pct+' %');
 }
+function traitText(x){ return TRAIT_INFO[x.k].n+' · '+TRAIT_EPI[x.k][x.l]+' ('+traitEffect(x)+')'; }
 const traitScore=u=>(u.tr||[]).reduce((a,x)=>a+x.l,0);
 // borde dorado si tiene un rasgo muy bueno, plateado si solo bueno
 function traitBorder(u){ const m=Math.max(-9,...(u.tr||[]).map(x=>x.l)); return m>=2?'tg':m===1?'ts':''; }
-function traitChips(u){ return (u.tr||[]).map(x=>`<i class="tc ${x.l>0?'p':'n'}${Math.abs(x.l)}" title="${esc(traitText(x))}">${TRAIT_INFO[x.k].ic}</i>`).join(''); }
+// Apodos con humor corto para cada rasgo y nivel (no cambian nada del juego: solo se ven).
+const TRAIT_EPI={
+  agr:{'2':'Mano verde','1':'Buena mano','-1':'Torpe con el arado','-2':'Pulgar negro'},
+  ing:{'2':'Manos de herrero','1':'Hábil','-1':'Manos de manteca','-2':'Peligro con el martillo'},
+  com:{'2':'Lengua de oro','1':'Buen regateo','-1':'Regatea mal','-2':'Se deja timar'},
+  cie:{'2':'Mente brillante','1':'Curioso','-1':'Distraído','-2':'Cabeza en las nubes'},
+  apt:{'2':'Come como pajarito','1':'De poco comer','-1':'Buen diente','-2':'Barriga sin fondo'},
+  sal:{'2':'Fuerte como un roble','1':'Robusto','-1':'Delicado','-2':'Enclenque'},
+  fue:{'2':'Brazo de hierro','1':'Fornido','-1':'Flojo','-2':'Brazos de fideo'}
+};
+const FIRST_NAMES=['Inés','Tomás','Lupe','Marcos','Rosa','Beto','Elvira','Nico','Paloma','Ciro','Alba','Mateo','Irene','Hugo','Celia','Ramiro','Olga','Dante','Nora','Pablo','Julia','Saúl','Mara','Cleto'];
+const personName=u=>FIRST_NAMES[(u.id*7+3)%FIRST_NAMES.length];
+// insignia de un rasgo: disco con su ícono y puntitos de nivel (verde/dorado si es bueno, rojo/gris si es malo)
+function traitBadge(x,big){
+  const dots=Array.from({length:Math.abs(x.l)},()=>'<b></b>').join('');
+  return `<span class="tb ${x.l>0?'p':'n'}${Math.abs(x.l)}${big?' big':''}"><i>${TRAIT_INFO[x.k].ic}</i><em>${dots}</em></span>`;
+}
+function traitChips(u){ return (u.tr||[]).map(x=>traitBadge(x)).join(''); }
+// medallas del resumen de una zona: ★ = muy buenos, ☆ = buenos
+function medalsHTML(list){ const g=list.filter(u=>traitBorder(u)==='tg').length, s=list.filter(u=>traitBorder(u)==='ts').length; return (g?`<span class="medal g" title="Con un rasgo muy bueno">★ ${g}</span>`:'')+(s?`<span class="medal s" title="Con un rasgo bueno">☆ ${s}</span>`:''); }
+// Ficha de una persona: aparece al pasar el mouse (o tocar) sobre un token con data-id.
+function personById(id){ for(const z of G.zones){ const us=z.units[ME]||[]; for(const u of us) if(u.id===id) return u; } return null; }
+function fichaHTML(u){
+  const best=(u.tr||[]).slice().sort((a,b)=>Math.abs(b.l)-Math.abs(a.l))[0];
+  const rows=(u.tr||[]).map(x=>`<div class="fr ${x.l>0?'p':'n'}">${traitBadge(x,true)}<div><b>${TRAIT_EPI[x.k][x.l]}</b><small>${TRAIT_INFO[x.k].n}</small></div><span class="fe">${traitEffect(x)}</span></div>`).join('');
+  return `<div class="fh">${uIcon(u.t,40)}<div><b>${personName(u)}</b><small>${UN[u.t].toLowerCase()}${best?' · «'+TRAIT_EPI[best.k][best.l].toLowerCase()+'»':''}</small></div></div>${rows}`;
+}
+let FICHA=null;
+function fichaMove(e,el){ const r=el.getBoundingClientRect(); const w=FICHA.offsetWidth, h=FICHA.offsetHeight; let x=r.left+r.width/2-w/2, y=r.top-h-8; if(y<6) y=r.bottom+8; x=Math.max(6,Math.min(innerWidth-w-6,x)); FICHA.style.left=x+'px'; FICHA.style.top=y+'px'; }
+document.addEventListener('mouseover',e=>{
+  const t=e.target.closest&&e.target.closest('.token[data-id]'); if(!t||typeof G==='undefined'||!G) return;
+  const u=personById(Number(t.dataset.id)); if(!u||!u.tr) return;
+  if(!FICHA){ FICHA=document.createElement('div'); FICHA.id='ficha'; FICHA.setAttribute('role','tooltip'); document.body.appendChild(FICHA); }
+  FICHA.innerHTML=fichaHTML(u); FICHA.classList.add('on'); fichaMove(e,t);
+});
+document.addEventListener('mouseout',e=>{ const t=e.target.closest&&e.target.closest('.token[data-id]'); if(t&&FICHA) FICHA.classList.remove('on'); });
+document.addEventListener('dragstart',()=>{ if(FICHA) FICHA.classList.remove('on'); });
 // Personas libres de un oficio (menos las ya elegidas para una orden), las mejores primero.
 function availListQ(zid,t){
   const z=G.zones[zid]; const used=new Set(); let idq=0;

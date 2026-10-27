@@ -1,7 +1,7 @@
 'use strict';
 // Figuras de cada oficio y cada tropa.
 
-const JOBC = {pob:'#B8A58A',agr:'#8DB04A',ing:'#7C8791',con:'#C97A3A',cie:'#F4F1EA',com:'#8E4A8E'};
+const JOBC = {pob:'#B8A58A',agr:'#8DB04A',ing:'#7C8791',cie:'#F4F1EA',com:'#8E4A8E'};
 /* fig(): personaje con base en (x,y), ~16 unidades de alto. col = color del jugador. quiet = sin animaciones (íconos) */
 function fig(t,x,y,col,s,quiet){
   s=s||1; const I=INK, skin='#F2CDA3'; const an=c=>quiet?'':` class="${c}"`;
@@ -29,7 +29,6 @@ function fig(t,x,y,col,s,quiet){
   switch(t){
     case 'agr': g+=`<ellipse cx="0" cy="-9.4" rx="4.6" ry="1.2" fill="#E3C46A" stroke="${I}" stroke-width=".4"/><path d="M-2.4,-9.5 A2.4,2.4 0 0 1 2.4,-9.5 Z" fill="#E3C46A" stroke="${I}" stroke-width=".4"/><g${an('wk-agr')}><line x1="3.4" y1="-3" x2="6.2" y2="-11" stroke="#6B4528" stroke-width=".9"/><path d="M6.2,-11 l2.6,.6 l-.4,1.6 z" fill="#9AA0A6" stroke="${I}" stroke-width=".3"/></g><path d="M-4.4,-1 q-.8,-3 0,-5 M-5.6,-1 q-.8,-3 0,-5" stroke="#E3C46A" stroke-width=".7" fill="none"/>`; break;
     case 'ing': g+=`<path d="M-2.6,-8.4 A2.6,2.6 0 0 1 2.6,-8.4 Z" fill="#E0A21B" stroke="${I}" stroke-width=".4"/><circle cx="0" cy="-2.6" r="1.1" fill="none" stroke="#fff" stroke-width=".7"/><g${an('wk-ing')}><line x1="3.4" y1="-3" x2="6.4" y2="-10" stroke="#6B6F73" stroke-width="1"/><circle cx="6.6" cy="-10.6" r="1.5" fill="none" stroke="#6B6F73" stroke-width=".9"/></g>`; break;
-    case 'con': g+=`<path d="M-2.7,-8.4 A2.7,2.7 0 0 1 2.7,-8.4 Z" fill="#E8762F" stroke="${I}" stroke-width=".4"/><rect x="-3.2" y="-8.6" width="6.4" height=".9" fill="#E8762F"/><g${an('wk-con')}><line x1="3.4" y1="-3" x2="5.2" y2="-11" stroke="#6B4528" stroke-width=".9"/><rect x="3.4" y="-12.6" width="3.8" height="2.2" fill="#6B6F73" stroke="${I}" stroke-width=".4"/></g>`; break;
     case 'cie': g+=`<circle cx="-.9" cy="-7.8" r=".95" fill="none" stroke="${I}" stroke-width=".35"/><circle cx=".9" cy="-7.8" r=".95" fill="none" stroke="${I}" stroke-width=".35"/><g${an('wk-cie')}><path d="M3.4,-4 l-1.2,3.4 h4.8 l-1.2,-3.4 z" fill="#5BA6E0" stroke="${I}" stroke-width=".4"/><rect x="3.6" y="-6.4" width="1.6" height="2.4" fill="#cfe7f7" stroke="${I}" stroke-width=".3"/><circle class="bub" cx="4.4" cy="-8" r=".7" fill="#9BD0F2"/><circle class="bub b2" cx="5.4" cy="-9.4" r=".5" fill="#9BD0F2"/></g>`; break;
     case 'com': g+=`<path d="M-2.4,-8.6 A2.4,2.4 0 0 1 2.4,-8.6 Z" fill="#C8452F" stroke="${I}" stroke-width=".4"/><rect x="-1" y="-9.9" width="3.8" height=".9" fill="#C8452F"/><g${an('wk-com')}><circle cx="4.6" cy="-5.2" r="1.7" fill="#E9C46A" stroke="${I}" stroke-width=".4"/><text x="4.6" y="-4.4" text-anchor="middle" font-size="2.4" font-weight="700" fill="#8A6A10" class="zt">$</text></g>`; break;
     case 'sol': g+=`<path d="M-2.6,-8.4 A2.6,2.6 0 0 1 2.6,-8.4 Z" fill="#6B7479" stroke="${I}" stroke-width=".4"/><line x1="4.4" y1="1" x2="4.4" y2="-13" stroke="#3a2a20" stroke-width=".9"/><path d="M4.4,-13 l-1.1,2.4 h2.2 z" fill="#d8d8d8" stroke="${I}" stroke-width=".3"/>`; break;
@@ -53,7 +52,7 @@ function figRows(z,f,col){
   if(z.owner===f){
     types.forEach(t=>{
       let k=-1; if(JOB_BLD[t]) k=z.b.findIndex(b=>b.t===JOB_BLD[t]);
-      if(t==='con'&&z.proj.length) k=z.b.length;   // los constructores, junto a la obra
+      if((t==='ing'||t==='pob')&&z.proj.length&&z.bplan&&z.bplan[t]>0) k=z.b.length;   // quienes construyen, junto a la obra
       if(k>=0){ const p=SLOT_POS[k%SLOT_POS.length]; const off=(used[k]||0); used[k]=off+1; anchor[t]=[p[0]+(off?34:0)*(off%2?1:-1),p[1]+30+off*22]; }
     });
   }

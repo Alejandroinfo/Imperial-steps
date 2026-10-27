@@ -8,7 +8,7 @@
 
 ![The valley map: each zone is a plot of land; fences mark roads, ravines mark borders you cannot cross](docs/img/valley.jpg)
 
-> **Status:** playable prototype v0.13 (one human against 1–3 bots, 12 maps, 2–4 players). The rules design is mostly settled; the final engine will be ported to Python.
+> **Status:** playable prototype v0.13 (against 1–3 bots, or online with 2–4 people; 12 maps). The rules design is mostly settled; the final engine will be ported to Python.
 
 ## What it shows
 
@@ -33,12 +33,16 @@ Controls: drag to pan, scroll to zoom, double-click to center a zone; arrow keys
 
 ![Battle replay: each combat can be replayed blow by blow, wave by wave in initiative order](docs/img/battle.jpg)
 
+## Play online
+
+One player opens **🌐 Jugar en línea…** (*Play online*), creates a room and shares the 4-letter code or link; 2 to 4 people can join, and empty seats are played by bots. The host's browser runs the engine and, once everyone presses **¡Listo!**, resolves the step and publishes the full game state through **Firebase Realtime Database**, so every screen stays in sync and anyone can reload and rejoin their seat. Online play needs the game served from a web address (not opened as a local file) and a one-time Firebase setup of about 10 minutes: a project, a Realtime Database with the rules in `firebase/reglas_base_datos.json`, anonymous sign-in, and the values in `js/red/config_firebase.js`. See [`docs/multijugador.md`](docs/multijugador.md) (in Spanish).
+
 ## Run and test locally
 
 No build step and no dependencies. Download the repository and open `index.html` in Chrome, Firefox or Edge.
 
 ```bash
-npm test                                   # layer check + rule tests + 72 simulated games
+npm test                                   # layer check + rule tests + network state + 72 simulated games
 npm run check                              # TypeScript check of the engine (no build step)
 npm run balance                            # balance scenarios and technology ratings
 node pruebas/simular_partidas.js 10 80     # 10 seeds per map and player count, up to 80 steps
@@ -86,7 +90,9 @@ js/
     paneles/                Side panels: zone, empire, technologies, victory, orders
     batalla.js              Battle replay viewer
     sugerencias.js          Per-step warnings and tips
-pruebas/                    Layer check, rule tests and the game simulator
+  red/                      Online play: rooms, orders and shared state through Firebase
+firebase/                   Security rules for the Realtime Database
+pruebas/                    Layer check, rule tests, game simulator, network state and a two-browser online test
 herramientas/empaquetar.py  Bundles the game into a single HTML file to share
 docs/                       Rules, hand-off documents and how we work (in Spanish),
                             plus the balance reports and screenshots
@@ -110,7 +116,7 @@ How one step resolves: births → event → orders (research, specialize, train,
 
 1. Play-test with family and decide what feels heavy.
 2. Port the engine to **Python** with `pytest`, plus a balance simulator running thousands of games.
-3. Real online multiplayer with **FastAPI + WebSockets** (rooms with a code, reconnection).
+3. ~~Online multiplayer~~ ✅ done with Firebase (rooms with a code, reconnection); next, the first real family game.
 
 ## Team
 

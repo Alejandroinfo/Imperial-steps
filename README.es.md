@@ -4,22 +4,26 @@
 
 Juego de estrategia por turnos simultáneos para jugar en línea con la familia. Todos planean **a la vez**; cuando todos presionan **¡Listo!**, el paso se resuelve y se ve qué pasó. La idea es recuperar la diversión de planificar en grupo con presión de tiempo, sin el micromanagement de un juego de estrategia en tiempo real.
 
-> **Estado:** prototipo jugable v0.13 en el navegador (una persona contra 1 a 3 bots). El diseño de reglas está bastante cerrado; el motor definitivo se pasará a Python.
+> **Estado:** prototipo jugable v0.13 en el navegador, contra 1 a 3 bots o en línea con 2 a 4 personas. El diseño de reglas está bastante cerrado; el motor definitivo se pasará a Python.
 
 ## Cómo jugarlo
 
 No hace falta instalar nada. Descarga el repositorio y abre `index.html` en el navegador (Chrome, Firefox o Edge). Para mandarlo en un solo archivo, corre `python herramientas/empaquetar.py` y comparte `dist/Los_Pasos_del_Imperio.html`. Elige mapa, número de jugadores y modo de victoria, y presiona **Empezar**. La **📖 Guía** dentro del juego explica cada sistema.
+
+## Jugar en línea
+
+Una persona abre **🌐 Jugar en línea…**, crea una sala y comparte el código de 4 letras o el enlace. Pueden entrar de 2 a 4 personas; los asientos libres los juega un bot. El navegador del anfitrión corre el motor y, cuando todos dan **¡Listo!**, resuelve el paso y publica el estado completo con **Firebase Realtime Database**: todas las pantallas quedan iguales y cualquiera puede recargar y volver a su asiento. Hace falta abrir el juego desde una dirección web (no con doble clic) y configurar Firebase una sola vez, unos 10 minutos. La guía paso a paso está en [`docs/multijugador.md`](docs/multijugador.md).
 
 ## Cómo probar el motor
 
 El motor no depende del navegador, así que se puede probar solo con [Node.js](https://nodejs.org) (versión 18 o más nueva):
 
 ```bash
-npm test                                   # capas + reglas + 12 mapas × 2, 3 y 4 jugadores
+npm test                                   # capas + reglas + estado en red + 12 mapas × 2, 3 y 4 jugadores
 node pruebas/simular_partidas.js 10 80     # 10 semillas por combinación, hasta 80 pasos
 ```
 
-`pruebas/revisar_capas.js` comprueba que el motor no use nada de la pantalla. `pruebas/probar_reglas.js` arma situaciones pequeñas y revisa que cada regla dé el resultado esperado (por ejemplo, cuántos científicos investigan con la ciencia guardada). `pruebas/simular_partidas.js` hace jugar a los bots entre sí en todos los mapas, revisa después de cada paso que no aparezcan cantidades imposibles (negativas o no numéricas) y resume con qué condiciones se ganó. Las pruebas corren en GitHub Actions con cada cambio.
+`pruebas/revisar_capas.js` comprueba que el motor no use nada de la pantalla. `pruebas/probar_reglas.js` arma situaciones pequeñas y revisa que cada regla dé el resultado esperado (por ejemplo, cuántos científicos investigan con la ciencia guardada). `pruebas/probar_red.js` comprueba que el estado de una partida, mandado por la red y reconstruido, siga idéntico al original. `pruebas/simular_partidas.js` hace jugar a los bots entre sí en todos los mapas, revisa después de cada paso que no aparezcan cantidades imposibles (negativas o no numéricas) y resume con qué condiciones se ganó. Las pruebas corren en GitHub Actions con cada cambio.
 
 ## Cómo está organizado
 
@@ -53,17 +57,25 @@ js/
     acciones.js             Convierte los botones en órdenes
     flujo.js                Empezar, ¡Listo!, resolver y fin de partida
     render.js               Redibuja el estado actual
+  red/
+    multijugador.js         Salas en línea: el anfitrión resuelve y publica el estado con Firebase
+    config_firebase.js      Datos del proyecto de Firebase
   main.js                   Punto de entrada
+firebase/
+  reglas_base_datos.json    Reglas de seguridad de la base de datos
 pruebas/
   revisar_capas.js          Comprueba que datos, config y motor no dependan de la interfaz
   probar_reglas.js          Casos concretos de cada regla (almacén, científicos, comida, equipo, edificios)
   simular_partidas.js       Partidas entre bots sin navegador
+  probar_red.js             El estado mandado por la red sigue idéntico al original
+  probar_en_linea.py        Partida en línea con dos navegadores y un Firebase falso
 herramientas/
   empaquetar.py             Junta todo en un solo HTML para mandarlo a la familia
 docs/
   Reglas_v0.1.md            Fuente de verdad de las reglas (✅ decidido, 💡 propuesta, ❓ por definir)
   TRASPASO_Los_Pasos_del_Imperio.md   Resumen para retomar el proyecto en 10 minutos
   Como_manejar_el_proyecto.md         Cómo trabajamos
+  multijugador.md           Jugar en línea: configurar Firebase, publicar y jugar
 Tecnologias_v0.2.xlsx       Catálogo de tecnologías con valoración y riesgo de balance
 atlas_mapas.html            Atlas visual de los 12 mapas (selector de 2, 3 o 4 jugadores)
 ```
@@ -98,7 +110,7 @@ La lista completa está en [`docs/TRASPASO_Los_Pasos_del_Imperio.md`](docs/TRASP
 
 1. Jugarlo con la familia y decidir qué se siente pesado.
 2. Pasar el motor a **Python** con `pytest` y un simulador de balance de miles de partidas.
-3. Multijugador real con **FastAPI + WebSockets** (salas con código y reconexión).
+3. ~~Multijugador en línea~~ ✅ hecho con Firebase (salas con código y reconexión); falta la primera partida real con la familia.
 
 ## Equipo
 

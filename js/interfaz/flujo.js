@@ -1,9 +1,15 @@
 'use strict';
+// En línea (js/red/multijugador.js) el anfitrión resuelve y los demás reciben el resultado.
 // Flujo de la partida: empezar, ¡Listo!, resolver el paso, fin y telemetría.
 
-function startGame(){
-  const mi=Number($('selMap').value), N=Number($('selN').value), thr=$('selThr').value;
-  const q=new URLSearchParams(location.search).get('seed'); const seed=q?Number(q):Math.floor(Math.random()*1e9);
+// cfg (opcional) llega de la sala en línea: {mapIdx, N, seed, thr}. Sin cfg se usan los menús.
+function startGame(cfg){
+  let mi,N,seed,thr;
+  if(cfg){ mi=cfg.mapIdx; N=cfg.N; seed=cfg.seed; thr=cfg.thr; }
+  else {
+    mi=Number($('selMap').value); N=Number($('selN').value); thr=$('selThr').value;
+    const q=new URLSearchParams(location.search).get('seed'); seed=q?Number(q):Math.floor(Math.random()*1e9);
+  }
   G=newGame(mi,N,seed,thr); G.mapIdx=mi; layoutBoard(); ui=newUI(); tele={ready:[],orders:[]};
   if($('dlgEnd').open) $('dlgEnd').close();
   buildWorld(); buildTerritoryDOM(); setViewMode('terr',true);
@@ -11,7 +17,7 @@ function startGame(){
   beginStep(); render();
   fitAll(0);
   setTimeout(()=>{ flyTo(sx(mc),sy(mc)+30,840,FXS.on?1500:0); },FXS.on?350:0);
-  const sm=$('startMsg'); sm.innerHTML=`<b>Aquí empiezas</b><div>Tu capital es <b>${esc(zname(G.zones[mc]))}</b> (borde rojo). Arrastra el mapa para recorrerlo, usa la rueda para acercar o el minimapa para saltar.</div>`; sm.className='startmsg show'; clearTimeout(sm._t); sm._t=setTimeout(()=>{ sm.className='startmsg'; },7000);
+  const sm=$('startMsg'); sm.innerHTML=`<b>Aquí empiezas</b><div>Tu capital es <b>${esc(zname(G.zones[mc]))}</b> (borde ${ME===0?'rojo':'de tu color'}). Arrastra el mapa para recorrerlo, usa la rueda para acercar o el minimapa para saltar.</div>`; sm.className='startmsg show'; clearTimeout(sm._t); sm._t=setTimeout(()=>{ sm.className='startmsg'; },7000);
 }
 function setViewMode(v,quiet){
   ui.view=v; $('cam').classList.toggle('hide',v!=='terr'); $('plan').classList.toggle('hide',v!=='plan'); $('mini').classList.toggle('hide',v!=='terr');
@@ -24,28 +30,42 @@ function beginStep(){
   ui.ready=[]; for(let f=0;f<G.N;f++) ui.ready.push(false);
   ui.stepStart=now; ui.orders=[]; ui.mv=null; ui.sugI=0;
   const enc=G.F[ME].enc; if(enc&&ui.encSeen!==enc.step){ ui.encSeen=enc.step; sfxLater(enc.k==='amenaza'?'warn':'encounter',2200,0); }
-  for(let f=1;f<G.N;f++) ui.botAt[f]=now+700+Math.floor(Math.random()*3000);
+  for(let f=0;f<G.N;f++) if(isBotSeat(f)) ui.botAt[f]=now+700+Math.floor(Math.random()*3000);
   if(typeof tutOnStep==='function') tutOnStep();
 }
+// Un asiento lo juega un bot si no es el de esta pantalla ni el de otra persona de la sala en línea.
+function isBotSeat(f){ return f!==ME && !(NET.on && NET.humans.includes(f)); }
+// Quién resuelve los pasos: el juego local o el anfitrión de la sala. Los demás solo reciben el resultado.
+function isAuthority(){ return !NET.on || NET.host; }
 function toggleReady(){
   if(G.over||(G.F[ME].out&&!G.F[ME].ghost)) return;
   if(!ui.ready[ME]) tele.ready.push(Date.now()-ui.stepStart); else tele.ready.pop();
-  ui.ready[ME]=!ui.ready[ME]; sfx(ui.ready[ME]?'ready':'unready'); render(); checkAll();
+  setMyReady(!ui.ready[ME]);
+}
+function setMyReady(v,quiet){
+  ui.ready[ME]=v; if(!quiet) sfx(v?'ready':'unready'); render();
+  if(!isAuthority()){ netSendReady(v); return; }   // en línea, el anfitrión junta las órdenes
+  netBroadcastReady(); checkAll();
 }
 function checkAll(){
-  if(G.over) return;
+  if(G.over||!isAuthority()) return;
   for(let f=0;f<G.N;f++){ if(!ui.ready[f]) return; }
   finishStep();
 }
 function finishStep(){
   const orders=ui.orders.map(o=>Object.assign({f:ME},o));
-  for(let f=1;f<G.N;f++) botOrders(G,f).forEach(o=>orders.push(o));
+  for(let f=0;f<G.N;f++){
+    if(f===ME) continue;
+    if(isBotSeat(f)) botOrders(G,f).forEach(o=>orders.push(o));
+    else netOrdersOf(f).forEach(o=>orders.push(o));   // órdenes de las otras personas de la sala
+  }
   tele.orders.push(ui.orders.length);
   const before=[...Array(G.N).keys()].map(f=>victoryConds(G,f));
   const prev={gold:Math.floor(G.F[ME].gold),tech:Math.floor(G.F[ME].tech)};
   resolveStep(G,orders); sfx('step');
   recomputeMods(G);
   if(ui.sel!==null&&!G.zones[ui.sel]) ui.sel=null;
+  netSendState();   // en línea, el anfitrión manda el paso resuelto a todos
   if(G.over){ render(); playFx(G.fx,before); showEnd(); return; }
   beginStep(); render(); playFx(G.fx,before);
 }
@@ -66,13 +86,19 @@ function tick(){
   if(!G||G.over) return;
   const now=Date.now(); $('clock').textContent=Math.round((now-ui.stepStart)/1000)+' s';
   let ch=false;
-  for(let f=1;f<G.N;f++){ if(!ui.ready[f]&&now>=ui.botAt[f]){ ui.ready[f]=true; ch=true; } }
-  if(G.F[ME].out&&!G.F[ME].ghost&&!ui.ready[ME]){ ui.ready[ME]=true; ch=true; }
+  if(isAuthority()){
+    for(let f=0;f<G.N;f++){
+      if(ui.ready[f]) continue;
+      if(isBotSeat(f)&&now>=ui.botAt[f]){ ui.ready[f]=true; ch=true; }
+      else if(f!==ME&&G.F[f].out&&!G.F[f].ghost){ ui.ready[f]=true; ch=true; }   // eliminado sin fantasma: solo mira
+    }
+  }
+  if(G.F[ME].out&&!G.F[ME].ghost&&!ui.ready[ME]){ setMyReady(true,true); return; }
   if(ui.auto>0&&!ui.ready[ME]&&!(G.F[ME].out&&!G.F[ME].ghost)){
     ui.orders=botOrders(G,ME).map(o=>{ const c=Object.assign({},o); delete c.f; return c; });
-    ui.auto--; ui.ready[ME]=true; tele.ready.push(now-ui.stepStart); ch=true;
+    ui.auto--; tele.ready.push(now-ui.stepStart); setMyReady(true,true); return;
   }
-  if(ch){ drawChips(); checkAll(); }
+  if(ch){ drawChips(); netBroadcastReady(); checkAll(); }
 }
 function buildGallery(){
   const rows=[['Zona libre',()=>({role:'vacia',owner:null,units:{}})],['Zona poblada (jugador)',i=>({role:'vacia',owner:0,units:{0:Array.from({length:6},()=>({t:'pob',w:0}))}})],['Tribu',()=>({role:'tribu',owner:TRIBE,units:{4:[{t:'agr',w:0},{t:'sol',w:0}]}})],['Capital con edificios',()=>({role:'capital',owner:1,units:{1:Array.from({length:6},(_,i)=>({t:i<4?'pob':'sol',w:0}))},b:[{t:'molino',l:2},{t:'cuartel',l:1},{t:'fort',l:3}]})]];

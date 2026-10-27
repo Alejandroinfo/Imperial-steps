@@ -2,9 +2,9 @@
 
 **Para qué sirve este documento:** permite retomar el proyecto en una conversación nueva (o con otra persona) sin tener que volver a explicar nada. Está escrito para leerse de arriba abajo en 10 minutos.
 
-**Última actualización:** 26 de octubre de 2026
+**Última actualización:** 27 de octubre de 2026 (reglas de maravillas únicas, botín e ingenieros automáticos; multijugador con Firebase)
 **Autores del diseño:** Pao (idea inicial) y Alejandro.
-**Estado:** diseño en papel bastante cerrado; prototipo jugable v0.13 en el navegador, organizado como proyecto en GitHub con pruebas automáticas; sin servidor multijugador todavía.
+**Estado:** diseño en papel bastante cerrado; prototipo jugable v0.13 en el navegador, organizado como proyecto en GitHub con pruebas automáticas. 🆕 Multijugador en línea con Firebase hecho y probado (rama `online/firebase`); falta configurar Firebase y jugar la primera partida real.
 
 ---
 
@@ -34,7 +34,8 @@
 | **`docs/Como_manejar_el_proyecto.md`** | Cómo trabajamos. | Estable |
 | **`Tecnologias_v0.2.xlsx`** | Catálogo de 203 tecnologías. ⚠ Los textos de Almacén, Intereses del almacén y Capital próspera cambiaron en el juego y falta pasarlos al Excel. | Vivo |
 | **`index.html`, `css/`, `js/`** | El juego. `js/datos` (mapas y tecnologías), `js/config` (números de balance), `js/motor` (reglas, sin pantalla) y `js/interfaz` (lo que se ve). | Vivo |
-| **`pruebas/`** | `revisar_capas.js`, `probar_reglas.js` (37 casos) y `simular_partidas.js` (72 partidas entre bots). Se corren con `npm test`. | Vivo |
+| **`pruebas/`** | `revisar_capas.js`, `probar_reglas.js` (37 casos), 🆕 `probar_red.js` (estado en red, 18 casos) y `simular_partidas.js` (72 partidas entre bots). Se corren con `npm test`. 🆕 `probar_en_linea.py`: partida con dos navegadores y un Firebase falso. | Vivo |
+| **`docs/multijugador.md`** | 🆕 Cómo funciona el juego en línea, cómo configurar Firebase y cómo publicarlo. | Vivo |
 | **`herramientas/empaquetar.py`** | Junta todo en un solo HTML. | Estable |
 | **`atlas_mapas.html`** | Atlas visual de los 12 mapas. | Estable |
 
@@ -46,7 +47,7 @@
 
 1. Cada jugador empieza con **una capital y 4 pobladores básicos**, más 10 de comida, producción, oro y ciencia (el almacén de la capital es de 40).
 2. Todos planean **a la vez**; cuando todos presionan ¡Listo!, el paso se resuelve y se ve qué pasó. En las pruebas **no hay reloj**: el paso avanza solo cuando todos están listos (se mide cuánto tarda cada uno).
-3. Se **especializa** a la gente en oficios (agricultor, ingeniero, constructor, científico, comerciante), se **construye**, se **investiga** con científicos, se **mueve** gente por el mapa, se **negocia o pelea** con tribus y jugadores.
+3. Se **especializa** a la gente en oficios (agricultor, ingeniero, científico, comerciante; 🆕 el constructor se fusionó con el ingeniero), se **construye**, se **investiga** con científicos, se **mueve** gente por el mapa, se **negocia o pelea** con tribus y jugadores.
 4. Se **gana cumpliendo 2 de 7 condiciones al mismo tiempo**. Si pierdes una, deja de contar.
 
 **La idea central del diseño:** la tensión viene de **decidir bajo presión de tiempo**, no de la destreza con el mouse. Por eso hay pasos, órdenes que siguen solas y botón de ¡Listo!.
@@ -65,7 +66,7 @@
 - **Capital:** 🆕 **+2** de cada recurso (+3 con *Capital próspera*). Se mantiene aunque la conquisten. **Perder la capital no elimina** a un jugador.
 
 ### Población y economía
-- **Civiles:** poblador (1 comida + 1 producción), agricultor (2 comida), ingeniero (2 producción), constructor (2 de capacidad de obra), científico (2 de ciencia o 2 para investigar), comerciante (2 de oro). Fuerza de combate 1. Se mueven gratis pero ese paso no producen. **Solo entran a zonas libres o propias.**
+- **Civiles:** poblador (1 comida + 1 producción), agricultor (2 comida), ingeniero (🆕 2 de producción **o** 2 para construir), científico (2 de ciencia o 2 para investigar), comerciante (2 de oro). Fuerza de combate 1. Se mueven gratis pero ese paso no producen. **Solo entran a zonas libres o propias.**
 - **Especializar** cuesta 1 de producción (2 entre oficios, porque primero vuelven a básicos).
 - **Militares:** consumen 2 de comida y no producen. Fuerza 2 que sube +1 por paso hasta 4. Moverlos cuesta 1 de oro por unidad por zona. 🆕 Entrenar cuesta el soldado (1) más su **equipo** (arco 2, escudo 4, caballo o hacha 6); si una tropa muere en tu territorio, su arma se guarda y se reutiliza. Se pueden **licenciar** para volver a ser civiles (2 o 3 de producción).
 - **Recursos:** comida y producción son **locales** (🆕 tope **10 por tamaño** de zona, ampliable con Almacén); oro y ciencia son **globales**. Enviar comida o producción entre zonas cuesta oro según la distancia y los Caminos.
@@ -94,8 +95,9 @@
 - **20 de producción por nivel**; mejorar paga la diferencia; destruir devuelve la mitad. 🆕 Se construye directamente en el **nivel más alto desbloqueado**, eligiendo con qué especialización nace.
 - 🆕 **Uno de cada tipo por zona**; con una tecnología de nivel 3 de ese edificio se puede tener **un segundo** (💡 cuesta 50 % más).
 - Trabajadores: 2 por defecto, 3 con *Andamios*, 4 con *Grúas*. El efecto se aplica **por trabajador**.
-- **Construir lleva varios pasos** según la **capacidad de obra** de la zona (1 por poblador, 2 por constructor).
-- **Maravilla:** 500 de producción, sin trabajadores, ocupa un espacio; si pierdes la zona, el conquistador se la queda.
+- 🆕 **Ingenieros automáticos:** si la zona tiene una obra en cola, sus ingenieros construyen solos (cada uno usa 2 de la producción guardada); el resto produce. Sin obra, todos producen. Se acabó la capacidad de obra y la zona industrial (se fusiona con la de Producción), igual que los científicos automáticos.
+- **Maravilla:** 500 de producción, sin trabajadores, ocupa un espacio; si pierdes la zona, el conquistador se la queda. 🆕 **Hay 12, una por rama, únicas en la partida.** La vertebral de nivel 5 de la rama solo la desbloquea (se paga como siempre) y solo se puede investigar si esa maravilla aún no existe; **el efecto de esa tecnología lo da la maravilla** mientras la controles (nombres y efectos en Reglas 15.3: por ejemplo, La Gran Fragua, La Torre de los Sabios y La Puerta de los Estandartes). Si pierdes la carrera, recuperas la mitad de la ciencia y la mitad de la producción puestas.
+- 🆕 **Botín:** al conquistar una zona, el atacante se lleva la mitad de la producción que tuviera guardada.
 
 ### Tribus, eventos, victoria y fantasmas
 - 🆕 **Fronteras:** entre imperios vecinos hay una tierra de nadie sin dueño; quienes estén ahí ganan 🪙 +3 por paso cada uno mientras haya paz (+4 si hay uno solo). Es el dilema del prisionero del juego.
@@ -117,7 +119,7 @@
 | **Capas** | 🆕 `datos → config → motor → interfaz`; el motor no puede usar nada de la pantalla (lo revisa una prueba) | Permite probar el motor en Node y pasarlo a Python sin reescribir reglas |
 | **Pruebas** | 🆕 `npm test` y GitHub Actions: regla de capas, 37 casos de reglas y 72 partidas entre bots | Detectar errores antes de jugar |
 | **Tipos** | 🆕 `js/tipos.d.ts` + JSDoc, revisado con TypeScript (`npm run check`), sin compilar | Encontró que las Maravillas no se podían construir; marca campos mal escritos y órdenes sin atender |
-| **Servidor futuro** | FastAPI + WebSockets; cliente sencillo en HTML/JS (D3 o SVG) | Con pasos largos, la latencia no importa; lo más simple que funcione |
+| **Multijugador** | 🆕 Firebase Realtime Database: el anfitrión resuelve cada paso y publica el estado completo; los demás mandan sus órdenes (antes se pensaba en FastAPI + WebSockets) | Nadie tiene que mantener un servidor prendido, funciona en casi cualquier red y guarda la partida para reconectarse |
 | **Motor** | Función pura `resolver_paso(estado, ordenes, rng)` con generador aleatorio **con semilla**, probada con **pytest** | Partidas reproducibles y tests fiables |
 | **Configuración** | Todos los números en tablas o archivos de configuración, no dentro del código | Cambiar balance sin reescribir código |
 | **Balance** | Simulador con bots que corre miles de partidas y mide quién gana y con qué | Es además la pieza de portafolio de datos |
@@ -142,14 +144,16 @@
 ### Alta
 0. 🆕 **La sensación de Pao jugando (26/10/2026): no se siente diversión.** Los bots casi no atacan, no hay tensión para invertir en lo militar, las tribus se compran baratas y los recursos pasan desapercibidos. Las simulaciones lo confirman: 0 a 3 combates por partida y población estancada cerca de 10 (`docs/balance_economia.md`). **Esto es lo primero a resolver.**
 1. 🆕 **Orden elegido por Pao para dar tensión:** (1) ✅ encuentros sorpresa y recursos disputados; (2) ✅ mapas más conectados con dilema del prisionero en zonas de frontera; (3) tribus como amenaza latente y tributo negociado (ofertas secretas; atacan al que dio menos); (4) multijugador.
-1a. 🆕 **Multijugador para el primer playtest:** cada uno en su computadora, en videollamada. Propuesta: conexión directa entre navegadores (WebRTC con PeerJS), donde uno crea la sala y los demás entran con un código, sin servidor propio y funcionando desde GitHub Pages.
+1a. ✅ 🆕 **Multijugador para el primer playtest:** cada uno en su computadora, en videollamada. Decidido por Pao (27/10/2026): **Firebase Realtime Database** en vez de PeerJS o un servidor propio (ver 3c).
 1b. **Jugarlo con la familia.** 🆕 Ya se trabajó lo que se sentía mal al jugar sola (opciones de partida, tecnologías, zona, mapa, edificios, combate). Falta probarlo con más personas.
 2. 🆕 **Ritmo y balance después de los cambios de hoy:** con la capital a +2 y el equipo más caro, casi nadie gana antes del paso 60 en las simulaciones (pendientes 26 y 28). Revisar los umbrales del modo prueba.
-3. 🆕 **Confirmar las propuestas 💡 de hoy:** reparto del sobrante de comida (pendiente 29), costo del segundo edificio (30) y valores del equipo (31).
+3. 🆕 **Confirmar las propuestas 💡 de hoy:** reparto del sobrante de comida (pendiente 29), costo del segundo edificio (30) y valores del equipo (31). 🆕 Y las nuevas: maravillas únicas (38), ingenieros automáticos (39) y botín (40).
+3b. 🆕 **Pasar al juego** las reglas de maravillas, botín e ingenieros automáticos (Reglas 23.5) y simular el ritmo con la capital a +2.
+3c. 🆕 **Multijugador con Firebase (decidido por Pao):** hecho sobre la v0.13 en la rama `online/firebase` (guía en `docs/multijugador.md`), probado con dos navegadores y un Firebase falso. Falta: unir la rama a `main`, configurar Firebase (unos 10 minutos), publicar el juego y jugar la primera partida real. La rama `red/multijugador-salas` (servidor propio sobre la v0.4) queda descartada y se puede borrar.
 4. **19 de 203 tecnologías no tienen efecto simulado** (lista en la sección 23.2 de las reglas).
 5. **Pasar el motor a Python** con pytest y tablas de configuración; después, el simulador de balance. 🆕 La separación por capas ya lo deja preparado.
-6. **Multijugador real** (FastAPI + WebSockets, salas con código, reconexión).
-7. 🆕 **Subir la v0.13 del código a GitHub y activar GitHub Pages** (Settings → Pages → rama `main`, carpeta raíz), para que el enlace «Play it in your browser» del README funcione.
+6. ✅ 🆕 ~~Multijugador real~~ hecho con Firebase (salas con código y reconexión), ver 3c.
+7. 🆕 ✅ El código v0.13 ya está en GitHub (27/10/2026). Falta **activar GitHub Pages** (Settings → Pages → rama `main`, carpeta raíz) para que el enlace «Play it in your browser» del README funcione; para jugar en línea, esa dirección hay que autorizarla en Firebase (`docs/multijugador.md`, paso 7).
 
 ### Media
 7. **Bots mejores:** siguen atacando poco.
@@ -242,6 +246,12 @@ Al cerrar cada sesión:
 | 🆕 Postura entre jugadores en vez de por zona | La relación es entre dos jugadores, no de un lugar |
 | 🆕 Capital a la mitad (+2) | Generaba demasiado |
 | 🆕 Edificios en su nivel máximo y segundo del mismo tipo con nivel 3 | Evitar obras repetidas y dar más peso a las especializaciones |
+| 🆕 Maravillas únicas, una por rama, con el efecto de la vertebral de nivel 5 | La producción no tenía un destino interesante y la Maravilla solo contaba para la victoria; ahora es una carrera visible |
+| 🆕 La vertebral de nivel 5 solo desbloquea la maravilla y solo se investiga si la maravilla no existe | Llegar tarde cuesta algo y la carrera se siente |
+| 🆕 Perder la carrera devuelve la mitad de la ciencia y de la producción | Castiga sin arruinar |
+| 🆕 Nombres y efectos de las 12 maravillas (Saber, Urbanismo y Guerra con efecto nuevo) | Las vertebrales de esas tres ramas eran flojas al final o no tenían efecto propio |
+| 🆕 Botín: el conquistador se lleva la mitad de la producción guardada | Da premio a la guerra y riesgo a acumular (pendientes 26 y 28) |
+| 🆕 Ingenieros automáticos y constructor fusionado con ingeniero | Dos números para una sola acción complicaban construir; es la misma solución de los científicos |
 | 🆕 README y guía de colaboración en inglés, con capturas y enlace para jugar | Que un reclutador entienda el proyecto y lo pruebe en un minuto |
 | 🆕 Prioridad de crecer o guardar por zona, envíos automáticos y oficio al nacer | Menos micromanagement y más control sobre el ritmo de cada zona |
 | 🆕 Militares más baratos (soldado 1, equipo 2 × nivel) | Con 2 y 3 × nivel nadie armaba ejércitos |
@@ -252,3 +262,4 @@ Al cerrar cada sesión:
 | 🆕 Fronteras sin dueño entre imperios vecinos (dilema del prisionero) | Las tribus eran el único colchón y no había tensión entre vecinos |
 | 🆕 Tipos con TypeScript sobre el motor, sin compilar | Detectan órdenes sin atender y campos mal escritos; documentan las reglas |
 | 🆕 Seguir con SVG para dibujar; PixiJS como opción si hace falta más fluidez | En la comparación, PixiJS se ve igual y SVG funcionó bien en una computadora normal |
+| 🆕 Multijugador con Firebase Realtime Database, con el anfitrión como autoridad | Más estable que PeerJS entre casas distintas y sin servidor propio; con una sola pantalla resolviendo, nadie se desincroniza |

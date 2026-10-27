@@ -9,7 +9,7 @@ Documento de trabajo para corregir y construir encima. Reúne todo lo conversado
 - ❓ **Por definir** — falta una decisión o hay ambigüedad.
 - 🆕 **Nuevo en la última sesión** (26 de octubre de 2026). Junto a ✅ o 💡 indica si lo decidieron ustedes o si es una propuesta mía.
 
-**Última actualización:** 26 de octubre de 2026 (prototipo v0.13).
+**Última actualización:** 26 de octubre de 2026 (prototipo v0.13). 🆕 Más tarde ese mismo día se escribieron las reglas de **maravillas únicas**, **botín** e **ingenieros automáticos** (secciones 15.2 y 15.3); el prototipo todavía no las tiene (ver 23.5).
 
 Cómo usarlo: cambien el emoji de estado cuando decidan algo, tachen lo que no les guste y escriban encima.
 
@@ -89,7 +89,7 @@ Cada zona tiene un terreno. Algunos efectos dependen de si la unidad es **atacan
 | **Praderas** | Caballeros **defensores**: iniciativa 0 | Agricultores y pobladores: +1 de comida |
 | **Bosques** | Arqueros **atacantes**: +1 de fuerza (un dado más) | Comerciantes: +1 de oro |
 | **Ríos** | Arqueros **defensores**: +1 de fuerza (un dado más) | Comerciantes: +1 de oro |
-| **Colinas** | Berserkers **atacantes**: iniciativa 2 | Ingenieros y pobladores construyen usando +1 de producción |
+| **Colinas** | Berserkers **atacantes**: iniciativa 2 | Ingenieros construyen usando +1 de producción (🆕 💡 antes también pobladores; ver 15.2) |
 | **Llanuras** | Caballeros **atacantes**: iniciativa 0 | Científicos: +1 de tecnología |
 
 - ✅ Cada terreno favorece a un tipo de unidad en un rol (atacante o defensor) y a una especialización.
@@ -219,8 +219,8 @@ Cada zona tiene un terreno. Algunos efectos dependen de si la unidad es **atacan
 | Zona | Mayoría | Efecto por unidad | Bono de zona (nivel 1 / 2 / 3) |
 |---|---|---|---|
 | **Básica** | Pobladores | 1 comida y 1 producción por poblador; autosuficiente | — |
-| **Producción** | Ingenieros | Ingeniero: 2 de producción (normal: 1) | +4 / +8 / +12 producción |
-| **Industrial** | Constructores | Cada constructor puede **usar** 2 de producción por paso (normal: 1) | Usa 4 / 8 / 12 de producción |
+| **Producción** | Ingenieros | Ingeniero: **genera 2 de producción o usa 2 para construir** (normal: 1) | +4 / +8 / +12 producción (🆕 o de capacidad de obra mientras sus ingenieros construyen; ver 15.2) |
+| ~~Industrial~~ | ~~Constructores~~ | ✅ 🆕 **Desaparece (26/10/2026, decidido por Pao):** se fusiona con la zona de Producción | — |
 | **Agricultura** | Agricultores | Agricultor: 2 de comida (normal: 1) | +4 / +8 / +12 comida |
 | **Tecnología** | Científicos | Científico: genera 2 o usa 2 de tecnología (solo ellos pueden) | 4 / 8 / 12 de tecnología |
 | **Comercial** | Comerciantes | Comerciante: 2 de oro por paso | +4 / +8 / +12 oro |
@@ -228,7 +228,7 @@ Cada zona tiene un terreno. Algunos efectos dependen de si la unidad es **atacan
 Detalles:
 
 - ✅ **Zona básica:** especializar es barato, **1 de producción por persona** que se especializa.
-- ✅ **Zona industrial:** usa producción local y, si no alcanza, la de la vecina. Cada espacio de distancia cuesta **1 de oro por unidad de producción** movida.
+- ~~**Zona industrial:** usa producción local y, si no alcanza, la de la vecina.~~ ✅ 🆕 **Obras con producción de zonas vecinas:** una obra gasta la producción guardada de su zona y, si no alcanza, trae la de las zonas vecinas. Cada espacio de distancia cuesta **1 de oro por unidad de producción** movida (la regla es la misma de antes, pero ya no depende de una zona industrial).
 - ✅ **Agricultura:** civiles no militares consumen 1 de comida, militares 2. El consumo es **local**.
 - ✅ 🆕 **Capital (26/10/2026, decidido por Pao: la mitad de antes):** atributo de la zona inicial de cada jugador. Genera **+2 de producción, +2 de comida, +2 de tecnología y +2 de oro**, adicional a cualquier especialización. *Capital próspera* lo sube a **+3**. (Antes: +4 y +6.)
 - ✅ El atributo de capital **se mantiene en la zona aunque sea conquistada** (son zonas muy especiales y perderlas debe doler). Se entiende que sus bonos pasan al conquistador. ❓ Confirmar esa interpretación.
@@ -566,6 +566,9 @@ El catálogo completo está en **Tecnologias_v0.2.xlsx** (hojas *Reglas*, *Tecno
   - Conserva como máximo **1 edificio** (consecuencia directa de la regla 1 edificio por cada 3 de tamaño).
   - Los **edificios extra se retiran** y se recupera **la mitad de la producción** que costó construirlos.
 - ✅ La mitad de la producción recuperada se la lleva **el conquistador**, si el dueño anterior ya se fue de la zona.
+- ✅ 🆕 **Botín (26/10/2026, decidido por Pao):** al **conquistar** una zona, el atacante se lleva **la mitad de la producción que el dueño tuviera guardada en ella**. Así guardar mucho en una zona de frontera es un riesgo, producir de más ya no es solo desperdicio, y las guerras tienen premio (pendientes 26 y 28).
+  - ❓ 🆕 ¿Solo la producción, o también la comida guardada? (💡 solo producción: la comida ya tiene su propio costo si la zona cambia de manos.)
+  - ❓ 🆕 ¿Solo al conquistar, o también al ganar un combate sin quedarse con la zona?
 - ✅ El atributo de **capital se mantiene** en la zona conquistada (ver sección 7).
 - ❓ ¿Quién elige qué edificio se conserva?
 - ✅ Un jugador que pierde su capital **puede seguir jugando** con sus otras zonas; solo se elimina por la condición de la sección 17.
@@ -580,11 +583,11 @@ El catálogo completo está en **Tecnologias_v0.2.xlsx** (hojas *Reglas*, *Tecno
 - ✅ **Mejorar un edificio** cuesta **solo la diferencia**: si tienes un granero de nivel 2 y sacas la tecnología de nivel 3, pagas los 20 que faltan.
 - ✅ **Destruir un edificio** que ya no necesitas devuelve **la mitad de su costo**. (Es la misma proporción que se recupera al retirar edificios en una conquista.)
 - ✅ **Cuartel** (militar-ofensivo): los militares que trabajan ahí **no consumen comida**. Si se movilizan, pueden moverse **una zona extra** en un turno, y ese movimiento **sigue costando oro**.
-- ✅ **Maravilla:** edificio especial **sin espacios para trabajadores**. Cuesta **500 de producción** cada una y **ocupa uno de los espacios de edificio** de la zona. Controlar **3 maravillas** es una de las condiciones de victoria (ver sección 16.3).
+- ✅ **Maravilla:** edificio especial **sin espacios para trabajadores**. Cuesta **500 de producción** cada una y **ocupa uno de los espacios de edificio** de la zona. Controlar **3 maravillas** es una de las condiciones de victoria (ver sección 16.3). ✅ 🆕 Hay **12, una por rama, y cada una es única en la partida**; da el efecto de la vertebral de nivel 5 de su rama (ver 15.3).
 - ✅ Construirla en una zona pequeña obliga a llevar ingenieros y a pagar el oro de logística para traer la producción, así que no es barato.
-- 💡 Requiere la tecnología **Arte monumental** (Construcción nivel 5).
-- ❓ ¿Tiene algún efecto aparte de contar para la victoria?
-- ❓ ¿Hay un máximo de maravillas en la partida, o cada jugador puede construir las que pueda?
+- ~~💡 Requiere la tecnología **Arte monumental** (Construcción nivel 5).~~ ✅ 🆕 Requiere la **vertebral de nivel 5 de su rama** (ver 15.3).
+- ✅ 🆕 ~~¿Tiene algún efecto aparte de contar para la victoria?~~ Sí: el efecto de la vertebral de nivel 5 de su rama (15.3).
+- ✅ 🆕 ~~¿Hay un máximo de maravillas en la partida?~~ Sí: **una de cada** (12 en total), y quien la construye primero la tiene (15.3).
 - 💡 **Propuesta de catálogo de edificios:** ver la sección 15.1.
 - ✅ Sustituye a mi propuesta anterior de espacios por nivel: ahora los espacios dependen del **tamaño** de la zona.
 
@@ -603,7 +606,7 @@ El catálogo completo está en **Tecnologias_v0.2.xlsx** (hojas *Reglas*, *Tecno
 | **Taller** | Civiles | Talleres | +1 de producción por trabajador | 4: +2, +3 y +5, y una especialización |
 | **Mercado** | Civiles | Mercados | +1 de oro por trabajador | 4: +2, +3 y +5, y una especialización |
 | **Biblioteca** | Civiles (científicos) | Bibliotecas | +1 de tecnología por trabajador | 4: +2, +3 y +5, y una especialización |
-| **Maravilla** | Ninguno | Maravillas (nivel 5) | 500 de producción; cuenta para la victoria; ocupa un espacio | 2: más barata, más defensa |
+| **Maravilla** | Ninguno | 🆕 Vertebral de nivel 5 de su rama (12 maravillas, una por rama) | 500 de producción; da el efecto de esa vertebral; cuenta para la victoria; ocupa un espacio | 2: más barata, más defensa |
 
 **Equipar y entrenar** (propuesta, para completar lo que faltaba sobre cuánto cuesta un militar):
 
@@ -621,6 +624,54 @@ El catálogo completo está en **Tecnologias_v0.2.xlsx** (hojas *Reglas*, *Tecno
 - ❓ ¿Se entrena en cualquier zona con Cuartel, o el equipo debe fabricarse en una zona industrial?
 - ❓ ¿Cada edificio cuenta como 1 para la condición "Desarrollo" sin importar su nivel? Se asume que sí. ¿Y la Maravilla cuenta como edificio?
 - ❓ Si una zona tiene una maravilla y otros edificios, ¿cuál se conserva al conquistarla? Se asume que siempre la maravilla, que pasa al conquistador.
+
+### 15.2 Producción y obras: ingenieros automáticos (🆕 26/10/2026)
+
+Es la misma idea que los científicos automáticos (sección 14.0), aplicada a la producción.
+
+- ✅ 🆕 **Fusión de constructores en ingenieros (decidido por Pao):** desaparece el oficio de constructor (de **6 a 5 oficios**) y la zona Industrial se junta con la de Producción. Se acaba la «capacidad de obra» como un número aparte de la producción guardada.
+- ✅ 🆕 **Ingenieros automáticos (decidido por Pao: «si no está construyendo nada, está produciendo»):** si la zona tiene una obra en cola, sus ingenieros **construyen solos**, cada uno usando 2 de la producción guardada de la zona. Si la producción guardada no alcanza para todos, construyen los que alcance y **el resto produce** (ej.: con 4 guardados y 3 ingenieros, 2 construyen y 1 produce). Sin obra en cola, todos producen. Un ingeniero produce 2 **o** usa 2, no ambas cosas. **No existe orden de asignar.**
+- ✅ 🆕 **Zona de Producción:** su bono (4, 8 o 12) cuenta **como capacidad de obra** mientras sus ingenieros construyen (también limitado por la producción guardada); si no hay obra, cuenta como producción de siempre.
+- ✅ Una obra cuesta 20 por nivel y **avanza cada paso hasta la capacidad de los ingenieros que construyen**, gastando de la producción guardada de la zona (la que producen los pobladores, los ingenieros libres, los talleres y la capital).
+- 💡 🆕 **Los pobladores ya no construyen** (antes sumaban 1 de capacidad). Consecuencia: al inicio nadie construye; hay que especializar ingenieros (1 de producción cada uno), igual que con los científicos. La apertura compite ahora entre crecer, ciencia y obras.
+- 💡 🆕 **Sin tiempo mínimo para la Maravilla:** la velocidad sale de cuántos ingenieros tienes (por ejemplo, 12 ingenieros en una zona de Producción nivel 3 serían unos 36 por paso, o sea unos 14 pasos para 500). Hay que simularlo.
+- ❓ 🆕 **Costo real de construir:** como el ingeniero que construye deja de producir, construir cuesta más en la práctica que antes. Medir en el simulador; si queda caro, compensar con Taller, zona de Producción y tecnologías.
+- ❓ 🆕 **Tecnologías a retocar** (hoy hablan de constructores o de zona industrial): *Cuadrillas de obra*, *Línea de ensamblaje*, *Gremios de constructores*, *Grandes obras*, *Logística de obra* y *Canteras de colina*. 💡 Casi todas solo cambian de palabra («ingeniero que construye» en vez de «constructor»; «zona de Producción» en vez de «zona industrial»), pero falta decidir qué tecnologías abren los niveles 2 y 3 de la zona de Producción.
+
+### 15.3 Maravillas únicas ligadas a las ramas (🆕 26/10/2026)
+
+- ✅ 🆕 **12 maravillas, una por rama, únicas en toda la partida (decidido por Pao).**
+- ✅ 🆕 **La vertebral de nivel 5 desbloquea la maravilla (decidido por Pao):** se paga como siempre (ciencia: 100), pero **por sí sola no da su efecto**: desbloquea la construcción de la maravilla de esa rama. **El efecto lo da la maravilla** mientras la controles; si te conquistan la zona, el efecto pasa al conquistador (ya decidido en 16.3).
+- ✅ 🆕 **Solo se puede investigar esa tecnología si su maravilla todavía no se ha construido** (por nadie).
+- ✅ 🆕 **Si pierdes la carrera (decidido por Pao):** si otro jugador termina la maravilla antes que tú, tu obra se cancela y pierdes la tecnología que la desbloqueaba, y **recuperas la mitad de la ciencia y la mitad de la producción** que habías puesto (por ejemplo, 50 de los 100 de ciencia). Si la tecnología aún estaba en la cola, se cancela y recuperas la mitad de la ciencia ya gastada.
+- 💡 🆕 La obra se **anuncia a todos al empezar**, para que la carrera se vea.
+- 💡 🆕 **Empate:** si dos jugadores terminan la misma maravilla en el mismo paso, **nadie la logra** y a cada uno le cuesta el doble lo que le falte (el mismo empate que las tribus).
+- 💡 🆕 Las maravillas **no se pueden demoler** (sí conquistar), para que nadie reabra la carrera por capricho.
+- 💡 🆕 Defensa solo tiene una tecnología de nivel 5 (la vertebral): quien construye esa maravilla cierra la rama a los demás. Es un detalle estratégico, no un error.
+- 💡 🆕 *Canteras reales* (maravillas a 400) y *Guardianes de la maravilla* (+2 de defensa), de Urbanismo, siguen valiendo y pesan más ahora.
+
+- ✅ 🆕 **Nombres y efectos de las 12 (26/10/2026, decidido por Pao):**
+
+| Rama | Maravilla | Efecto mientras la controles | Nota |
+|---|---|---|---|
+| Agricultura | La Huerta Infinita | +1 de comida por agricultor | Efecto de su vertebral, tal cual |
+| Producción | La Gran Fragua | +1 de producción por ingeniero | Tal cual |
+| Comercio | La Lonja Dorada | +1 de oro por comerciante | Tal cual |
+| Saber | La Torre de los Sabios | 🆕 Cada científico **genera o usa 3** (en vez de 2) | Reemplaza el efecto de *Enciclopedia*, que era casi inútil al final |
+| Logística | La Calzada sin Fin | Mover comida y producción por su zona es gratis | Tal cual (riesgo de balance alto) |
+| Urbanismo | La Plaza Mayor | 🆕 Tus obras cuestan **un 25 % menos** (no aplica a maravillas) | Nuevo: su vertebral desbloqueaba la Maravilla en general |
+| Sanidad y población | Las Termas de la Salud | Todas las unidades con 2 de vida más | Tal cual (riesgo alto) |
+| Diplomacia e imperio | El Palacio de los Pactos | +1 de cada recurso por cada 5 zonas | Tal cual |
+| Armas y unidades | La Sala de los Mil Filos | Las armas cuestan la mitad de producción | Tal cual |
+| Cuartel y entrenamiento | El Patio de Armas | La fuerza máxima sube de 4 a 5 | Tal cual |
+| Defensa | El Bastión Eterno | Defensores con +4 de defensa y +1 de vida | Tal cual (riesgo alto) |
+| Guerra y conquista | La Puerta de los Estandartes | 🆕 Tus **atacantes** tienen +1 de fuerza | Reemplaza *Contraataque*; es el espejo del Bastión |
+
+- 💡 🆕 Se revisó que ningún nombre choque con una tecnología del catálogo.
+- 💡 🆕 Alternativas que se descartaron: +1 espacio de edificio por zona para Urbanismo (empujaba demasiado la victoria de Desarrollo) y botín completo para Guerra.
+- ❓ 🆕 **Excel:** cambiar el texto de las vertebrales de nivel 5 de las 12 ramas a «Desbloquea [maravilla]», y el efecto de *Enciclopedia*, *Maravillas* y *Contraataque* por los nuevos.
+- ❓ 🆕 **Victoria tecnológica:** ¿una maravilla controlada cuenta como «nivel 5» para la condición de Tecnología? 💡 Yo diría que sí, porque da el efecto, pero un mismo logro alimentaría dos condiciones.
+- ❓ 🆕 **Ritmo:** con la capital a +2, ¿cuántos pasos tarda una maravilla típica y cuántos las 3 de la condición de victoria? Simular antes de dar los números por buenos.
 
 ---
 
@@ -669,7 +720,7 @@ El catálogo completo está en **Tecnologias_v0.2.xlsx** (hojas *Reglas*, *Tecno
 ### 16.3 Condición de maravillas
 
 - ✅ **Controlar 3 maravillas** es una de las 7 condiciones: cuenta como una más dentro del "2 de ellas", no es una vía independiente.
-- ✅ Una **maravilla** es un edificio especial, **sin espacios para trabajadores**, que cuesta **500 de producción** (1500 en total para las 3) y **ocupa un espacio de edificio** de la zona.
+- ✅ Una **maravilla** es un edificio especial, **sin espacios para trabajadores**, que cuesta **500 de producción** (1500 en total para las 3) y **ocupa un espacio de edificio** de la zona. 🆕 Las 3 deben ser **distintas** (hay una por rama, ver 15.3) y cada una se desbloquea con la vertebral de nivel 5 de su rama; las 3 ramas más baratas hasta el nivel 4 suman unos 640 de ciencia (💡 estimación sobre el catálogo v0.2).
 - ✅ Construirla en una zona pequeña requiere llevar ingenieros y pagar el oro de logística para traer la producción.
 - ✅ Si otro jugador te quita una zona donde construiste una maravilla, **la pierdes** y **él gana el control de ella**.
 - ✅ Como el resto de las condiciones, las 3 maravillas deben estar **bajo tu control al mismo tiempo**.
@@ -707,6 +758,7 @@ El catálogo completo está en **Tecnologias_v0.2.xlsx** (hojas *Reglas*, *Tecno
 - ✅ 🆕 La capital empieza con **10 de comida y 10 de producción**; su almacén base es 40 (10 × tamaño 4).
 - ✅ La capital empieza con **tamaño 4**, por lo que ya puede tener **1 edificio**.
 - ✅ **Nadie empieza con científicos:** los 4 pobladores iniciales son básicos. La primera decisión de cada jugador es elegir su apertura: **crecimiento explosivo** (hacerlos agricultores) o **ciencia primero** (especializar 1 o 2 científicos, que investigan solos cuando hay algo en cola).
+- 💡 🆕 **Tampoco hay ingenieros al inicio:** para construir hay que especializarlos (1 de producción cada uno), igual que a los científicos (ver 15.2).
 - ✅ Cada jugador empieza **solo con su capital**. El resto del mapa son tribus neutrales (2 por jugador) y zonas vacías de tamaño 3 (ver sección 4).
 - ❓ Orden de turno / asignación de posiciones iniciales.
 
@@ -719,7 +771,7 @@ El catálogo completo está en **Tecnologias_v0.2.xlsx** (hojas *Reglas*, *Tecno
 - 💡 **Configuración en tablas** (unidades, zonas, costos) en un archivo que el simulador lee; cambiar un número no requiere cambiar código.
 - 💡 **Simulaciones masivas** con bots (miles de partidas) para balancear: victorias por posición inicial, ventajas de unidades, duración de partida.
 - 💡 **Telemetría** de partidas reales guardada en una base (SQL): órdenes por paso, tiempo de decisión, condiciones de victoria alcanzadas.
-- 💡 **Servidor** con FastAPI + WebSockets; cliente simple en HTML/JavaScript (D3 para el mapa).
+- ~~💡 **Servidor** con FastAPI + WebSockets; cliente simple en HTML/JavaScript (D3 para el mapa).~~ ✅ 🆕 **Multijugador con Firebase Realtime Database** (27/10/2026, decidido por Pao), sin servidor propio: ver pendiente 35 y `docs/multijugador.md`.
 - 💡 La animación del combate **no frena el timer**: el estado ya está calculado.
 - 💡 Un **notebook final** que cuente la historia del balance (para el portafolio).
 
@@ -766,7 +818,7 @@ El catálogo completo está en **Tecnologias_v0.2.xlsx** (hojas *Reglas*, *Tecno
 18. ✅ Anexión simultánea de tribus: resuelta (ver sección 12).
 19. ❓ **Terrenos:** qué terrenos son riesgosos o muy riesgosos para los eventos.
 20. ❓ **Mapas:** elegir cuáles probar primero; definir especialización y tamaño de cada tribu.
-21. ❓ **Maravillas:** si hay un máximo en la partida, si tienen algún efecto aparte de contar para la victoria, y si cuentan para la condición de Desarrollo.
+21. ✅ 🆕 **Maravillas:** resuelto el máximo (una de cada, 12 en total) y el efecto (el de la vertebral de nivel 5 de su rama), ver 15.3. ❓ Sigue pendiente si cuentan para la condición de Desarrollo.
 22. ❓ **Tecnologías y edificios:** revisar y corregir el catálogo de 203 tecnologías (Tecnologias_v0.2.xlsx) y los edificios de la sección 15.1. 🆕 Los textos de Almacén, Intereses del almacén y Capital próspera ya se actualizaron en el juego; falta pasarlos al Excel.
 23. ❓ **Máquinas de asedio:** movimiento, comida, qué pasa si pierdes la zona, si cuentan como población y si se pueden licenciar (sección 9.1).
 24. ❓ **Eventos y recursos:** revisar el catálogo de eventos (13.1) y la lista de recursos estratégicos (6.3), y añadirlos de forma simétrica al atlas.
@@ -782,7 +834,10 @@ El catálogo completo está en **Tecnologias_v0.2.xlsx** (hojas *Reglas*, *Tecno
 34. ❓ 🆕 **Diseño para más tensión**, en el orden que eligió Pao: ✅ encuentros sorpresa y recursos disputados (secciones 13.2 y 6.3) → ✅ mapas más conectados con dilema del prisionero en la frontera (secciones 4.2 y 11) → tribus como amenaza latente y tributo negociado → multijugador por videollamada.
 36. ❓ 🆕 **Fronteras:** confirmar los bonos (+3 / +4) jugando, y revisar los 11 mapas donde un camino todavía pasa por encima de otra zona (sobre todo Espiral y Dientes de sierra).
 37. ✅ 🆕 **Maravillas:** no se podían construir (la orden no se atendía); corregido al agregar la revisión de tipos.
-35. ❓ 🆕 **Multijugador para el primer playtest** por videollamada, cada uno en su computadora.
+35. ❓ 🆕 **Multijugador para el primer playtest** por videollamada, cada uno en su computadora. ✅ 🆕 **Con Firebase Realtime Database (27/10/2026, decidido por Pao: más estable que PeerJS y nadie tiene que dejar su compu prendida como servidor).** Salas con código de 4 letras; el anfitrión resuelve cada paso y escribe el estado completo; cualquiera puede recargar y volver a su asiento. Hecho sobre la v0.13 (rama `online/firebase`) y probado con dos navegadores y un Firebase falso (ver `docs/multijugador.md`). ❓ Falta la primera partida con el Firebase real. La versión anterior con servidor propio (rama `red/multijugador-salas`, sobre la v0.4) queda descartada.
+38. ❓ 🆕 **Maravillas únicas (15.3):** ✅ nombres y efectos ya decididos; falta pasarlos al Excel, decidir si cuentan como «nivel 5» para la victoria tecnológica, y confirmar las propuestas 💡 (empate, no demoler, anuncio de la obra).
+39. ❓ 🆕 **Ingenieros automáticos (15.2):** costo real de construir, tecnologías a retocar y qué tecnologías abren los niveles 2 y 3 de la zona de Producción.
+40. ❓ 🆕 **Botín (sección 15):** solo producción o también comida, y si aplica solo al conquistar.
 
 ---
 
@@ -869,3 +924,10 @@ El catálogo completo está en **Tecnologias_v0.2.xlsx** (hojas *Reglas*, *Tecno
 ### 23.4 Lo que muestran las simulaciones entre bots
 - El motor no tiene errores ni cantidades inválidas en los 12 mapas con 2, 3 y 4 jugadores.
 - 🆕 Antes de los cambios de hoy, en modo prueba se ganaba casi siempre por **Comercial + Desarrollo**. Después de bajar la capital a +2 y encarecer el equipo, casi nadie gana antes del paso 60 (pendiente 28).
+
+### 23.5 Reglas decididas que el prototipo todavía no tiene (🆕 26/10/2026)
+
+- **Maravillas únicas** ligadas a las ramas (15.3).
+- **Botín** al conquistar (sección 15).
+- **Ingenieros automáticos** y fusión de constructores en ingenieros (15.2): el juego sigue con 6 oficios, capacidad de obra y zona industrial.
+- Al pasarlo al código hay que mover también los números a `js/config/` y retocar las tecnologías de 15.2.

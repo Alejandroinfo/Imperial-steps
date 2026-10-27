@@ -4,14 +4,14 @@
       "$codigo": {
         ".read": "auth != null",
         "creador": {
-          ".write": "auth != null && !data.exists() && newData.val() === auth.uid"
+          ".write": "auth != null && newData.val() === auth.uid && (!data.exists() || root.child('salas').child($codigo).child('jugadores').child('a0').child('uid').val() === auth.uid)"
         },
         "creada": {
           ".write": "auth != null && !data.exists() && root.child('salas').child($codigo).child('creador').val() === auth.uid"
         },
         "jugadores": {
           "$asiento": {
-            ".write": "auth != null && ((!data.exists() && newData.child('uid').val() === auth.uid) || data.child('uid').val() === auth.uid)"
+            ".write": "auth != null && ((!data.exists() && newData.child('uid').val() === auth.uid) || data.child('uid').val() === auth.uid || (data.child('conectado').val() === false && newData.child('uid').val() === auth.uid && newData.child('nombre').val() === data.child('nombre').val() && newData.child('asiento').val() === data.child('asiento').val()))"
           }
         },
         "config": {

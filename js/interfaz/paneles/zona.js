@@ -4,10 +4,10 @@
 function unitsTable(z){
   let h='';
   Object.keys(z.units).map(Number).filter(f=>z.units[f].length>0).forEach(f=>{
-    const us=z.units[f], by={}; us.forEach(u=>{ const k=u.t; by[k]=by[k]||{n:0,w:0}; by[k].n++; if(u.w>0) by[k].w++; });
+    const us=z.units[f], by={}; us.forEach(u=>{ const k=u.t; by[k]=by[k]||{n:0,w:0,g:0}; by[k].n++; if(u.w>0) by[k].w++; if(u.gen) by[k].g++; });
     const vis=(f!==TRIBE)||tribeVisible(z)||z.owner!==TRIBE;
     h+=`<div class="ut"><span class="dot" style="background:${PLN[f].col}"></span><b>${PLN[f].name}</b>: `;
-    h+=vis?Object.keys(by).map(t=>`<span class="uchip" title="${UN[t]}">${uIcon(t,22)}<b>${by[t].n}</b>${by[t].w?`<small>(${by[t].w} herid.)</small>`:''}</span>`).join(''):'(no los ves todavía)';
+    h+=vis?Object.keys(by).map(t=>`<span class="uchip" title="${UN[t]}">${uIcon(t,22)}<b>${by[t].n}</b>${by[t].g?`<small>★${by[t].g}</small>`:''}${by[t].w?`<small>(${by[t].w} herid.)</small>`:''}</span>`).join(''):'(no los ves todavía)';
     h+='</div>';
   });
   return h||'<div class="hint">Sin unidades.</div>';
@@ -193,6 +193,7 @@ function zoneOverview(z){
   // --- reservas ---
   const cf=capStore(G,z,'food'), cp=capStore(G,z,'prod'), gc=growCost(G,z.owner,z);
   const rt=(z.routes||[]); const gm=z.growMode||GROW_MODE_DEFAULT;
+  if((z.repop||0)>0) h+=`<div class="hint repop" title="Murieron o fueron capturadas personas nacidas aquí: los próximos nacimientos de esta zona cuestan menos">🕊 <b>Repoblación:</b> los próximos ${z.repop} nacimiento${z.repop>1?'s':''} cuestan un ${Math.round(100*Math.min(0.9,REPOP_PCT+G.M[ME].repopBonus))} % menos.</div>`;
   h+=`<div class="hint" style="margin:-2px 0 4px">${gm==='crecer'?'👶 El sobrante va a <b>crecer</b>':'⏸ El crecimiento está <b>en pausa</b>: el sobrante se guarda'}${z.autoSpec?` · los que nacen serán <b>${UNP[z.autoSpec].toLowerCase()}</b>`:''}${rt.length?` · 🔁 ${rt.length} envío${rt.length>1?'s':''} automático${rt.length>1?'s':''}`:''} <a href="#" data-act="zsub" data-s="recursos" class="wlink">cambiar</a></div>`;
   h+=`<div class="zres3"><div><span title="comida">🌾</span><b>${Math.floor(z.food)}/${cf}</b>${barHTML(z.food,cf,'#9DC764')}</div><div><span title="producción">⚒</span><b>${Math.floor(z.prod)}/${cp}</b>${barHTML(z.prod,cp,'#C9A878')}</div><div><span title="crecimiento">👶</span><b>${Math.floor(z.prog)}/${gc}</b>${barHTML(z.prog,gc,'#7FB2E5')}<small>${growText(z)}</small></div></div>`;
   // --- quién trabaja y dónde ---
@@ -220,7 +221,7 @@ function zoneOverview(z){
   const mil=MIL.filter(t=>cnt[t]);
   if(mil.length){
     const mt=mil.map(t=>`${cnt[t]} ${(cnt[t]>1?UNP[t]:UN[t]).toLowerCase()}`).join(', ');
-    const cu=blds.filter(b=>b.mil); h+=`<h4>Tropas</h4><div class="wrow">${uIcon(mil[0],30)}<div class="wtx"><b>${esc(mt)}</b><small>${cu.length?cu.map(b=>`${b.wk||0} en ${BT[b.t].n.toLowerCase()}`).join(' · ')+' · ':''}comen 2 cada una (las del cuartel, nada)</small></div></div>`;
+    const cu=blds.filter(b=>b.mil); h+=`<h4>Tropas</h4><div class="wrow">${uIcon(mil[0],30)}<div class="wtx"><b>${esc(mt)}</b><small>${cu.length?cu.map(b=>`${b.wk||0} en ${BT[b.t].n.toLowerCase()}`).join(' · ')+' · ':''}${(()=>{ let f=0,gd=0; (z.units[ME]||[]).forEach(u=>{ if(!UT[u.t].civ){ f+=(u.need||0); if(!u.free) gd+=((UNIT_UPKEEP[u.t]||{gold:0}).gold+(u.gen?GEN_PAY:0))*G.M[ME].payMul; } }); return 'mantienen 🌾 '+Math.ceil(f-1e-9)+(gd>0?' y 🪙 '+Math.ceil(gd-1e-9):'')+' por paso (las del Cuartel, nada)'; })()}</small></div></div>`;
   }
   if(z.owner===ME&&(z.units[ME]||[]).some(u=>!UT[u.t].civ)&&supplySources(G,ME,z.id).length===0) h+='<div class="warn">⚠ Esta zona está aislada: sin camino seguro, sus tropas pasan hambre.</div>';
   if(fd&&(Object.keys(fd.from).length||fd.short)) h+=`<div class="${fd.short?'warn':'hint'}">Comida de la gente: ${fd.local} de aquí${Object.keys(fd.from).map(s=>`, ${fd.from[s]} desde ${esc(zname(G.zones[s]))}`).join('')}${fd.short?`. Faltaron ${fd.short}: alguien pasa hambre.`:'.'}</div>`;
@@ -270,24 +271,63 @@ function supplyHTML(z){
   if(src===null||src===undefined) return `<div class="tribute"><div class="trh">⚠ <b>Sin suministros</b></div><div class="hint">No hay camino seguro (de hasta ${SUPPLY_RANGE+(G.M[ME].supplies?1:0)} zonas, sin pasar por zonas enemigas) hasta una zona tuya con comida. Tus tropas pasan hambre, pelean con la <b>mitad de los dados</b> y acaban muriendo. Retíralas o abre el camino.</div></div>`;
   return `<div class="${hambre?'warn':'hint'}">🍞 Suministro desde <b>${esc(zname(G.zones[src]))}</b>${hambre?` · ⚠ ${hambre} con hambre: pelean con la mitad de los dados`:''}.</div>`;
 }
+// Aptitud para pelear de una persona: fuerza + salud (sus rasgos).
+const combatApt=u=>trInt(u,'fue')+trInt(u,'sal');
+const WEAPON_T=['arq','esc','ber','cab'];
+// chips con los tres costos de una tropa: producción, comida y oro (los que valen 0 no salen)
+function costChips(c){ return [['prod',c.prod],['food',c.food],['gold',c.gold]].filter(x=>x[1]>0).map(x=>rq(x[0],x[1])).join(' '); }
+function upkeepText(t,gen){ const up=UNIT_UPKEEP[t]||{food:1,gold:0}; const g=up.gold+(gen?GEN_PAY:0); return `mantiene 🌾 ${up.food}${g?` · 🪙 ${g}`:''}`; }
+// Personas que se pueden elegir ahora (sin orden en cola): civiles para nombrar general, soldados para equipar; las más aptas primero.
+function trainPool(z){
+  const mode=fv('tr_mode','new'); if(mode==='new') return [];
+  const list=mode==='sol'?availListQ(z.id,'sol'):CIV.flatMap(t=>availListQ(z.id,t));
+  return list.slice().sort((a,b)=>combatApt(b)-combatApt(a)||(a.t==='pob'?0:1)-(b.t==='pob'?0:1));
+}
+// Cuántas tropas más puede reclutar esta zona este paso (según sus Cuarteles) descontando lo que ya tienes en cola.
+function recruitLeft(z){ return Math.max(0,recruitCap(G,ME,z)-ui.orders.filter(o=>o.t==='train'&&o.zone===z.id&&(o.from==='new'||!o.from)).reduce((a,o)=>a+(o.n||0),0)); }
+// Reclutar, nombrar generales o equipar: tropa (tarjetas), de dónde sale y, si hace falta, las personas (con sus rasgos). Sin listas desplegables.
+function trainPickerHTML(z){
+  const T='<b>Reclutar</b>: las tropas nuevas salen de un <b>Cuartel</b> pagando producción, comida y oro (cada Cuartel recluta 1 por nivel y por paso); <b>no gastan ningún civil</b>. <b>Nombrar general</b>: un civil que tú eliges asciende a campeón: es más fuerte, el último en morir de su tipo y cobra una paga extra. <b>Equipar</b>: un soldado que ya tienes recibe su arma. Mira los rasgos de ❤ salud y ⚔ fuerza al elegir a quién ascender; también puedes arrastrar gente al puesto «Ejército» en Población.';
+  let h='<h4>Reclutar y mandar'+infoBtn('cuartel',T)+'</h4>'+infoBody('cuartel',T);
+  const mode=['new','civ','sol'].includes(fv('tr_mode','new'))?fv('tr_mode','new'):'new';
+  const all=MIL.filter(t=>!TRAIN_TECH[t]||techOwn(G,ME,TRAIN_TECH[t]));
+  const opts=mode==='new'?all.filter(t=>canRecruit(G,ME,z,t)||!hasBarracks(z)):mode==='civ'?all.filter(t=>GEN_TYPES.includes(t)):all.filter(t=>WEAPON_T.includes(t));
+  h+=`<div class="row"><span class="seg"><button data-act="trmode" data-v="new" aria-pressed="${mode==='new'}">⚔ Reclutar</button><button data-act="trmode" data-v="civ" aria-pressed="${mode==='civ'}">★ Nombrar general</button><button data-act="trmode" data-v="sol" aria-pressed="${mode==='sol'}">🛠 Equipar soldados</button></span></div>`;
+  if(!opts.length) return h+'<div class="hint">Todavía no tienes tecnologías para esto.</div>';
+  const uT=opts.includes(fv('tr_u','sol'))?fv('tr_u','sol'):opts[0]; const weapon=WEAPON_T.includes(uT);
+  const stock0=weapon?stockOf(z,uT)-ui.orders.filter(o=>o.t==='train'&&o.zone===z.id&&o.u===uT).reduce((a,o)=>a+(o.ids?o.ids.length:o.n),0):0;
+  h+='<div class="trcards">'+opts.map(t=>{ const c=recruitCost(G,ME,z,t,mode,WEAPON_T.includes(t)&&stockOf(z,t)>0); return `<button class="trc ${t===uT?'on':''}" data-act="trtype" data-v="${t}" aria-pressed="${t===uT}">${uIcon(t,30)}<b>${mode==='civ'?'General de '+UN[t].toLowerCase():UN[t]}</b><small>${costChips(c)}</small><small class="up">${upkeepText(t,mode==='civ')}</small></button>`; }).join('')+'</div>';
+  let n=0;
+  if(mode==='new'){
+    const left=recruitLeft(z), cap=recruitCap(G,ME,z);
+    if(!canRecruit(G,ME,z,uT)) return h+'<div class="hint">Esta zona no tiene <b>Cuartel</b>: sin él no se puede reclutar aquí. Constrúyelo en Edificios (o investiga <i>Mercenarios</i>).</div>';
+    n=Math.min(Math.max(1,Number(fv('tr_n',1))||1),Math.max(1,left));
+    h+=`<div class="stp ${n>0?'on':''}">${uIcon(uT,34)}<span class="sn"><b>${left?n:0}</b><small>de ${left} este paso (${cap} por paso)</small></span><span class="sb"><button data-act="trn" data-d="1" ${n>=left?'disabled':''} aria-label="Una más">＋</button><button data-act="trn" data-d="-1" ${n<=1?'disabled':''} aria-label="Una menos">－</button></span></div>`;
+    if(!left) h+='<div class="hint">Este paso ya no caben más reclutas en esta zona: cada Cuartel recluta 1 por nivel y por paso (con <i>Levas</i>, más).</div>';
+    else n=Math.min(n,left);
+    if(!left) n=0;
+  } else {
+    const pool=trainPool(z); const sel=(ui.trainIds||[]).filter(id=>pool.some(u=>u.id===id)); n=sel.length;
+    if(!pool.length) h+='<div class="hint">'+(mode==='sol'?'No tienes soldados libres para equipar en esta zona.':'No hay civiles libres en esta zona (los que se mueven, trabajan en una orden o están heridos no se pueden ascender).')+'</div>';
+    else {
+      h+=`<div class="row trbest"><small class="hint">Elegir:</small>${[1,2,3,5].filter(k=>k<=pool.length).map(k=>`<button class="chip" data-act="trbest" data-n="${k}">Los ${k} más apto${k>1?'s':''}</button>`).join('')}${sel.length?'<button class="chip" data-act="trclear">Limpiar</button>':''}</div>`;
+      h+='<div class="trpool">'+pool.slice(0,40).map(u=>{ const ap=combatApt(u); return `<div class="token tk trp ${sel.includes(u.id)?'picked':''} ${traitBorder(u)}" data-act="trpick" data-id="${u.id}" data-t="${u.t}" role="button" tabindex="0" aria-pressed="${sel.includes(u.id)}" aria-label="${esc(personName(u)+', '+UN[u.t].toLowerCase())}">${uIcon(u.t,28)}<div class="tkb">${traitChips(u)}</div>${ap?`<span class="aptc ${ap>0?'p':'n'}" title="Aptitud para pelear (fuerza + salud)">⚔${ap>0?'+':''}${ap}</span>`:''}</div>`; }).join('')+(pool.length>40?`<div class="tokmore">+${pool.length-40}</div>`:'')+'</div>';
+    }
+  }
+  const st=weapon?Math.min(n,Math.max(0,stock0)):0; const c1=recruitCost(G,ME,z,uT,mode,true), c0=recruitCost(G,ME,z,uT,mode,false);
+  const tot={prod:c1.prod*st+c0.prod*(n-st),food:c0.food*n,gold:c0.gold*n}; const cm=commits();
+  const lack=(tot.prod+(cm.prod[z.id]||0)>z.prod)||(tot.food+(cm.food[z.id]||0)>z.food)||(tot.gold+cm.gold>G.F[ME].gold);
+  h+=`<div class="cost ${lack?'bad':''}"><b>${n?costChips(tot):'Elige cuántos'}</b><small>${n?`${n} ${mode==='civ'?'general'+(n>1?'es':'')+' de ':''}${(n>1?UNP[uT]:UN[uT]).toLowerCase()} · ${upkeepText(uT,mode==='civ')} c/u${st>0?` · 🛠×${st} guardado${st>1?'s':''}`:''} · hay ⚒ ${Math.floor(z.prod)} · 🌾 ${Math.floor(z.food)} · 🪙 ${Math.floor(G.F[ME].gold)}`:(mode==='new'?'Usa ＋ y － para elegir cuántos reclutar.':'Toca a las personas que quieres elegir.')}</small></div>`;
+  const label=mode==='new'?'Reclutar':mode==='civ'?'Nombrar general':'Equipar';
+  h+=`<div class="row">${btnHTML('train',label+(n?' · '+n:''),n?'':'disabled','primary')}</div>`;
+  return h;
+}
 function subMilitar(z){
   const us=z.units[ME]||[]; const by={}; us.forEach(u=>{ if(!UT[u.t].civ){ by[u.t]=by[u.t]||{n:0,w:0}; by[u.t].n++; if(u.w>0) by[u.t].w++; } });
   const mil=MIL.filter(t=>by[t]); let h='<h4>Tropas</h4>'+(mil.length?'<div class="kv">'+mil.map(t=>`<span>${uIcon(t,20)} ${UNP[t]}</span><span>${by[t].n}${by[t].w?` <small>(${by[t].w} herid.)</small>`:''}</span>`).join('')+'</div>'+supplyHTML(z):'<div class="hint">Sin tropas.</div>');
   if(!mine(z)) return h;
   h+=relationsHTML(true);
-  { const T='Se puede entrenar en cualquier zona. Con un <b>Cuartel</b>, además, sus tropas no comen y se mueven una zona extra.'; h+='<h4>Entrenar militares'+infoBtn('cuartel',T)+'</h4>'+infoBody('cuartel',T); }
-  { const cu=z.b.some(b=>b.t==='cuartel');
-    const opts=MIL.filter(t=>!TRAIN_TECH[t]||techOwn(G,ME,TRAIN_TECH[t]));
-    const uT=opts.includes(fv('tr_u','sol'))?fv('tr_u','sol'):opts[0];
-    const weapon=['arq','esc','ber','cab'].includes(uT);
-    const srcOpts=weapon?[['civ','Un civil'],['sol','Un soldado (equipar)']]:[['civ','Un civil']];
-    const fromK=weapon&&fv('tr_src','civ')==='sol'?'sol':'civ';
-    const from=fromK==='sol'?'sol':null; const stock=weapon?stockOf(z,uT)-ui.orders.filter(o=>o.t==='train'&&o.zone===z.id&&o.u===uT).reduce((a,o)=>a+o.n,0):0;
-    const cost=trainCost(G,ME,z,uT,from,false), costS=trainCost(G,ME,z,uT,from,true);
-    const avail=fromK==='sol'?availQ(z.id,'sol'):CIV.reduce((a,t)=>a+availQ(z.id,t),0);
-    h+=`<div class="row">${selHTML('tr_u',opts.map(t=>[t,UN[t]+' ('+trainCost(G,ME,z,t,null,stockOf(z,t)>0)+')']),uT)} ${weapon?selHTML('tr_src',srcOpts,fromK):''} ${numHTML('tr_n',1,avail)}</div>`;
-    h+=`<div class="hint">${weapon?`${uIcon('sol',18)} ${from?0:soldierCost(G,ME,z)} + 🛠 ${equipCost(G,ME,z,uT)} = ${rq('prod',cost)} c/u`:`${rq('prod',cost)} c/u`}${stock>0?` · 🛠×${stock} guardado${stock>1?'s':''}: ${rq('prod',costS)}`:''}</div><div class="row">${btnHTML('train','Entrenar')}</div>`;
-  }
+  h+=trainPickerHTML(z);
   const eqs=Object.keys(z.eq||{}).filter(t=>z.eq[t]>0), eqp=Object.keys(z.eqPend||{}).filter(t=>z.eqPend[t]>0);
   if(eqs.length||eqp.length){
     h+=`<div class="box">⚔ <b>Equipo guardado:</b> ${eqs.length?eqs.map(t=>z.eq[t]+' '+EQUIP_N[t][z.eq[t]>1?1:0]).join(', '):'nada'}${eqp.length?`<div class="hint">Por recuperar cuando acabe el conflicto: ${eqp.map(t=>z.eqPend[t]+' '+EQUIP_N[t][z.eqPend[t]>1?1:0]).join(', ')}.</div>`:''}</div>`;
@@ -317,17 +357,17 @@ function offerBuilderHTML(f){
     <div class="cost ${gn<=0||an<=0?'bad':''}"><b>${rq(give,gn)} ⇄ ${rq(ask,an)}</b><small>Lo que das queda en reserva hasta que ${esc(PLN[f].name)} responda; si no acepta, lo recuperas.${pending?` · ya tienes ${pending} oferta${pending>1?'s':''} para él en cola`:''}</small></div>
     <div class="row">${btnHTML('ofgo','Enviar oferta',gn>0&&an>0?`data-t="${f}"`:'disabled','primary')}${btnHTML('ofopen','Cerrar',`data-t="${f}"`)}</div>`;
 }
+// Dar de baja tropas (recuperas parte de su producción) o retirar a un general (vuelve a ser civil). Con botones ＋/－, sin listas.
+function milFree(z,t,gen){ return (z.units[ME]||[]).filter(u=>u.t===t&&u.w===0&&!u.busy&&!!u.gen===gen).length-ui.orders.filter(o=>o.t==='demob'&&o.zone===z.id&&o.u===t&&((o.to==='baja')===!gen)).reduce((a,o)=>a+o.n,0); }
 function demobHTML(z){
-  const can=DEMOB_FROM.filter(t=>availQ(z.id,t)>0);
-  if(!can.length&&!(z.units[ME]||[]).some(u=>DEMOB_FROM.includes(u.t))) return '';
-  let h=fold('demob','Licenciar (volver a civiles)');
+  const rows=[]; DEMOB_FROM.forEach(t=>{ const sol=milFree(z,t,false), gen=GEN_TYPES.includes(t)?milFree(z,t,true):0; if(sol>0) rows.push([t,'baja',sol]); if(gen>0) rows.push([t,'ret',gen]); });
+  if(!rows.length&&!(z.units[ME]||[]).some(u=>DEMOB_FROM.includes(u.t))) return '';
+  let h=fold('demob','Dar de baja o retirar generales');
   if(!ui.det||!ui.det.demob) return h;
-  if(!can.length){ const hurt=(z.units[ME]||[]).some(u=>DEMOB_FROM.includes(u.t)&&u.w>0); return h+`<div class="hint">${hurt?'Las tropas heridas no se pueden licenciar hasta curarse.':'No hay tropas para licenciar en esta zona.'}</div>`; }
-  const u=can.includes(fv('dm_u',can[0]))?fv('dm_u',can[0]):can[0];
-  const to=CIV.includes(fv('dm_to','pob'))?fv('dm_to','pob'):'pob';
-  const per=demobCost(G,ME,to);
-  h+=`<div class="row">${selHTML('dm_u',can.map(t=>[t,UNP[t]+' ('+availQ(z.id,t)+')']),u)} → ${selHTML('dm_to',CIV.map(t=>[t,UN[t]+' ('+demobCost(G,ME,t)+')']),to)} ${numHTML('dm_n',1,availQ(z.id,u))}</div>`;
-  h+=`<div class="hint">${per?`Cuesta ${rq('prod',per)} cada uno`:'Gratis gracias a «Reservistas»'}. Vuelven como civiles con fuerza 1 y dejan de comer el doble. Ese paso no producen.</div><div class="row">${btnHTML('demob','Licenciar')}</div>`;
+  if(!rows.length) return h+'<div class="hint">No hay tropas libres en esta zona (las heridas o recién reclutadas no se pueden dar de baja).</div>';
+  const per=demobCost(G,ME,'pob'), ref=Math.round(100*(G.M[ME].reserv?0.75:DISBAND_REFUND));
+  h+='<div class="stps">'+rows.map(([t,k,mx])=>{ const key='dm_'+k+'_'+t; const n=Math.min(mx,Number(fv(key,0))||0); return `<div class="stp ${n>0?'on':''}">${uIcon(t,34)}<span class="sn"><b>${n}</b><small>${k==='baja'?'dar de baja':'retirar generales'} · de ${mx}</small></span><span class="sb"><button data-act="dmstep" data-k="${key}" data-d="1" data-mx="${mx}" ${n>=mx?'disabled':''}>＋</button><button data-act="dmstep" data-k="${key}" data-d="-1" ${n<=0?'disabled':''}>－</button></span></div>`; }).join('')+'</div>';
+  h+=`<div class="hint">Dar de baja devuelve el ${ref} % de la producción de la tropa. Retirar a un general lo devuelve a ser poblador${per?` (cuesta ${rq('prod',per)} cada uno)`:' (gratis)'}.</div><div class="row">${btnHTML('demob','Aplicar')}</div>`;
   return h;
 }
 // Prioridad de la comida que sobra: crecer o guardar.
@@ -387,8 +427,8 @@ function subMover(z){
   return h;
 }
 function presenceChips(z,f){
-  const us=z.units[f]||[], by={}; us.forEach(u=>{ by[u.t]=by[u.t]||{n:0,w:0}; by[u.t].n++; if(u.w>0) by[u.t].w++; });
-  return Object.keys(by).map(t=>`<span class="uchip" title="${UN[t]}${by[t].w?' ('+by[t].w+' heridos)':''}">${uIcon(t,20)}<b>${by[t].n}</b>${by[t].w?'<small>✚'+by[t].w+'</small>':''}</span>`).join('');
+  const us=z.units[f]||[], by={}; us.forEach(u=>{ by[u.t]=by[u.t]||{n:0,w:0,g:0}; by[u.t].n++; if(u.w>0) by[u.t].w++; if(u.gen) by[u.t].g++; });
+  return Object.keys(by).map(t=>`<span class="uchip" title="${UN[t]}${by[t].g?' ('+by[t].g+' general'+(by[t].g>1?'es':'')+')':''}${by[t].w?' ('+by[t].w+' heridos)':''}">${uIcon(t,20)}<b>${by[t].n}</b>${by[t].g?'<small>★'+by[t].g+'</small>':''}${by[t].w?'<small>✚'+by[t].w+'</small>':''}</span>`).join('');
 }
 function zoneHead(z){
   const rn=z.role==='capital'?'Capital':z.role==='tribu'?'Tribu':z.role==='frontera'?'Frontera':'Zona libre';
@@ -410,7 +450,7 @@ function panelZona(){
   if(!z) return '<p class="hint">Toca una zona del mapa. Cada zona tiene sus propias pestañas: resumen, población, edificios, militar, recursos y moverse. Si tienes gente en ella, desde «Moverse» eliges a qué zona vecina ir.</p>';
   const mz=mine(z); const subs=mz?ZSUBS:[ZSUBS[0],ZSUBS[5]];
   const cur=subs.some(s=>s[0]===ui.zsub)?ui.zsub:'resumen';
-  let h=zoneHead(z)+'<div class="subtabs" role="tablist">'+subs.map(([k,l])=>`<button data-act="zsub" data-s="${k}" aria-selected="${k===cur}" role="tab">${l}</button>`).join('')+'</div>';
+  let h=zoneHead(z)+'<div class="subtabs" role="tablist">'+subs.map(([k,l])=>`<button data-act="zsub" data-s="${k}" aria-selected="${k===cur}" role="tab">${l}${ui.alerts&&ui.alerts.subs[z.id+'|'+k]?'<i class="al">!</i>':''}</button>`).join('')+'</div>';
   const fn={resumen:subResumen,poblacion:subPoblacion,edificios:subEdificios,militar:subMilitar,recursos:subRecursos,mover:subMover}[cur];
   return h+fn(z);
 }

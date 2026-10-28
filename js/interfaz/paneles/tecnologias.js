@@ -61,7 +61,7 @@ function impactChips(t){
   if(r.out.store) parts.push(`<span class="rq" title="almacenamiento">🏺 +${r.out.store}</span>`);
   if(r.growth&&r.growth.eta1&&r.growth.eta0&&r.growth.eta1<r.growth.eta0) parts.push(`<span class="rq" title="próximo poblador">👶 ${r.growth.eta0}→${r.growth.eta1}</span>`);
   if(r.units.length) parts.push(r.units.map(u=>`<span class="uchip" title="mejora a tus ${UNP[u.t].toLowerCase()}">${uIcon(u.t,18)}<b>↑${u.n}</b></span>`).join(''));
-  if(r.unlock) parts.push(`<span class="uchip" title="permite entrenar ${UNP[r.unlock].toLowerCase()}">🔓${uIcon(r.unlock,18)}</span>`);
+  if(r.unlock) parts.push(`<span class="uchip" title="permite reclutar ${UNP[r.unlock].toLowerCase()}">🔓${uIcon(r.unlock,18)}</span>`);
   if(r.bunlock) parts.push(`<span class="rq" title="permite construir">🔓 ${BT[r.bunlock].n}</span>`);
   return parts.length?`<span class="ichips">${r.ups.length?'<small title="al mejorar tu edificio">⬆</small>':''}${parts.join('')}</span>`:'';
 }
@@ -75,7 +75,7 @@ function impactHTML(t){
   if(r.out.store) parts.push(`${r.ups.length&&!prodTxt?'Al mejorar tu almacén: ':''}<b>+${r.out.store}</b> de almacenamiento`);
   if(r.growth){ const z=G.zones[r.growth.zone]; parts.push(r.growth.eta0&&r.growth.eta1&&r.growth.eta1!==r.growth.eta0?`Próximo poblador en ${esc(zname(z))}: <b>en ${r.growth.eta1} paso${r.growth.eta1>1?'s':''}</b> en vez de ${r.growth.eta0}`:`Crecer en ${esc(zname(z))} cuesta <b>${r.growth.cost1}</b> en vez de ${r.growth.cost0}`); }
   if(r.units.length) parts.push('Mejora a tus '+r.units.map(u=>`<b>${u.n} ${(u.n>1?UNP[u.t]:UN[u.t]).toLowerCase()}</b>`).join(' y '));
-  if(r.unlock) parts.push(`Permite entrenar <b>${UNP[r.unlock].toLowerCase()}</b>${r.barracks?'':' (necesitas un Cuartel)'}`);
+  if(r.unlock) parts.push(`Permite reclutar <b>${UNP[r.unlock].toLowerCase()}</b>${r.barracks?'':' (necesitas un Cuartel)'}`);
   if(r.bunlock&&r.bunlock!=='mar') parts.push(`Permite construir <b>${BT[r.bunlock].n}</b>`); else if(r.bunlock==='mar') parts.push('Permite construir <b>Maravillas</b>');
   if(!parts.length){
     if(!t.impl) return '';

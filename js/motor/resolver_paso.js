@@ -43,8 +43,9 @@ function resolveStep(g,orders){
   Z.forEach(z=>{ z.att={}; for(const f in z.units) z.units[f].forEach(u=>{ u.mv=0; u.busy=0; }); });
   recomputeMods(g);
   Z.forEach(z=>{ if(z.owner===TRIBE&&(z.units[TRIBE]||[]).length) z.tbase=tribeBase(z); });
+  Z.forEach(z=>{ z.recruited=0; });   // el cupo de reclutas de cada Cuartel se renueva cada paso
   // 0. nacimientos
-  Z.forEach(z=>{ if(z.grow>0&&isPl(z.owner)){ for(let i=0;i<z.grow;i++){ const u=mkUnit(g,z.owner,'pob');
+  Z.forEach(z=>{ if(z.grow>0&&isPl(z.owner)){ for(let i=0;i<z.grow;i++){ const u=mkUnit(g,z.owner,'pob'); u.home=z.id;
       if(z.autoSpec){ const per=specPer(g,z.owner,z,'pob',z.autoSpec); if(z.prod>=per){ z.prod-=per; u.t=z.autoSpec; } }
       lst(z,z.owner).push(u); } L(zname(z)+': nace'+(z.grow>1?'n ':' ')+z.grow+' poblador'+(z.grow>1?'es':'')+(z.autoSpec?' (se especializa'+(z.grow>1?'n':'')+' como '+UN[z.autoSpec].toLowerCase()+')':'')+'.'); g.fx.push({k:'born',zone:z.id,f:z.owner,n:z.grow}); } z.grow=0; });
   // 1. evento
@@ -130,23 +131,39 @@ function specPer(g,f,z,from,to){
   const M=g.M[f]; let per=(from==='pob'||to==='pob')?1:2;
   per=Math.max(0,per-M.specSub); if(M.specFree&&z.b.some(b=>b.t==='taller')) per=0; return per;
 }
-// Costo de hacer un soldado a partir de un civil.
+// Producción del soldado básico (la parte «de la persona» del costo de una tropa).
 /** @param {Partida} g */
 function soldierCost(g,f,z){ let c=SOLDIER_COST; if(z.b.some(b=>b.t==='cuartel'&&b.s==='instruccion')) c-=1; return Math.max(1,c); }
-// Costo de fabricar el equipo de una tropa (arco, escudo, caballo, hacha).
+// Producción del EQUIPO de una tropa (arco, escudo, caballo, hacha).
 /** @param {Partida} g */
 function equipCost(g,f,z,u){
   const M=g.M[f]; let c=EQUIP_COST[u]||0; if(!c) return 0;
   if(M.weaponHalf) c=Math.ceil(c/2); c-=hasRes(g,f,'hierro'); if(z.b.some(b=>b.t==='taller'&&b.s==='armeria')) c-=1;
   return Math.max(1,c);
 }
-// Costo de entrenar una unidad. from='sol' equipa a un soldado existente; useStock usa un arma guardada en la zona.
+// Cuarteles de la zona y cuántas tropas pueden reclutar por paso (RECRUIT_PER_LEVEL por nivel; «Levas» suma más).
+function hasBarracks(z){ return z.b.some(b=>b.t==='cuartel'); }
 /** @param {Partida} g */
-function trainCost(g,f,z,u,from,useStock){
-  if(u==='ari'||u==='lan') return TRAIN_COST[u];
-  const base=from==='sol'?0:soldierCost(g,f,z); if(u==='sol') return base;
-  return base+(useStock?0:equipCost(g,f,z,u));
+function recruitCap(g,f,z){ const M=g.M[f]; let c=0; z.b.forEach(b=>{ if(b.t==='cuartel') c+=(b.l||1)*RECRUIT_PER_LEVEL+M.recruitExtra; }); if(!c&&M.merc) c=1; return c; }
+// Sin Cuartel solo se puede reclutar con «Mercenarios» (soldados y arqueros, pagando el doble de oro).
+/** @param {Partida} g */
+function canRecruit(g,f,z,u){ return hasBarracks(z)||(!!g.M[f].merc&&(u==='sol'||u==='arq')); }
+// Costo de una tropa: {prod, food, gold}. from: 'new' = reclutar una nueva; 'sol' = equipar a un soldado que ya tienes (solo el equipo y la diferencia de oro);
+// 'civ' = ascender a un civil a general (mismo costo, con el descuento de «Campeones»). useStock usa un arma guardada en la zona.
+/** @param {Partida} g */
+function recruitCost(g,f,z,u,from,useStock){
+  const M=g.M[f], U=UNIT_COST[u]; let prod, food=U.food, gold=U.gold;
+  if(u==='ari'||u==='lan') prod=U.prod;
+  else { const base=from==='sol'?0:soldierCost(g,f,z); prod=u==='sol'?base:base+(useStock?0:equipCost(g,f,z,u)); }
+  if(from==='sol'){ food=0; gold=Math.max(0,U.gold-UNIT_COST.sol.gold); }
+  else if(z.b.some(b=>b.t==='cuartel'&&b.s==='instruccion')) food=Math.max(0,food-1);   // Cuartel de instrucción
+  if(from==='civ'){ prod=Math.max(1,Math.ceil(prod*M.genDisc)); food=Math.ceil(food*M.genDisc); }
+  if(from==='new'&&M.merc&&!hasBarracks(z)) gold*=2;
+  return {prod,food,gold};
 }
+// Solo la producción (para mostrar y para las pruebas).
+/** @param {Partida} g */
+function trainCost(g,f,z,u,from,useStock){ return recruitCost(g,f,z,u,from||'new',useStock).prod; }
 function stockOf(z,u){ return (z.eq&&z.eq[u])||0; }
 /** @param {Partida} g */
 function doSpec(g,o,L){
@@ -165,34 +182,48 @@ function doSpec(g,o,L){
 function demobCost(g,f,to){ if(g.M[f].reserv) return 0; return to==='pob'?DEMOB_COST.basico:DEMOB_COST.especializado; }
 /** @param {Partida} g */
 function doDemob(g,o,L){
-  const z=g.zones[o.zone]; if(!z||z.owner!==o.f||!DEMOB_FROM.includes(o.u)||!CIV.includes(o.to)) return;
-  const f=o.f, per=demobCost(g,f,o.to);
-  let n=Math.min(o.n||0,availUnits(g,z,f,o.u)); if(per>0) n=Math.min(n,Math.floor(z.prod/per)); if(n<=0) return;
-  let k=0; for(const u of lst(z,f)){ if(k>=n) break; if(u.t===o.u&&u.w===0&&!u.busy){ u.t=o.to; u.hp=mhp(g,f,o.to,z); u.str=1; u.busy=1; u.hg=0; delete u.mit; delete u.cabhp; delete u.brea; k++; } }
-  z.prod-=per*k;
-  if(k){ g.fx.push({k:'spec',zone:z.id,f,n:k,to:o.to}); L(zname(z)+': '+PLN[f].name+' licencia '+k+' '+(k>1?UNP[o.u].toLowerCase():UN[o.u].toLowerCase())+', que vuelve'+(k>1?'n':'')+' a ser '+(k>1?UNP[o.to].toLowerCase():UN[o.to].toLowerCase())+'.'); }
+  const z=g.zones[o.zone]; if(!z||z.owner!==o.f||!DEMOB_FROM.includes(o.u)) return;
+  const f=o.f, M=g.M[f], us=lst(z,f); const libre=u=>u.t===o.u&&u.w===0&&!u.busy;
+  if(CIV.includes(o.to)){   // retirar a un general: vuelve a ser civil
+    if(!GEN_TYPES.includes(o.u)) return; const per=demobCost(g,f,o.to);
+    let pool=us.filter(u=>libre(u)&&u.gen); let n=Math.min(o.n||0,pool.length); if(per>0) n=Math.min(n,Math.floor(z.prod/per)); if(n<=0) return;
+    pool.slice(0,n).forEach(u=>{ u.t=o.to; u.gen=0; u.hp=mhp(g,f,o.to,z); u.str=1; u.busy=1; u.hg=0; u.unp=0; delete u.mit; delete u.cabhp; delete u.brea; });
+    z.prod-=per*n; g.fx.push({k:'spec',zone:z.id,f,n,to:o.to}); L(zname(z)+': '+PLN[f].name+' retira a '+n+' general'+(n>1?'es':'')+' de '+(n>1?UNP[o.u]:UN[o.u]).toLowerCase()+', que vuelve'+(n>1?'n':'')+' a ser '+(n>1?UNP[o.to].toLowerCase():UN[o.to].toLowerCase())+'.');
+  } else if(o.to==='baja'){   // dar de baja: las tropas desaparecen y se recupera parte de la producción
+    const pool=us.filter(u=>libre(u)&&!u.gen); const n=Math.min(o.n||0,pool.length); if(n<=0) return;
+    const gone=new Set(pool.slice(0,n)); z.units[f]=us.filter(u=>!gone.has(u));
+    const back=Math.floor(UNIT_COST[o.u].prod*(M.reserv?0.75:DISBAND_REFUND))*n; z.prod=Math.min(capStore(g,z,'prod'),z.prod+back);
+    L(zname(z)+': '+PLN[f].name+' da de baja a '+n+' '+(n>1?UNP[o.u].toLowerCase():UN[o.u].toLowerCase())+(back?' (recupera ⚒ '+back+')':'')+'.');
+  }
 }
 /** @param {Partida} g */
 function doTrain(g,o,L){
   const z=g.zones[o.zone]; if(!z||z.owner!==o.f||!MIL.includes(o.u)) return;
-  const f=o.f;
-  const need=TRAIN_TECH[o.u]; if(need&&!techOwn(g,f,need)) return;
-  const isWeapon=['arq','esc','ber','cab'].includes(o.u); const from=(isWeapon&&o.from==='sol')?'sol':null;
-  const n=o.n||0; if(n<=0) return;
-  const srcT=from||'pob', alt=CIV.filter(t=>t!=='pob');
-  let made=0, reused=0; const us=lst(z,f);
+  const f=o.f, M=g.M[f], F=g.F[f]; const need=TRAIN_TECH[o.u]; if(need&&!techOwn(g,f,need)) return;
+  const mode=o.from==='sol'?'sol':(o.from==='civ'||o.from==='pob'||o.from==='gen')?'civ':'new';
+  const isWeapon=['arq','esc','ber','cab'].includes(o.u);
+  if(mode==='sol'&&!isWeapon) return; if(mode==='civ'&&!GEN_TYPES.includes(o.u)) return; if(mode==='new'&&!canRecruit(g,f,z,o.u)) return;
+  // Con ids, esas personas (o soldados) en ese orden; si no se eligió a nadie, los más aptos para pelear (fuerza y salud).
+  const ids=Array.isArray(o.ids)&&o.ids.length?o.ids.slice(0,60):null; const n=ids?ids.length:(o.n||0); if(n<=0) return;
+  const us=lst(z,f); const apt=u=>trInt(u,'fue')+trInt(u,'sal'); const libre=x=>x.w===0&&!x.busy; let made=0, reused=0;
   for(let i=0;i<n;i++){
-    const stock=isWeapon&&stockOf(z,o.u)>0; const cost=trainCost(g,f,z,o.u,from,stock);
-    if(z.prod<cost) break;
-    let u=us.find(x=>x.t===srcT&&x.w===0&&!x.busy);
-    if(!u&&!from) u=us.find(x=>UT[x.t].civ&&alt.includes(x.t)&&x.w===0&&!x.busy);
-    if(!u) break;
-    z.prod-=cost; if(stock){ z.eq[o.u]--; reused++; }
-    u.t=o.u; u.hp=mhp(g,f,o.u,z); u.str=(isWeapon&&from)?u.str:2; u.busy=1; u.hg=0;
-    u.mit=(o.u==='esc')?resMul(z,'mitril'):0; u.cabhp=(o.u==='cab')?resMul(z,'caballos'):0; u.brea=(UT[o.u].siege)?resMul(z,'brea'):0; made++;
+    const stock=isWeapon&&stockOf(z,o.u)>0; const c=recruitCost(g,f,z,o.u,mode,stock);
+    if(z.prod<c.prod||z.food<c.food||F.gold<c.gold) break;
+    let u=null;
+    if(mode==='new'){ if((z.recruited||0)>=recruitCap(g,f,z)) break; u=mkUnit(g,f,o.u); u.str=Math.min(M.forceMax,2+(z.b.some(b=>b.t==='cuartel'&&b.s==='campo')?1:0)); }
+    else {
+      const pick=arr=>arr.sort((a,b)=>apt(b)-apt(a))[0];
+      if(ids){ u=us.find(x=>x.id===ids[i]&&libre(x)&&(mode==='sol'?x.t==='sol':UT[x.t].civ)); if(!u) continue; }
+      else u=mode==='sol'?pick(us.filter(x=>x.t==='sol'&&libre(x))):(pick(us.filter(x=>x.t==='pob'&&libre(x)))||pick(us.filter(x=>UT[x.t].civ&&libre(x))));
+      if(!u) break;
+    }
+    z.prod-=c.prod; z.food-=c.food; F.gold-=c.gold; if(stock){ z.eq[o.u]--; reused++; }
+    if(mode==='new'){ z.recruited=(z.recruited||0)+1; lst(z,f).push(u); }
+    else { u.t=o.u; u.hp=mhp(g,f,o.u,z); if(mode==='civ'){ u.gen=1; u.str=Math.min(M.forceMax,2); } u.hg=0; }
+    u.busy=1; u.mit=(o.u==='esc')?resMul(z,'mitril'):0; u.cabhp=(o.u==='cab')?resMul(z,'caballos'):0; u.brea=(UT[o.u].siege)?resMul(z,'brea'):0; made++;
   }
-  if(made) g.fx.push({k:'train',zone:z.id,f,u:o.u,n:made});
-  if(made) L(zname(z)+': '+PLN[f].name+' entrena '+made+' '+(made>1?UNP[o.u].toLowerCase():UN[o.u].toLowerCase())+(reused?' ('+reused+' con equipo recuperado)':'')+'.');
+  if(made) g.fx.push({k:'train',zone:z.id,f,u:o.u,n:made,gen:mode==='civ'?1:0});
+  if(made){ const nm=(made>1?UNP[o.u]:UN[o.u]).toLowerCase(); L(zname(z)+': '+PLN[f].name+(mode==='civ'?' nombra '+made+' general'+(made>1?'es':'')+' de '+nm:mode==='sol'?' equipa a '+made+' '+nm:' recluta '+made+' '+nm)+(reused?' ('+reused+' con equipo recuperado)':'')+'.'); }
 }
 /** @param {Partida} g */
 function doBuild(g,o,L){

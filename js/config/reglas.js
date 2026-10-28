@@ -49,14 +49,33 @@ const TRAIT_INFO = {
   fue:{ic:'⚔',n:'Fuerza',d:'los dados de combate (siempre números enteros)'}
 };
 const TRAIT_LV = {'-2':'muy malo','-1':'malo','1':'bueno','2':'muy bueno'};
-// Entrenar: un civil pasa a soldado (2) y, si la tropa usa equipo, se fabrica su arma.
-// El arma cuesta 2 × el nivel de la tecnología que la desbloquea (Arco 1, Escudos 2, Caballos y Hachas 3).
-// Si una tropa con equipo muere en tu territorio, el arma queda guardada en la zona y se reutiliza.
-const SOLDIER_COST = 1;
-const EQUIP_COST = {arq:2, esc:4, cab:6, ber:6};
+// ===== Reclutar (27/10/2026, decidido por Alejandro) =====
+// Las tropas se RECLUTAN en un Cuartel pagando producción, comida y oro; ya no cuestan una persona. Cada Cuartel recluta
+// RECRUIT_PER_LEVEL unidades por paso y por nivel. Aparte, un civil puede ascender a GENERAL (campeón): es más fuerte que una tropa normal
+// y es el último en morir de su tipo en una pelea. El mantenimiento base es comida; algunas tropas pagan además oro.
+// Parte del costo de producción de las tropas con arma es su EQUIPO (arco, escudo, caballo, hacha): si muere en tu territorio queda
+// guardado en la zona y se reutiliza pagando solo el soldado.
+const SOLDIER_COST = 2;                        // producción del soldado básico (el resto del costo de producción es el equipo)
+const EQUIP_COST = {arq:3, esc:5, cab:7, ber:7};
 const EQUIP_N = {arq:['arco','arcos'], esc:['escudo','escudos'], cab:['caballo','caballos'], ber:['hacha','hachas']};
-const TRAIN_COST = {sol:SOLDIER_COST, arq:SOLDIER_COST+EQUIP_COST.arq, esc:SOLDIER_COST+EQUIP_COST.esc,
-                    cab:SOLDIER_COST+EQUIP_COST.cab, ber:SOLDIER_COST+EQUIP_COST.ber, ari:8, lan:8};
+const UNIT_COST = {   // por unidad reclutada: producción, comida y oro
+  sol:{prod:2, food:2, gold:1}, arq:{prod:5, food:2, gold:2}, esc:{prod:7, food:2, gold:2},
+  cab:{prod:9, food:3, gold:4}, ber:{prod:9, food:3, gold:3}, ari:{prod:10, food:2, gold:3}, lan:{prod:10, food:2, gold:3}};
+const RECRUIT_PER_LEVEL = 1;
+// Mantenimiento por paso (comida, y oro de «paga» para algunas). Dentro de tu territorio y con suministro; los que trabajan en un Cuartel no cuestan nada.
+const UNIT_UPKEEP = {
+  sol:{food:1, gold:0}, arq:{food:1, gold:0}, esc:{food:1, gold:0},
+  cab:{food:2, gold:0}, ber:{food:1, gold:1}, ari:{food:1, gold:1}, lan:{food:1, gold:1}};
+const CAMPAIGN_FOOD = 1.5;   // fuera de tu territorio (con suministro) la comida cuesta 1,5 ×; con «Suministros de campaña», 1 ×
+// Generales (campeones): un civil que asciende. Más vida, fuerza y ataque; último en morir de su grupo; cobra una paga extra.
+const GEN_HP = 2, GEN_STR = 1, GEN_ATK = 1, GEN_PAY = 1;
+// Liderazgo: cada general vivo suma GEN_LEAD dado(s) a su grupo de tropas del mismo tipo (hasta GEN_LEAD_MAX generales por grupo).
+const GEN_LEAD = 1, GEN_LEAD_MAX = 2;
+// Repoblación (27/10/2026): cuando muere o es capturado un civil (o general) que nació en una zona, el próximo crecimiento de esa zona
+// cuesta menos (REPOP_PCT); si mueren 2, los 2 siguientes, hasta REPOP_MAX. Solo cuentan los nacidos por crecimiento propio.
+const REPOP_PCT = 0.5, REPOP_MAX = 8;
+// Dar de baja a una tropa devuelve una parte de su producción; retirar a un general lo devuelve a ser civil.
+const DISBAND_REFUND = 0.5;
 // Almacenamiento de cada zona: 10 por tamaño (comida y producción por separado).
 // El Almacén suma 5 por tamaño por cada nivel; sus especializaciones, lo indicado en SPECS × tamaño.
 const STORE_PER_SIZE = 10;
@@ -117,8 +136,9 @@ const DUP_LEVEL = 3, MAX_SAME = 2, DUP_COST_MULT = 1.5;
 const OFFER_TTL = 4, OFFER_MAX_OUT = 2, OFFER_RES = ['food','prod','gold','tech'];
 // Puestos de trabajo de cada edificio por nivel: nivel 1 = 2, nivel 2 = 4, nivel 3 = 6, nivel 4 = 8, nivel 5 = 10 (Andamios y Grúas suman 1 cada una).
 const WORKERS_PER_LEVEL = 2;
-const DEMOB_COST = {basico:2,especializado:3};   // regla 5.2: militar → civil básico 2, → civil especializado 3 (Reservistas: 0)
-const DEMOB_FROM = ['sol','arq','cab','esc','ber']; // las máquinas de asedio no se licencian (pendiente 23)
+const DEMOB_COST = {basico:2,especializado:3};   // retirar a un general → civil básico 2, → civil especializado 3 (Reservistas: 0)
+const DEMOB_FROM = ['sol','arq','cab','esc','ber','ari','lan'];   // todas las tropas se pueden dar de baja; solo los generales vuelven a ser civiles
+const GEN_TYPES = ['sol','arq','cab','esc','ber'];   // las máquinas de asedio no tienen general
 const TRAIN_TECH = {sol:null,arq:'Arco',esc:'Escudos',cab:'Doma de caballos',ber:'Forja de hachas',ari:'Ingeniería de asedio',lan:'Lanzapiedras'};
 const BT = {
   almacen:{n:'Almacén',unlock:'Almacenes',sr:'Almacén',col:'#8C6A3E',l:'A'},
@@ -199,24 +219,24 @@ const LOCAL_BY_TERR = {mon:'mitril',col:'piedra',pra:'caballos',bos:'brea',rio:'
 const GLOBAL_BY_TERR = {mon:'hierro',col:'hierro',pra:'hierbas',bos:'madera',rio:'sal',lla:'ruinas'};
 // eventos
 const EVENTS = [
-  {id:'cosecha',n:'Buena cosecha',k:'+',terr:['pra','lla'],d:'+0,5 de comida por agricultor y poblador'},
-  {id:'veta',n:'Veta rica',k:'+',terr:['mon','col'],d:'+0,5 de producción por ingeniero y poblador'},
-  {id:'feria',n:'Feria',k:'+',terr:['rio','bos'],d:'+0,5 de oro por comerciante'},
-  {id:'inspira',n:'Inspiración',k:'+',terr:['lla','col'],d:'+0,5 de tecnología por científico'},
-  {id:'caminos',n:'Caminos despejados',k:'+',terr:['all'],d:'La logística cuesta la mitad'},
-  {id:'fertil',n:'Año fértil',k:'+',terr:['all'],d:'Crecer cuesta un 30 % menos'},
-  {id:'sequia',n:'Sequía',k:'-',terr:['pra','lla'],d:'−0,5 de comida por agricultor y poblador'},
-  {id:'plaga',n:'Plaga',k:'-',terr:['bos','rio'],d:'+25 % de consumo de comida'},
-  {id:'derrumbe',n:'Derrumbe',k:'-',terr:['mon','col'],d:'−0,5 de producción por ingeniero y poblador'},
-  {id:'inunda',n:'Inundación',k:'-',terr:['rio'],d:'Los almacenes pierden la mitad de sus reservas',inst:1},
-  {id:'tormenta',n:'Tormenta',k:'-',terr:['all'],d:'La logística cuesta un 50 % más'},
-  {id:'fiebre',n:'Fiebre',k:'-',terr:['all'],d:'Los heridos tardan una ronda más en curarse'},
-  {id:'prosper',n:'Prosperidad',k:'+',terr:['all'],year:1,d:'+15 % de comida, producción, oro y tecnología',year:1},
-  {id:'escasez',n:'Escasez',k:'-',terr:['all'],d:'−15 % de comida y de producción',year:1},
-  {id:'inquietud',n:'Inquietud tribal',k:'t',terr:[],d:'Una tribu crece +1 de población'},
-  {id:'tributo',n:'Pedido de tribu',k:'t',terr:[],d:'Una tribu pide algo a sus vecinos (cumplirlo mejora la relación; no hacerlo no tiene castigo)'},
-  {id:'exodo',n:'Éxodo tribal',k:'t',terr:[],d:'Una tribu funda una nueva tribu'},
-  {id:'furia',n:'Furia tribal',k:'t',terr:[],d:'Una tribu se vuelve berserker'}
+  {id:'cosecha',ic:'🌾',n:'Buena cosecha',k:'+',terr:['pra','lla'],d:'+0,5 de comida por agricultor y poblador'},
+  {id:'veta',ic:'⛏',n:'Veta rica',k:'+',terr:['mon','col'],d:'+0,5 de producción por ingeniero y poblador'},
+  {id:'feria',ic:'🎪',n:'Feria',k:'+',terr:['rio','bos'],d:'+0,5 de oro por comerciante'},
+  {id:'inspira',ic:'💡',n:'Inspiración',k:'+',terr:['lla','col'],d:'+0,5 de tecnología por científico'},
+  {id:'caminos',ic:'🛤',n:'Caminos despejados',k:'+',terr:['all'],d:'La logística cuesta la mitad'},
+  {id:'fertil',ic:'👶',n:'Año fértil',k:'+',terr:['all'],d:'Crecer cuesta un 30 % menos'},
+  {id:'sequia',ic:'☀',n:'Sequía',k:'-',terr:['pra','lla'],d:'−0,5 de comida por agricultor y poblador'},
+  {id:'plaga',ic:'🦠',n:'Plaga',k:'-',terr:['bos','rio'],d:'+25 % de consumo de comida'},
+  {id:'derrumbe',ic:'🪨',n:'Derrumbe',k:'-',terr:['mon','col'],d:'−0,5 de producción por ingeniero y poblador'},
+  {id:'inunda',ic:'🌊',n:'Inundación',k:'-',terr:['rio'],d:'Los almacenes pierden la mitad de sus reservas',inst:1},
+  {id:'tormenta',ic:'⛈',n:'Tormenta',k:'-',terr:['all'],d:'La logística cuesta un 50 % más'},
+  {id:'fiebre',ic:'🤒',n:'Fiebre',k:'-',terr:['all'],d:'Los heridos tardan una ronda más en curarse'},
+  {id:'prosper',ic:'🌟',n:'Prosperidad',k:'+',terr:['all'],year:1,d:'+15 % de comida, producción, oro y tecnología',year:1},
+  {id:'escasez',ic:'🥀',n:'Escasez',k:'-',terr:['all'],d:'−15 % de comida y de producción',year:1},
+  {id:'inquietud',ic:'🔥',n:'Inquietud tribal',k:'t',terr:[],d:'Una tribu crece +1 de población'},
+  {id:'tributo',ic:'🤝',n:'Pedido de tribu',k:'t',terr:[],d:'Una tribu pide algo a sus vecinos (cumplirlo mejora la relación; no hacerlo no tiene castigo)'},
+  {id:'exodo',ic:'🏕',n:'Éxodo tribal',k:'t',terr:[],d:'Una tribu funda una nueva tribu'},
+  {id:'furia',ic:'😡',n:'Furia tribal',k:'t',terr:[],d:'Una tribu se vuelve berserker'}
 ];
 // Calendario: 1 paso = 1 mes, 12 pasos = 1 año. El primer año (pasos 1 a 12) es de fundación: sin eventos.
 // Desde el año EV_FIRST_YEAR, cada año tiene dos partes que duran los 12 pasos: una CIERTA (Prosperidad o Escasez, +/- EV_BASE_PCT de lo que se produce)

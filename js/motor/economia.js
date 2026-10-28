@@ -7,6 +7,7 @@ function growCost(g,f,z){
   const M=g.M[f]; let c=(z.size+1)*(z.size+1)-M.growSub;   // crecer a tamaño n cuesta n² (3.º = 9, 4.º = 16, 10.º = 100)
   if(M.growHalf) c=Math.ceil(c/2); if(g.growHalfEv) c=Math.ceil(c*EV_FERTIL_FACTOR);
   if(g.step<=FOUNDING_STEPS) c=Math.ceil(c/2);   // etapa de fundación: los primeros pasos son más rápidos
+  if((z.repop||0)>0&&z.owner===f) c=Math.ceil(c*(1-Math.min(0.9,REPOP_PCT+M.repopBonus)));   // repoblación: los próximos nacimientos de una zona que perdió gente cuestan menos
   return Math.max(1,c);
 }
 // Obras automáticas: si la zona tiene obras en cola (y no están en pausa), sus ingenieros y pobladores libres
@@ -214,6 +215,7 @@ function economy(g,L){
   Object.keys(wdone).forEach(w=>resolveWonder(g,w,wdone[w],L));
   // consumo y hambre (cada jugador alimenta a toda su gente), después crecimiento
   for(let f=0;f<g.N;f++) feedPlayer(g,f,L);
+  for(let f=0;f<g.N;f++) payTroops(g,f,L);
   Z.forEach(z=>{ if(isPl(z.owner)) runRoutes(g,z,L); });
   Z.forEach(z=>{ if(isPl(z.owner)) growZone(g,z); });
   Z.forEach(z=>{
@@ -259,8 +261,9 @@ function unitNeed(g,z,f,u,freeSlots){
   const M=g.M[f], ex=(z.ev&&z.ev.cons)||0;
   const am=aptMul(u);   // rasgo de apetito: bueno come menos
   if(UT[u.t].civ) return 1*am+ex;
-  if(z.owner===f){ if(freeSlots.n>0&&!UT[u.t].siege){ freeSlots.n--; return 0; } return (M.garrison?1:2)*am+ex; }
-  return (M.supplies?1:2)*am+ex;
+  u.free=0; const up=(UNIT_UPKEEP[u.t]||{food:1}).food;
+  if(z.owner===f){ if(freeSlots.n>0&&!UT[u.t].siege){ freeSlots.n--; u.free=1; return 0; } if(M.permanente&&z.b.some(b=>b.t==='cuartel')){ u.free=1; return 0; } return up*(M.garrison?0.5:1)*am+ex; }   // Guarniciones: comen la mitad en casa
+  return up*(M.supplies?1:CAMPAIGN_FOOD)*am+ex;   // en campaña cuesta más (menos con Suministros de campaña)
 }
 // Zonas propias desde las que la gente de `from` puede recibir comida, de la más cercana a la más lejana.
 // Dentro del propio territorio (o en una frontera) la red llega lejos: la comida circula por tus caminos.
@@ -312,12 +315,23 @@ function feedPlayer(g,f,L){
     if(d<=0){ us.forEach(u=>{ u.hg=0; }); return; }
     const order=us.slice().sort((a,b)=>b.need-a.need);
     order.forEach(u=>{ if(d>0&&u.need>0){ d-=u.need; u.hg++; if(u.hg>=M.hungerSteps||(u.w>0&&u.hg>=1)) u.dead=1; } else u.hg=0; });
-    const before=us.length; z.units[f]=us.filter(u=>!u.dead); const dead=before-z.units[f].length;
+    const before=us.length; us.filter(u=>u.dead).forEach(u=>unitLost(g,u,f)); z.units[f]=us.filter(u=>!u.dead); const dead=before-z.units[f].length;
     if(dead>0){
       if(z.owner===f&&!z.conflict) us.filter(u=>u.dead&&EQUIP_COST[u.t]).forEach(u=>{ z.eq=z.eq||{}; z.eq[u.t]=(z.eq[u.t]||0)+1; });
       L(PLN[f].name+': '+dead+' unidad'+(dead>1?'es':'')+' mueren de hambre en '+zname(z)+'.');
     }
   });
+}
+// Paga de las tropas: oro por paso según su tipo (y un extra por cada general). Los que trabajan en un Cuartel no cobran. Si no alcanza el oro,
+// las tropas sin paga pelean con la mitad de los dados ese paso (las que más cobran se quedan sin paga primero).
+/** @param {Partida} g */
+function payTroops(g,f,L){
+  const F=g.F[f], M=g.M[f]; if(!F||!isPl(f)) return; const due=[];
+  g.zones.forEach(z=>{ (z.units[f]||[]).forEach(u=>{ if(UT[u.t].civ){ u.unp=0; return; } const p=((UNIT_UPKEEP[u.t]||{gold:0}).gold+(u.gen?GEN_PAY:0))*M.payMul; if(p>0&&!u.free) due.push([u,p]); else u.unp=0; }); });
+  if(!due.length) return; due.sort((a,b)=>a[1]-b[1]); let total=Math.ceil(due.reduce((a,x)=>a+x[1],0-1e-9));
+  if(F.gold>=total){ F.gold-=total; due.forEach(x=>{ x[0].unp=0; }); return; }
+  let left=F.gold; F.gold=0; let miss=0; due.forEach(([u,p])=>{ if(left>=p){ left-=p; u.unp=0; } else { u.unp=1; miss++; } });
+  if(miss) L(PLN[f].name+': no alcanza el oro para pagar a '+miss+' tropa'+(miss>1?'s':'')+': pelean peor este paso.');
 }
 // Crecimiento según la prioridad de la zona: 'crecer' manda todo el sobrante del paso a crecer;
 // 'guardar' lo deja en el almacén. En los dos casos, lo que no cabe en el almacén va a crecer.
@@ -328,14 +342,14 @@ function growZone(g,z){
   if((z.growMode||GROW_MODE_DEFAULT)==='crecer'&&gain>0){ z.food-=gain; z.prog+=gain; }
   const cf=capStore(g,z,'food'), cp=capStore(g,z,'prod');
   if(z.food>cf){ z.prog+=z.food-cf; z.food=cf; }
-  let c=growCost(g,f,z); while(z.prog>=c){ z.prog-=c; z.size++; z.grow++; c=growCost(g,f,z); }
+  let c=growCost(g,f,z); while(z.prog>=c){ z.prog-=c; z.size++; z.grow++; if((z.repop||0)>0) z.repop--; c=growCost(g,f,z); }
   if(z.prod>cp) z.prod=cp;
 }
 // Estimación de pasos hasta el próximo poblador, con la producción y el consumo del último paso.
 /** @param {Partida} g */
 function growETA(g,z){
   const f=z.owner; if(!isPl(f)) return null; if(!z.last) return undefined;   // todavía sin un paso con qué calcular
-  const need=(z.units[f]||[]).reduce((a,u)=>a+(u.need!==undefined?u.need:(UT[u.t].civ?1:2)),0);
+  const need=(z.units[f]||[]).reduce((a,u)=>a+(u.need!==undefined?u.need:1),0);
   const net=z.last.food-need; if(net<=0) return null;
   let food=z.food, prog=z.prog; const cf=capStore(g,z,'food'), c=growCost(g,f,z), grow=(z.growMode||GROW_MODE_DEFAULT)==='crecer';
   for(let k=1;k<=60;k++){ if(grow) prog+=net; else { food+=net; if(food>cf){ prog+=food-cf; food=cf; } } if(prog>=c) return k; }

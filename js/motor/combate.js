@@ -21,11 +21,11 @@ function fightZone(g,z,facs,att,L){
     lst(z,f).forEach(u=>{
       const b=UT[u.t], mm=M.u[u.t]||{str:0,def:0,hp:0,atk:0,init:null};
       const T=z.terrain;
-      let hpMax=Math.max(1,b.hp+mm.hp+(b.civ?M.civHp:0)+trInt(u,'sal'))+(u.cabhp||0)+((M.bastion&&def)?1:0);
-      let str=b.civ?Math.max(0,1+trInt(u,'fue')):Math.max(1,u.str+mm.str+trInt(u,'fue')), atk=b.atk+mm.atk, d=b.def+mm.def, init=(mm.init!==null&&mm.init!==undefined)?mm.init:b.init;
+      let hpMax=Math.max(1,b.hp+mm.hp+(b.civ?M.civHp:0)+trInt(u,'sal'))+(u.cabhp||0)+((M.bastion&&def)?1:0)+(u.gen?GEN_HP+M.genHp:0);   // los generales aguantan más
+      let str=b.civ?Math.max(0,1+trInt(u,'fue')):Math.max(1,u.str+mm.str+trInt(u,'fue')+(u.gen?GEN_STR+M.genStr:0)), atk=b.atk+mm.atk+(u.gen?GEN_ATK:0), d=b.def+mm.def, init=(mm.init!==null&&mm.init!==undefined)?mm.init:b.init;
       const wounded=u.w>0;
       if(wounded) str=b.civ?0:Math.floor(str*M.moral);
-      if(u.hg>0&&!b.civ) str=Math.max(1,Math.floor(str*HUNGRY_FIGHT));   // sin suministros se pelea mal
+      if((u.hg>0||u.unp)&&!b.civ) str=Math.max(1,Math.floor(str*HUNGRY_FIGHT));   // sin suministros o sin paga se pelea mal
       if(u.t==='ber'&&def&&T==='mon') init=M.tm.monBer?1:2;
       if(u.t==='ber'&&!def&&T==='col'){ init=2; if(M.tm.colBer) str+=1; }
       if(u.t==='cab'&&def&&T==='pra'){ init=0; if(M.tm.praCab) atk+=1; }
@@ -39,6 +39,7 @@ function fightZone(g,z,facs,att,L){
       if(!def&&M.puerta&&!b.civ) str+=1;   // La Puerta de los Estandartes
       if(M.estandarte&&z.capital&&z.owner===f&&!b.civ) str+=1;
       if(M.vetwar&&(u.cb||0)>=3&&!b.civ) d+=1;
+      if(u.free&&!b.civ&&z.owner===f&&z.b.some(x=>x.t==='cuartel'&&x.s==='guardia')) d+=1;   // Guardia de élite: los que trabajan en ese Cuartel
       if(u.t==='esc'&&def&&M.escTortuga) d+=M.escTortuga;
       if(u.t==='esc'&&u.mit) d+=u.mit;
       if(b.siege&&u.brea) str+=u.brea;
@@ -51,24 +52,28 @@ function fightZone(g,z,facs,att,L){
       }
       if(str>0&&surprise[f]) str=Math.ceil(str*M.surprise);
       const hp=Math.max(1,hpMax-u.w);
-      cu.push({u,f,t:u.t,civ:!!b.civ,def,hp,hpMax,cush:d,dice:Math.max(0,Math.round(str)),atk:Math.max(0,atk),init,ranged:!!b.ranged,aoe:!!b.aoe,siege:!!b.siege,dead:false,kb:null,fire:u.t==='arq'&&M.arqFire});
+      cu.push({u,f,t:u.t,civ:!!b.civ,gen:!!u.gen,def,hp,hpMax,cush:d,dice:Math.max(0,Math.round(str)),atk:Math.max(0,atk),init,ranged:!!b.ranged,aoe:!!b.aoe,siege:!!b.siege,dead:false,kb:null,fire:u.t==='arq'&&M.arqFire});
     });
   });
   const start={}; facs.forEach(f=>{ start[f]={mil:lst(z,f).filter(u=>!UT[u.t].civ).length,civ:lst(z,f).filter(u=>UT[u.t].civ).length}; });
+  // Mando: con la tecnología, las tropas de un tipo que tienen un general vivo en la batalla ganan +1 de defensa
+  facs.forEach(f=>{ if(!(g.M[f]||newMods()).mando) return; const has={}; cu.forEach(c=>{ if(c.f===f&&c.gen) has[c.t]=1; }); cu.forEach(c=>{ if(c.f===f&&!c.gen&&has[c.t]&&!c.civ) c.cush+=1; }); });
   // registro de la batalla, para poder repetirla golpe por golpe
   cu.forEach((c,i)=>{ c.i=i; });
   const BL={zone:z.id,step:g.step,terr:z.terrain,owner:z.owner,facs:facs.slice(),surprise:facs.filter(f=>surprise[f]),waves:[],
-    units:cu.map(c=>({f:c.f,t:c.t,civ:c.civ,def:c.def,hp:c.hp,hpMax:c.hpMax,cush:c.cush,dice:c.dice,atk:c.atk,init:c.init,ranged:c.ranged,aoe:c.aoe}))};
+    units:cu.map(c=>({f:c.f,t:c.t,civ:c.civ,gen:c.gen,def:c.def,hp:c.hp,hpMax:c.hpMax,cush:c.cush,dice:c.dice,atk:c.atk,init:c.init,ranged:c.ranged,aoe:c.aoe}))};
   let curHits=null;
   const hit=(c,x)=>{ const abs=Math.min(x,c.cush); c.cush-=abs; const rem=x-abs; const take=Math.min(rem,c.hp); c.hp-=take; if(c.hp<=0) c.dead=true; if(curHits&&(abs||take)) curHits.push({i:c.i,abs,dmg:take,dead:!!c.dead}); return abs+take; };
   const inits=[...new Set(cu.map(c=>c.init))].sort((a,b)=>a-b);
   for(const w of inits){
-    const groups={};
+    const groups=/** @type {Object<string,any>} */({});
     cu.filter(c=>!c.dead&&c.init===w&&c.dice>0).forEach(c=>{
       let s=0; for(let k=0;k<c.dice;k++) if(rng()<0.5) s++;
       const key=c.f+'_'+(c.civ?'civ':c.t); const gr=groups[key]||(groups[key]={f:c.f,t:c.civ?'civ':c.t,ranged:c.ranged,aoe:c.aoe,dmg:0,fire:c.fire,who:[],dice:0,succ:0});
-      gr.dmg+=s*c.atk; gr.who.push(c.i); gr.dice+=c.dice; gr.succ+=s;
+      gr.dmg+=s*c.atk; gr.who.push(c.i); gr.dice+=c.dice; gr.succ+=s; gr.gen=(gr.gen||0)+(c.gen?1:0); gr.atk1=gr.atk1||c.atk;
     });
+    // liderazgo: los generales suman dados a su grupo
+    Object.values(groups).forEach(gr=>{ if(gr.gen&&gr.t!=='civ'){ const extra=Math.min(GEN_LEAD_MAX,gr.gen)*GEN_LEAD; for(let k=0;k<extra;k++){ gr.dice++; if(rng()<0.5){ gr.succ++; gr.dmg+=gr.atk1; } } } });
     const hits=Object.values(groups); const wave={init:w,acts:[]}; BL.waves.push(wave);
     hits.forEach(gr=>{
       const act={f:gr.f,t:gr.t,who:gr.who,dice:gr.dice,succ:gr.succ,dmg:gr.dmg,aoe:!!gr.aoe,fire:!!gr.fire,target:null,hits:[]}; wave.acts.push(act);
@@ -78,7 +83,8 @@ function fightZone(g,z,facs,att,L){
       let cand=Object.values(en); if(!cand.length) return;
       if(!gr.ranged){ const m=cand.filter(x=>x.melee); if(m.length) cand=m; }
       cand.sort((a,b)=>(b.def?1:0)-(a.def?1:0)||b.units.length-a.units.length);
-      const tg=cand[0]; act.target={f:tg.units[0].f,t:tg.units[0].civ?'civ':tg.units[0].t}; curHits=act.hits;
+      const tg=cand[0]; tg.units.sort((a,b)=>(a.gen?1:0)-(b.gen?1:0));   // los generales son los últimos en caer de su grupo
+      act.target={f:tg.units[0].f,t:tg.units[0].civ?'civ':tg.units[0].t}; curHits=act.hits;
       if(gr.fire) tg.units.forEach(c=>{ c.cush=Math.max(0,c.cush-1); });
       if(gr.aoe){ tg.units.forEach(c=>{ hit(c,gr.dmg); if(c.dead&&c.kb===null) c.kb=gr.f; }); }
       else { let d=gr.dmg; for(const c of tg.units){ if(d<=0) break; const used=hit(c,d); d-=used; if(c.dead&&c.kb===null) c.kb=gr.f; } }
@@ -91,6 +97,7 @@ function fightZone(g,z,facs,att,L){
   facs.forEach(f=>{ z.units[f]=[]; });
   cu.forEach(c=>{
     if(c.dead){
+      unitLost(g,c.u,c.f);   // repoblación: la zona natal de un civil o general caído gana una reducción para el próximo crecimiento
       if(c.kb!==null&&c.kb!==undefined){ kills[c.kb]++; if(c.civ&&isPl(c.kb)) capt[c.kb]++; }
       if(EQUIP_COST[c.t]&&z.owner===c.f){ z.eqPend=z.eqPend||{}; z.eqPend[c.t]=(z.eqPend[c.t]||0)+1; }
     } else {

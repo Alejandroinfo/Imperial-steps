@@ -25,6 +25,8 @@ function suggestions(){
     if(!e.ev||!e.ev.terr) return; const hit=mz.filter(z=>e.ev.terr.includes('all')||e.ev.terr.includes(z.terrain)); if(!hit.length) return;
     const n=e.step-G.step; out.push({k:'warn',t:`${n<=0?'Este paso':n===1?'En 1 paso':'En '+n+' pasos'}: ${e.ev.n}${e.ev.terr.includes('all')?' en todo tu imperio':' en '+TERRN[hit[0].terrain]+' ('+hit.map(zname).join(', ')+')'}. ${e.ev.d}.`,go:{zone:hit[0].id,sub:'resumen'}});
   });
+  // Un rival cerca de ganar
+  for(let f=0;f<G.N;f++){ if(f===ME||G.F[f].out) continue; const cs=victoryConds(G,f); const n=cs.filter(c=>c.ok).length; if(n>=1&&cs.some(c=>!c.ok&&c.v/c.t>=0.7)){ out.push({k:'warn',t:`${PLN[f].name} cumple ${n} condición de victoria y está cerca de otra.`,go:{tab:'vic'}}); break; } }
   // Ideas
   const cap=mz.find(z=>z.capital)||mz[0];
   const sci=mz.reduce((a,z)=>a+(z.units[ME]||[]).filter(u=>u.t==='cie').length,0);
@@ -94,7 +96,7 @@ function evChipsHTML(){
   if(!G||G.over) return '';
   const run=(G.evAct||[]).filter(a=>a.end>=G.step&&EVT[a.id].k!=='t'&&!EVT[a.id].inst).map(a=>({e:EVT[a.id],left:a.end-G.step+1,now:0}));
   const start=(G.evq||[]).filter(x=>x.step===G.step&&EVT[x.id].k!=='t'&&!EVT[x.id].inst).map(x=>({e:EVT[x.id],left:x.dur||1,now:1}));
-  return run.concat(start).map(x=>`<span class="evchip ${x.e.k==='+'?'pos':'neg'}" title="${esc(x.e.n+': '+x.e.d+'. '+(x.now?'Empieza este paso y dura '+x.left+' pasos.':'Quedan '+x.left+' paso'+(x.left===1?'':'s')+'.'))}">${x.e.k==='+'?'🌟':'⚠'} ${esc(x.e.n)} <b>${x.now?'empieza':x.left+(x.left===1?' paso':' pasos')}</b></span>`).join('');
+  return run.concat(start).sort((a,b)=>(b.e.year?1:0)-(a.e.year?1:0)).map(x=>evBadge(x.e,x.left,x.now)).join('');
 }
 function encPending(){ if(!G||G.over) return null; const e=G.F[ME].enc; return (e&&!ui.orders.some(o=>o.t==='encounter'))?e:null; }
 function encPillHTML(){ const e=encPending(); if(!e||ui.encHide!==e.step) return ''; const z=G.zones[e.zone];
@@ -106,7 +108,29 @@ function encPopup(){
   $('encBody').innerHTML=encBarHTML()+`<div class="row encx"><button class="btn" data-act="enclater">Decidir después</button></div>`;
   if(!d.open) d.show();
 }
-function sugBarHTML(){
+// Las sugerencias ya no ocupan una barra arriba: salen como un ❗ en la pestaña a la que pertenecen (y en la subpestaña de la zona),
+// y al abrir la pestaña aparece la lista corta de lo pendiente. Cada fila lleva al lugar exacto.
+function alertInfo(){
+  const s=suggestions(), tabs={zona:[],imperio:[],tec:[],vic:[],hist:[],ord:[]}, subs={};
+  s.forEach((it,i)=>{ const g=it.go||{}; let tab='zona', sub=null, zone=null;
+    if(g.tab) tab=g.tab; else if(g.move){ zone=g.move[0]; sub='mover'; } else { zone=g.zone; sub=g.sub||'resumen'; }
+    (tabs[tab]||tabs.zona).push({i,t:it.t,k:it.k}); if(zone!==null&&zone!==undefined&&sub) subs[zone+'|'+sub]=1; });
+  return {s,tabs,subs};
+}
+function alertBoxHTML(tab){
+  const L=(ui.alerts&&ui.alerts.tabs[tab])||[]; if(!L.length) return '';
+  const show=L.slice(0,3); return `<div class="albox">${show.map(a=>`<button class="alrow ${a.k}" data-act="sug" data-i="${a.i}"><b>❗</b><span>${esc(a.t)}</span></button>`).join('')}${L.length>3?`<div class="hint">…y ${L.length-3} aviso${L.length-3>1?'s':''} más</div>`:''}</div>`;
+}
+function drawTabAlerts(){
+  const A=ui.alerts=alertInfo();
+  document.querySelectorAll('.tabs button[data-tab]').forEach(b=>{
+    let m=b.querySelector('.tabal'); if(!m){ m=document.createElement('i'); m.className='tabal'; m.textContent='!'; b.appendChild(m); }
+    const L=A.tabs[b.dataset.tab]||[]; m.hidden=!L.length; m.classList.toggle('warn',L.some(a=>a.k==='warn')); m.title=L.map(a=>a.t).join('\n');
+  });
+  const w=A.s.filter(x=>x.k==='warn').map(x=>x.t).join('|'); if(w&&w!==ui.lastWarn){ ui.lastWarn=w; sfxLater('warn',2600,1500); } else if(!w) ui.lastWarn='';
+}
+function sugBarHTML(){ return ''; }
+function sugBarHTML_old(){
   const s=suggestions(); if(!s.length) return '';
   const w=s.filter(x=>x.k==='warn').map(x=>x.t).join('|'); if(w&&w!==ui.lastWarn){ ui.lastWarn=w; sfxLater('warn',2600,1500); } else if(!w) ui.lastWarn='';
   const i=Math.min(ui.sugI||0,s.length-1); const it=s[i];

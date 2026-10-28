@@ -25,7 +25,7 @@ function victoryConds(g,f){
   const caps=zs.filter(z=>z.capital).length;
   const dev=zs.reduce((a,z)=>a+z.b.filter(b=>b.t!=='mar').length,0);
   const wond=zs.reduce((a,z)=>a+z.b.filter(b=>b.t==='mar').length,0);
-  const pop=totalPop(g,f);
+  const pop=civPop(g,f);   // la victoria Económica cuenta solo civiles (las tropas no)
   const need=Math.floor(g.zones.length*T.terr)+1;
   return [
     {k:'Comercial',d:'Oro en cofres',v:Math.floor(F.gold),t:T.gold,ok:F.gold>=T.gold},

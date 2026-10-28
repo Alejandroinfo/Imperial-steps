@@ -14,10 +14,10 @@
 
 | Area | What is in the project |
 |---|---|
-| **Game design** | A full rule set (supply lines that make *where* you fight matter, frontier zones that create a prisoner's dilemma between neighbours, unannounced encounters that scale with the game, strategic resources that grow while held, populations and jobs, local and global economy, 10 buildings with levels, 203 technologies in 12 branches, initiative-based combat, tribes, events, 7 victory conditions), documented with decided / proposed / open markers in [`docs/Reglas_v0.1.md`](docs/Reglas_v0.1.md). |
+| **Game design** | A full rule set (supply lines that make *where* you fight matter, frontier zones that create a prisoner's dilemma between neighbours, unannounced encounters that scale with the game, strategic resources that grow while held, populations and jobs, local and global economy, 10 buildings with levels, 209 technologies in 12 branches, initiative-based combat, tribes, events, 7 victory conditions), documented with decided / proposed / open markers in [`docs/Reglas_v0.1.md`](docs/Reglas_v0.1.md). |
 | **Software architecture** | Four layers with a one-way dependency rule: `data → config → engine → interface`. The engine never touches the screen, so it runs headless in Node and can be ported to Python. |
 | **Testing** | An automated layer check, 37 rule-level tests and a simulation of 72 bot-vs-bot games on every map, run with `npm test` and on GitHub Actions. |
-| **Data & balance** | Simulators compare balance scenarios and rate all 203 technologies (economic payback and change in battle win rate); reports in [`docs/balance_tecnologias.md`](docs/balance_tecnologias.md) and [`docs/balance_economia.md`](docs/balance_economia.md). |
+| **Data & balance** | Simulators compare balance scenarios and rate all 209 technologies (economic payback and change in battle win rate); reports in [`docs/balance_tecnologias.md`](docs/balance_tecnologias.md) and [`docs/balance_economia.md`](docs/balance_economia.md). |
 | **UX** | Built and refined from play-testing: the technology panel recommends what helps most right now and previews each technology's impact on your current situation (e.g. “🌾 +3 per step”, computed by the engine itself), per-step suggestions, a zone summary of who works where, a step-by-step battle replay, procedurally generated sound effects and ambience (Web Audio, no audio files), and a map that reads as a landscape rather than a graph. |
 
 ![Zone summary: net food, stocks, and who is working in which building](docs/img/zone.jpg)
@@ -55,7 +55,7 @@ The tests need [Node.js](https://nodejs.org) 18 or newer. Randomness is seeded (
 
 ```mermaid
 flowchart LR
-  D["js/datos<br/>12 maps · 203 technologies"] --> C["js/config<br/>balance numbers"]
+  D["js/datos<br/>12 maps · 209 technologies"] --> C["js/config<br/>balance numbers"]
   C --> E["js/motor<br/>rules engine: resolveStep(state, orders)"]
   E --> I["js/interfaz<br/>map, panels, battle replay, sound"]
   T["js/tipos.d.ts<br/>Partida · Zona · Orden"] -. type-checks .-> E
@@ -68,7 +68,7 @@ The dependency rule is one-way (`data → config → engine → interface`) and 
 ## Engineering highlights
 
 - **Types that catch real bugs.** Every order the engine accepts is listed in a `Record<OrderType, …>`; when the type check was added it immediately showed that *wonder* orders were created by the interface but never handled, so wonders could not be built. Misspelled fields (`z.maravila`) are flagged before running anything.
-- **Simulation-driven design.** Balance questions are answered with data: `herramientas/escenarios_balance.js` compares rule variants over dozens of bot games, and `herramientas/balance_tecnologias.js` rates all 203 technologies by economic payback and by change in battle win rate. Those reports led to concrete changes (cheaper troops, per-zone growth priority, frontier zones).
+- **Simulation-driven design.** Balance questions are answered with data: `herramientas/escenarios_balance.js` compares rule variants over dozens of bot games, and `herramientas/balance_tecnologias.js` rates all 209 technologies by economic payback and by change in battle win rate. Those reports led to concrete changes (cheaper troops, per-zone growth priority, frontier zones).
 - **Reproducible games.** All randomness is seeded; any game or battle can be replayed exactly, and battles are recorded blow by blow for the in-game replay viewer.
 - **Bugs found by tests and simulation**, each now covered by a test: workers counted twice across buildings, empty tribes that crashed annexation, a tribute raid from a tribe with no people.
 
@@ -78,7 +78,7 @@ The dependency rule is one-way (`data → config → engine → interface`) and 
 index.html                  Page structure; loads the styles and scripts in order
 css/estilos.css             All visual styling
 js/
-  datos/                    Pure data: the 12 maps and the 203 technologies
+  datos/                    Pure data: the 12 maps and the 209 technologies
   config/                   Balance numbers: change the game without touching the engine
   motor/                    Game rules (engine). No access to the screen
     resolver_paso.js        resolveStep(state, orders): applies one full step

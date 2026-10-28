@@ -20,9 +20,9 @@ const res = vm.runInContext(`(() => {
     const vac=G.zones.filter(z=>z.owner===null&&z.role==='vacia').slice(0,2);
     const set=(z,lista)=>{ z.owner=0; z.units[0]=[]; Object.keys(lista).forEach(t=>{ for(let i=0;i<lista[t];i++) z.units[0].push(civ(G,t)); }); };
     if(etapa==='temprano'){ set(cap,{agr:2,pob:2,cie:1}); cap.size=5; cap.b=[{t:'molino',l:1,s:null,wk:0,cost:20}]; }
-    if(etapa==='medio'){ cap.size=9; set(cap,{agr:3,ing:2,com:2,cie:2,con:1,pob:2,sol:2,arq:1}); cap.b=['molino','taller','mercado'].map(t=>({t,l:1,s:null,wk:0,cost:20}));
+    if(etapa==='medio'){ cap.size=9; set(cap,{agr:3,ing:2,com:2,cie:2,pob:2,sol:2,arq:1}); cap.b=['molino','taller','mercado'].map(t=>({t,l:1,s:null,wk:0,cost:20}));
       set(vac[0],{agr:4,pob:1}); vac[0].size=5; vac[0].b=[{t:'almacen',l:1,s:null,wk:0,cost:20}]; }
-    if(etapa==='avanzado'){ cap.size=12; set(cap,{agr:4,ing:3,com:3,cie:3,con:2,pob:2,sol:3,arq:2,esc:1}); cap.b=['molino','taller','mercado','biblio'].map(t=>({t,l:2,s:null,wk:0,cost:60}));
+    if(etapa==='avanzado'){ cap.size=12; set(cap,{agr:4,ing:3,com:3,cie:3,pob:2,sol:3,arq:2,esc:1}); cap.b=['molino','taller','mercado','biblio'].map(t=>({t,l:2,s:null,wk:0,cost:60}));
       set(vac[0],{agr:5,pob:1}); vac[0].size=6; vac[0].b=['almacen','molino'].map(t=>({t,l:1,s:null,wk:0,cost:20}));
       set(vac[1],{com:4,pob:1}); vac[1].size=5; vac[1].b=[{t:'mercado',l:1,s:null,wk:0,cost:20}]; }
     cap.food=20; cap.prod=20; G.F[0].tech=60; G.F[0].gold=40; recomputeMods(G);

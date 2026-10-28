@@ -19,6 +19,7 @@ function newMods(){
     weaponHalf:0,reserv:0,saqueo:0,botin:0,captHp:1,conqSize:3,conqKeep:1,conqRefund:0.5,
     colonos:0,migr:0,freeFoodAdj:0,fortHalf:0,citadel:0,
     tm:{bosArq:0,rioArq:0,praCab:0,llaCab:0,monBer:0,colBer:0},
+    recruitExtra:0,payMul:1,merc:0,permanente:0,genStr:0,genHp:0,genDisc:1,mando:0,repopBonus:0,repopStack:1,
     siege:{ari:0,lan:0},cuartelExtra:1,capWonder:0,wonderDef:0,wonderCost:500
   };
 }
@@ -58,7 +59,9 @@ const FX = {
   // --- militares ---
   'Marcha forzada':M=>{M.cuartelExtra=2;}, 'Marcha relámpago':M=>{M.cuartelExtra=3;},
   'Entrenamiento continuo':M=>{M.forceStep=2;}, 'Lanceros':M=>{M.lanceros=1;},
-  'Reservistas':M=>{M.reserv=1;}, 'Armaduras ligeras':M=>{ ['sol','arq','cab','ber','ari','lan'].forEach(t=>{ mu(M,t).def+=1; }); },
+  'Reservistas':M=>{M.reserv=1;}, 'Mercenarios':M=>{M.merc=1;}, 'Ejército permanente':M=>{M.permanente=1;},
+  'Levas':M=>{M.recruitExtra+=1;}, 'Intendencia militar':M=>{M.payMul=0.5;}, 'Campeones':M=>{M.genDisc=0.5; M.genStr+=1;}, 'Mando':M=>{M.mando=1; M.genHp+=1;},
+  'Memoria del pueblo':M=>{M.repopBonus+=0.15;}, 'Raíces profundas':M=>{M.repopStack=2;}, 'Armaduras ligeras':M=>{ ['sol','arq','cab','ber','ari','lan'].forEach(t=>{ mu(M,t).def+=1; }); },
   'Arco compuesto':M=>{mu(M,'arq').str+=1;}, 'Flechas de fuego':M=>{M.arqFire=1;}, 'Lluvia de flechas':M=>{mu(M,'arq').init=0;},
   'Caballería pesada':M=>{mu(M,'cab').hp+=1;}, 'Escudos reforzados':M=>{mu(M,'esc').def+=1;}, 'Falange':M=>{mu(M,'esc').init=5;},
   'Tortuga':M=>{M.escTortuga=2;}, 'Furia':M=>{M.berFury=1;}, 'Frenesí':M=>{mu(M,'ber').init=4;},

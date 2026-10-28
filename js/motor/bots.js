@@ -76,17 +76,21 @@ function botOrders(g,f){
     if(freeSlots>0&&z.prod>=60){ const w=Object.keys(WONDERS).find(k=>techOwn(g,f,WONDERS[k].tech)&&!wonderBuilt(g,k)&&!wonderRace(g,k).some(x=>x.f===f)); if(w) o.push({t:'wonder',f,zone:z.id,w}); }
     // militares
     const mil=us.filter(u=>!UT[u.t].civ);
-    const eat=us.reduce((a,u)=>a+(UT[u.t].civ?1:2),0), net=(z.last?z.last.food:0)-eat;
+    const eat=us.reduce((a,u)=>a+(UT[u.t].civ?1:(UNIT_UPKEEP[u.t]?UNIT_UPKEEP[u.t].food:1)),0), net=(z.last?z.last.food:0)-eat;
     const surplus=net;
     // tropas objetivo: crecen con la partida (los guerreros antes y más)
     // tropas objetivo: ninguna durante la fundación (primero crecer), después según el estilo
     const target=g.step<=FOUNDING_STEPS?(style==='war'?1:0):(style==='war'?2+Math.floor(g.step/4):1+Math.floor(g.step/7));
-    if(mil.length<target&&z.prod>=3&&net>=2+mil.length&&civ.length>=4){
+    if(mil.length<target&&hasBarracks(z)&&net>=1+Math.floor(mil.length/2)&&civ.length>=4){
       /** @type {Militar[]} */
       const opts=['sol']; /** @type {Militar[]} */(['arq','esc','ber','cab']).forEach(t=>{ if(!TRAIN_TECH[t]||techOwn(g,f,TRAIN_TECH[t])) opts.push(t); });
       if(techOwn(g,f,'Ingeniería de asedio')&&rng()<0.2) opts.push('ari'); if(techOwn(g,f,'Lanzapiedras')&&rng()<0.2) opts.push('lan');
-      o.push({t:'train',f,zone:z.id,u:opts[Math.floor(rng()*opts.length)],n:1});
+      const pick=opts[Math.floor(rng()*opts.length)]; const c=recruitCost(g,f,z,pick,'new',false);
+      if(z.prod>=c.prod&&z.food>=c.food+4&&F.gold>=c.gold+2) o.push({t:'train',f,zone:z.id,u:pick,n:1,from:'new'});
     }
+    // un general: cuando ya hay tropas que liderar, un civil apto asciende (el más apto para pelear)
+    { const gens=mil.filter(u=>u.gen).length; if(mil.length>=2&&gens<1+Math.floor(mil.length/4)&&civ.length>=6&&rng()<0.3){ const c=recruitCost(g,f,z,'sol','civ',false);
+        if(z.prod>=c.prod&&z.food>=c.food+5&&F.gold>=c.gold+3){ const ids=us.filter(u=>UT[u.t].civ&&u.w===0&&!u.busy).sort((a,b)=>(trInt(b,'fue')+trInt(b,'sal'))-(trInt(a,'fue')+trInt(a,'sal'))).slice(0,1).map(u=>u.id); if(ids.length) o.push({t:'train',f,zone:z.id,u:'sol',n:1,from:'civ',ids}); } } }
     // anexar tribus
     z.adj.forEach(a=>{ const t=g.zones[a]; if(t.owner===TRIBE){ const price=annexPrice(g,f,t), res=TSPEC_RES[t.tspec]; const have=annexHave(g,f,t); if(((t.rel||{})[f]||0)>=TRIBE_REL_MAX&&have>=price+4&&rng()<0.6&&!o.some(x=>x.t==='annex'&&x.zone===t.id)) o.push({t:'annex',f,zone:t.id,from:z.id}); } });
     // expansión

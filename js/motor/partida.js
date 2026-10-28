@@ -71,7 +71,7 @@ function newGame(mapIdx,N,seed,thrMode){
   zones.forEach(z=>{
     if(z.role==='capital'){
       z.owner=z.sector; z.size=4; z.food=10; z.prod=10; z.capital=true;
-      for(let i=0;i<4;i++) lst(z,z.owner).push(mkUnit(g,z.owner,'pob'));
+      for(let i=0;i<4;i++){ const u=mkUnit(g,z.owner,'pob'); u.home=z.id; lst(z,z.owner).push(u); }
     } else if(z.role==='tribu'){
       z.owner=TRIBE; z.tspec=specs[Math.floor(rng()*4)];
       for(let i=0;i<3;i++) lst(z,TRIBE).push(mkUnit(g,TRIBE,z.tspec));

@@ -87,7 +87,7 @@ function routeZones(a,b){ // camino más corto por el grafo
 }
 
 /* ---------- emblemas de especialización ---------- */
-const SPECC={front:'#C9A24A',agr:'#6FA83A',ing:'#C97A3A',cie:'#4A7FC0',com:'#E0A21B',bas:'#B79A6A',tri:'#8A5A3A',free:'#9AA39C'};
+const SPECC={mil:'#7A2E24',front:'#C9A24A',agr:'#6FA83A',ing:'#C97A3A',cie:'#4A7FC0',com:'#E0A21B',bas:'#B79A6A',tri:'#8A5A3A',free:'#9AA39C'};
 const SPECL={agr:'Agrícola',ing:'Producción',cie:'Tecnología',com:'Comercial',bas:'Básica',tri:'Tribu',free:'Libre'};
 function emblem(sp,r){
   const c=SPECC[sp]||SPECC.free; let g='';
@@ -96,6 +96,7 @@ function emblem(sp,r){
     case 'ing': g='<circle r="7" fill="none" stroke="#fff" stroke-width="4.5"/><circle r="12" fill="none" stroke="#fff" stroke-width="4" stroke-dasharray="4.6 4.6"/>'; break;
     case 'cie': g='<path d="M-4,-13 h8 v8 l9,17 h-26 l9,-17 z" fill="#fff"/><circle cx="-1" cy="7" r="2.4" fill="#4A7FC0"/><circle cx="4" cy="3" r="1.8" fill="#4A7FC0"/>'; break;
     case 'com': g='<circle r="12" fill="#fff"/><text y="6" text-anchor="middle" font-size="17" font-weight="700" fill="#B07A10" class="zt">$</text>'; break;
+    case 'mil': g='<path d="M0,-13 L11,-8 V2 Q11,10 0,14 Q-11,10 -11,2 V-8 Z" fill="#fff"/><path d="M0,-6 V8 M-5,0 H5" stroke="#7A2E24" stroke-width="2.6" stroke-linecap="round"/>'; break;
     case 'tri': g='<polygon points="-13,12 0,-13 13,12" fill="#fff"/><polygon points="-4,12 0,2 4,12" fill="#8A5A3A"/>'; break;
     case 'free': g='<circle r="10" fill="none" stroke="#fff" stroke-width="3" stroke-dasharray="3 5"/>'; break;
     case 'front': g='<path d="M-9,13 V-13 M-9,-13 L9,-7 L-9,-1" stroke="#fff" stroke-width="3" fill="#fff" stroke-linejoin="round"/><path d="M3,13 V-6" stroke="#fff" stroke-width="2.5"/>'; break;
@@ -161,7 +162,7 @@ function buildTerritoryDOM(){
   for(let k=0;k<6;k++){ const r=mulberry32(300+k); const cx=B.x0+r()*WORLD.W, cy=B.y0+r()*WORLD.H; h+=`<g class="cloud" style="animation-delay:${-k*9}s"><ellipse cx="${f1(cx)}" cy="${f1(cy)}" rx="${90+r()*60}" ry="26" fill="rgba(0,0,0,.07)"/><ellipse cx="${f1(cx+40)}" cy="${f1(cy-14)}" rx="60" ry="22" fill="rgba(0,0,0,.07)"/></g>`; }
   h+=`<g id="zonesT">`;
   [...Z.keys()].sort((a,b)=>sy(a)-sy(b)).forEach(i=>{
-    h+=`<g class="zone" data-id="${i}" tabindex="0" role="button" transform="translate(${f1(sx(i))},${f1(sy(i))})"><polygon class="hit" points="${ptsStr(WORLD.poly[i])}" fill="transparent"/><g class="own"></g><g class="dyn"></g><g class="mvb" role="button" aria-label="Ir a esta zona" style="transform:translate(-120px,-60px) scale(var(--inv,1))"><circle r="27" fill="#2F8F4F" stroke="#fff" stroke-width="4"/><path d="M-11,2 H8 M1,-8 L11,2 L1,12" stroke="#fff" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><text class="zt" y="-32" text-anchor="middle" font-size="14" font-weight="700" fill="#fff" stroke="#2A1B16" stroke-width="3.5" paint-order="stroke">Ir</text></g>`
+    h+=`<g class="zone" data-id="${i}" tabindex="0" role="button" transform="translate(${f1(sx(i))},${f1(sy(i))})"><polygon class="hit" points="${ptsStr(WORLD.poly[i])}" fill="transparent"/><g class="own"></g><g class="dyn"></g><g class="mvb" role="button" aria-label="Ir a esta zona" style="transform:translate(-120px,-60px) scale(calc(var(--inv,1)*.7))"><title>Ir a esta zona</title><circle r="27" fill="#2F8F4F" stroke="#fff" stroke-width="4"/><path d="M-11,2 H8 M1,-8 L11,2 L1,12" stroke="#fff" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>`
      +`<polygon class="ov ov-tgt march" points="${ptsStr(WORLD.poly[i],0.97)}" fill="rgba(255,255,255,.12)" stroke="#fff" stroke-width="4" stroke-dasharray="14 10" stroke-linejoin="round"/>`
      +`<polygon class="ov ov-mv" points="${ptsStr(WORLD.poly[i],0.98)}" fill="rgba(124,224,160,.16)" stroke="#7CE0A0" stroke-width="6" stroke-linejoin="round"/>`
      +`<polygon class="ov ov-sel selp" points="${ptsStr(WORLD.poly[i],0.985)}" fill="none" stroke="#FFE27A" stroke-width="7" stroke-linejoin="round"/></g>`;
@@ -269,7 +270,7 @@ function nameplate(z,i){
   const nm=zname(z); const w=Math.max(own?268:230,66+nm.length*8.6), L=-w/2, H=own?76:58;
   let pips=''; for(let k=0;k<Math.min(slots,8);k++){ const x=L+150+k*13; const st=k<built?'b':(k<built+inProg?'p':'f'); const bc=st==='b'?BT[z.b[k].t].col:null; pips+=`<rect x="${f1(x)}" y="12" width="10" height="10" rx="2" fill="${st==='b'?bc:st==='p'?'#7FB2E5':'none'}" stroke="${st==='f'?'#9A8F80':'#fff'}" stroke-width="1.6" ${st==='f'?'stroke-dasharray="2.5 2"':''}/>`; }
   const lv=(sp.lvl>0&&!['bas','free','tri'].includes(sp.sp))?sp.lvl:0;
-  let s=`<g class="lbl" style="transform:translate(0px,-146px) scale(var(--inv,1))"><rect x="${f1(L)}" y="-27" width="${f1(w)}" height="${H}" rx="15" fill="#2A1B16" stroke="${col}" stroke-width="4"/>`
+  let s=`<g class="lbl" style="transform:translate(0px,-150px) scale(calc(var(--inv,1)*.82))"><rect x="${f1(L)}" y="-27" width="${f1(w)}" height="${H}" rx="15" fill="#2A1B16" stroke="${col}" stroke-width="4"/>`
    +`<g transform="translate(${f1(L+24)},1)">${emblem(sp.sp,21)}</g>`
    +(lv?`<g transform="translate(${f1(L+40)},-14)"><circle r="10" fill="#FFE27A" stroke="#2A1B16" stroke-width="2"/><text class="zt" text-anchor="middle" y="4" font-size="${lv===3?9:11}" font-weight="800" fill="#2A1B16">${ROMAN[lv]}</text></g>`:'')
    +`<text class="zt" x="${f1(L+50)}" y="-8" font-size="15" font-weight="700" fill="#FBF8F2">${esc(nm)}</text>`
@@ -303,16 +304,16 @@ function moveArrowSVG(fromId,toId,via,u,stance,key){
   const col=!contested?'#3B7DDD':(stance==='ataque'?'#C8452F':'#2F8F4F'); let h=''; let midPt=null;
   for(let k=0;k<hops.length-1;k++){
     const {A,B,C}=hopPts(hops[k],hops[k+1]); const d=`M${f1(A[0])},${f1(A[1])} Q${f1(C[0])},${f1(C[1])} ${f1(B[0])},${f1(B[1])}`;
-    h+=`<path d="${d}" stroke="#fff" stroke-width="20" fill="none" stroke-linecap="round" opacity=".85"/><path d="${d}" stroke="${col}" stroke-width="12" fill="none" stroke-dasharray="22 14" stroke-linecap="round" class="march"/>`;
+    h+=`<path d="${d}" stroke="#fff" stroke-width="13" fill="none" stroke-linecap="round" opacity=".85"/><path d="${d}" stroke="${col}" stroke-width="8" fill="none" stroke-dasharray="16 11" stroke-linecap="round" class="march"/>`;
     // flecha a ~82% del camino
-    const t=0.82, P=qpt(A,C,B,t), Q=qpt(A,C,B,t-0.04); h+=arrowAt(P,Q,col,30);
+    const t=0.82, P=qpt(A,C,B,t), Q=qpt(A,C,B,t-0.04); h+=arrowAt(P,Q,col,21);
     if(k===hops.length-2) midPt=qpt(A,C,B,0.3);
   }
   const parts=[]; Object.keys(u||{}).forEach(t=>{ if(u[t]>0) parts.push([t,u[t]]); });
   const civ=parts.filter(p=>CIV.includes(p[0])).reduce((a,p)=>a+p[1],0), mil=parts.filter(p=>!CIV.includes(p[0])).reduce((a,p)=>a+p[1],0);
   const lbl=(civ?civ+' civ.':'')+(civ&&mil?' + ':'')+(mil?mil+' mil.':'');
   const oro=moveGold(u,hops.length-1);
-  if(midPt) h+=`<g class="lbl" style="transform:translate(${f1(midPt[0])}px,${f1(midPt[1])}px) scale(var(--inv,1))"><rect x="-76" y="-25" width="152" height="50" rx="18" fill="${col}" stroke="#fff" stroke-width="3"/><text class="zt" x="0" y="-8" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">${!contested?'➜ Mover':(stance==='ataque'?'⚔ Ataque':'☮ Paz')}</text><text class="zt" x="0" y="5" text-anchor="middle" font-size="12" fill="#fff">${esc(lbl)}</text><text class="zt" x="0" y="18" text-anchor="middle" font-size="12" font-weight="700" fill="#FFE27A">${oro?'🪙 '+oro:'gratis'}</text></g>`;
+  if(midPt) h+=`<g class="lbl" style="transform:translate(${f1(midPt[0])}px,${f1(midPt[1])}px) scale(calc(var(--inv,1)*.8))"><rect x="-76" y="-25" width="152" height="50" rx="18" fill="${col}" stroke="#fff" stroke-width="3"/><text class="zt" x="0" y="-8" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">${!contested?'➜ Mover':(stance==='ataque'?'⚔ Ataque':'☮ Paz')}</text><text class="zt" x="0" y="5" text-anchor="middle" font-size="12" fill="#fff">${esc(lbl)}</text><text class="zt" x="0" y="18" text-anchor="middle" font-size="12" font-weight="700" fill="#FFE27A">${oro?'🪙 '+oro:'gratis'}</text></g>`;
   return h;
 }
 // Líneas de suministro de tus tropas fuera de casa: verde si llega la comida, rojo si está cortada.
@@ -354,7 +355,7 @@ function applyView(){
   const r=CAM; if(!r.vw) return; const B=WORLD.bounds; const k=r.vw/VIEW.w; r.k=k;
   const tx=-(VIEW.x-B.x0)*k, ty=-(VIEW.y-B.y0)*k;
   $('cam').style.transform=`translate3d(${tx.toFixed(1)}px,${ty.toFixed(1)}px,0) scale(${k.toFixed(4)})`;
-  const inv=Math.max(0.7,Math.min(1.9,1/k)); if(Math.abs(inv-CAM.inv)>0.01){ CAM.inv=inv; $('terr').style.setProperty('--inv',inv.toFixed(3)); }
+  const inv=Math.max(0.45,Math.min(1.4,0.8/k));   // los rótulos (placas, flechas, recursos) no crecen tanto al alejar el mapa ni se agrandan al acercar if(Math.abs(inv-CAM.inv)>0.01){ CAM.inv=inv; $('terr').style.setProperty('--inv',inv.toFixed(3)); }
   const far=k<0.5; if(far!==CAM.far){ CAM.far=far; $('terr').classList.toggle('far',far); }
   clearTimeout(CAM.reT); CAM.reT=setTimeout(()=>{ const c=$('cam'); c.style.willChange='auto'; void c.offsetWidth; c.style.willChange='transform'; },160);
   updateMiniRect();

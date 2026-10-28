@@ -56,6 +56,15 @@ function techOwn(g,f,n){ return !!(g.F[f]&&g.F[f].techs[n]); }
 /** @param {Partida} g */
 function zonesOf(g,f){ return g.zones.filter(z=>z.owner===f); }
 /** @param {Partida} g */
+/** @param {Partida} g */
+function civPop(g,f){ let n=0; g.zones.forEach(z=>{ (z.units[f]||[]).forEach(u=>{ if(UT[u.t].civ) n++; }); }); return n; }
+// Una baja (muerte o captura) de un civil o general que nació por crecimiento propio abarata los próximos crecimientos de su zona natal.
+/** @param {Partida} g */
+function unitLost(g,u,f){
+  if(!isPl(f)||u.home===undefined||!(UT[u.t].civ||u.gen)) return; const hz=g.zones[u.home]; if(!hz||hz.owner!==f) return;
+  hz.repop=Math.min(REPOP_MAX,(hz.repop||0)+(g.M[f].repopStack||1));
+}
+/** @param {Partida} g */
 function totalPop(g,f){ let n=0; g.zones.forEach(z=>{ n+=(z.units[f]||[]).length; }); return n; }
 /** @param {Partida} g */
 function hasRes(g,f,key){ let m=0; g.zones.forEach(z=>{ if(z.owner===f) m=Math.max(m,resMul(z,key)); }); if(!m&&isPl(f)&&((g.F[f].tres||[]).some(r=>r.key===key&&r.until>g.step))) m=1; return m; }   // 0 = no lo tienes; 1 = plata; 2 = oro (o un recurso temporal de la subasta, que cuenta como plata)

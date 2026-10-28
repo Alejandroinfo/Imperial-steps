@@ -19,7 +19,7 @@ function storyHTML(){
 }
 function panelImperio(){
   const F=G.F[ME], M=G.M[ME]; const zs=zonesOf(G,ME);
-  let h=`<div class="kv"><span>Oro</span><span>${Math.floor(F.gold)}</span><span>Tecnología</span><span>${Math.floor(F.tech)}</span><span>Zonas</span><span>${zs.length} de ${G.zones.length}</span><span>Población</span><span>${totalPop(G,ME)}</span><span>Tecnologías</span><span>${Object.keys(F.techs).length} de ${TECHS.length}</span><span>Investigación</span><span>${F.rcap} por paso${F.rq.length?' · '+F.rq.map(p=>esc(p.name)).join(', '):''}</span><span>Edificios</span><span>${zs.reduce((a,z)=>a+z.b.length,0)}</span></div>`;
+  let h=`<div class="kv"><span>Oro</span><span>${Math.floor(F.gold)}</span><span>Tecnología</span><span>${Math.floor(F.tech)}</span><span>Zonas</span><span>${zs.length} de ${G.zones.length}</span><span>Población</span><span>${totalPop(G,ME)}</span><span>Tecnologías</span><span>${Object.keys(F.techs).length} de ${TECHS.length}</span><span>Investigación</span><span>${F.rcap} por paso${F.rq.length?' · '+F.rq.map(p=>esc(p.name)).join(', '):''}</span><span>Edificios</span><span>${zs.reduce((a,z)=>a+z.b.length,0)}</span>${(()=>{ let n=0,gen=0,fd=0,gd=0; G.zones.forEach(z=>(z.units[ME]||[]).forEach(u=>{ if(UT[u.t].civ) return; n++; if(u.gen) gen++; fd+=(u.need||0); if(!u.free) gd+=((UNIT_UPKEEP[u.t]||{gold:0}).gold+(u.gen?GEN_PAY:0))*M.payMul; })); return n?`<span>Tropas</span><span>${n}${gen?' (★'+gen+')':''} · 🌾 ${Math.ceil(fd-1e-9)} · 🪙 ${Math.ceil(gd-1e-9)} por paso</span>`:''; })()}</div>`;
   h+=myZonesHTML();
   h+=relationsHTML();
   if(F.out) h+=`<div class="box warn">Quedaste eliminado${F.ghost?' y ahora controlas una tribu':''}. Ya no puedes ganar solo: puedes aliarte con un jugador vivo y ganar con él.</div>`;

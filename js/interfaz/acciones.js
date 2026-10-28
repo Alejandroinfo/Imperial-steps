@@ -11,14 +11,21 @@ function act(a,d){
       const toT=CIV.filter(t=>t!==from); const to=toT.includes(fv('sp_to','agr'))?fv('sp_to','agr'):toT[0];
       const n=Math.min(Number(fv('sp_n',1))||0,availQ(z.id,from)); if(n>0) addOrder({t:'spec',zone:z.id,from,to,n}); break; }
     case 'train': {
-      const opts=MIL.filter(t=>!TRAIN_TECH[t]||techOwn(G,ME,TRAIN_TECH[t])); const u=opts.includes(fv('tr_u','sol'))?fv('tr_u','sol'):opts[0];
-      const weapon=['arq','esc','ber','cab'].includes(u); const from=(weapon&&fv('tr_src','civ')==='sol')?'sol':'civ';
-      const avail=from==='sol'?availQ(z.id,'sol'):CIV.reduce((s,t)=>s+availQ(z.id,t),0);
-      const n=Math.min(Number(fv('tr_n',1))||0,avail); if(n>0) addOrder({t:'train',zone:z.id,u,n,from:from==='sol'?'sol':'pob'}); break; }
+      const mode=['new','civ','sol'].includes(fv('tr_mode','new'))?fv('tr_mode','new'):'new';
+      const all=MIL.filter(t=>!TRAIN_TECH[t]||techOwn(G,ME,TRAIN_TECH[t])); const opts=mode==='civ'?all.filter(t=>GEN_TYPES.includes(t)):mode==='sol'?all.filter(t=>WEAPON_T.includes(t)):all;
+      const u=opts.includes(fv('tr_u','sol'))?fv('tr_u','sol'):opts[0]; if(!u) break;
+      if(mode==='new'){ const n=Math.min(Math.max(1,Number(fv('tr_n',1))||1),recruitLeft(z)); if(n>0&&canRecruit(G,ME,z,u)) addOrder({t:'train',zone:z.id,u,n,from:'new'}); ui.form.tr_n=1; break; }
+      const pool=trainPool(z); const ids=(ui.trainIds||[]).filter(id=>pool.some(p=>p.id===id));
+      if(ids.length) addOrder({t:'train',zone:z.id,u,n:ids.length,from:mode,ids}); ui.trainIds=[]; break; }
+    case 'trmode': ui.form.tr_mode=d.v; ui.trainIds=[]; break;
+    case 'trn': ui.form.tr_n=Math.max(1,(Number(fv('tr_n',1))||1)+Number(d.d)); break;
+    case 'trtype': ui.form.tr_u=d.v; break;
+    case 'trpick': { const id=Number(d.id); ui.trainIds=ui.trainIds||[]; ui.trainIds=ui.trainIds.includes(id)?ui.trainIds.filter(x=>x!==id):ui.trainIds.concat(id); break; }
+    case 'trbest': ui.trainIds=trainPool(z).slice(0,Number(d.n)).map(u=>u.id); break;
+    case 'trclear': ui.trainIds=[]; break;
+    case 'dmstep': ui.form[d.k]=Math.max(0,Math.min(Number(d.mx||999),(Number(fv(d.k,0))||0)+Number(d.d))); break;
     case 'demob': {
-      const can=DEMOB_FROM.filter(t=>availQ(z.id,t)>0); if(!can.length) break;
-      const u=can.includes(fv('dm_u',can[0]))?fv('dm_u',can[0]):can[0]; const to=CIV.includes(fv('dm_to','pob'))?fv('dm_to','pob'):'pob';
-      const n=Math.min(Number(fv('dm_n',1))||0,availQ(z.id,u)); if(n>0) addOrder({t:'demob',zone:z.id,u,to,n}); break; }
+      DEMOB_FROM.forEach(t=>{ ['baja','ret'].forEach(k=>{ const key='dm_'+k+'_'+t; const n=Math.min(Number(fv(key,0))||0,milFree(z,t,k==='ret')); if(n>0) addOrder({t:'demob',zone:z.id,u:t,to:k==='baja'?'baja':'pob',n}); ui.form[key]=0; }); }); break; }
     case 'build': addOrder({t:'build',zone:Number(d.zone),bt:d.bt,spec:d.spec||null}); ui.bpick=null; break;
     case 'bpick': ui.bpick=(ui.bpick&&ui.bpick.bt===d.bt&&ui.bpick.zone===Number(d.zone))?null:{zone:Number(d.zone),bt:d.bt}; break;
     case 'battle': openBattle(Number(d.b)); return;

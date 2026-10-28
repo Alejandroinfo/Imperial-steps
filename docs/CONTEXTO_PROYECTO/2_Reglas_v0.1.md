@@ -142,13 +142,15 @@ Cada zona tiene un terreno. Algunos efectos dependen de si la unidad es **atacan
 
 ### 5.2 Militares
 
-- ✅ Consumen **2 de comida** (el doble) y **no generan nada**.
+- ✅ 🆕 **Mantenimiento (27/10/2026, decidido por Alejandro):** la base es **comida** y cada tipo puede tener algo más: soldado, arquero, escudero y máquinas 🌾 1; caballero 🌾 2; berserker y máquinas de asedio, además, 🪙 1 de paga; un **general** suma 🪙 1 de paga. Los que trabajan en un Cuartel no comen ni cobran. En casa, *Guarniciones* los hace comer la mitad; fuera de tu territorio la comida vale 1,5 × (1 × con *Suministros de campaña*). Si no alcanza el oro, esas tropas pelean con la mitad de los dados ese paso. ~~Antes: 2 de comida cada militar.~~ Y **no generan nada**.
 - ✅ Fuerza inicial **2**; cada ronda que se mantienen como militares **sube +1** hasta un máximo de **4**.
-- ✅ Convertir a civil básico cuesta **2** de producción; a civil especializado, **3**.
-  - ✅ 🆕 Se hace con la orden **Licenciar** de la pestaña Militar; la tecnología *Reservistas* lo deja gratis.
-  - 💡 🆕 Se puede licenciar en cualquier zona propia (sin Cuartel); las tropas heridas esperan a curarse; las máquinas de asedio no se licencian (ver pendiente 23).
+- ✅ 🆕 **Dar de baja y retirar (27/10/2026):** una tropa reclutada se **da de baja** (desaparece y recuperas el 50 % de su producción; 75 % con *Reservistas*). Solo un **general** puede volver a ser civil: **retirarlo** cuesta 2 de producción como poblador y 3 como oficio (gratis con *Reservistas*) y conserva sus rasgos y su zona natal. Se hace en la pestaña Militar de cualquier zona propia; las tropas heridas esperan a curarse. ~~Antes: «Licenciar» convertía a cualquier militar en civil.~~
 - ✅ Moverlos cuesta **1 de oro por unidad por espacio** movido. 🆕 El formulario de «Ir» y la flecha del mapa muestran el costo exacto, y recuerdan que los civiles se mueven gratis pero ese paso no producen.
-- ✅ 🆕 **Entrenar no necesita Cuartel (26/10/2026, decidido por Alejandro: el Cuartel frenaba el inicio y la agresividad):** se puede entrenar en cualquier zona propia. El Cuartel mantiene sus ventajas: sus militares no comen, dan movimiento extra y permite sus especializaciones.
+- ✅ 🆕 **Reclutar, generales y equipar (27/10/2026, decidido por Alejandro; reemplaza «Entrenar no necesita Cuartel» y «convertir a un civil en soldado»):**
+  - **Reclutar:** las tropas se crean **en un Cuartel pagando producción, comida y oro**, y **no gastan ningún civil**. Cada Cuartel recluta **1 tropa por nivel y por paso** (*Levas* suma 1 por Cuartel; *Mercenarios* permite reclutar soldados y arqueros sin Cuartel, 1 por paso por zona, pagando el doble de oro). Nacen cansadas y con fuerza 2 (+1 en un Cuartel con *Campo de entrenamiento*). 💡 Costos: soldado ⚒ 2 🌾 2 🪙 1 · arquero ⚒ 5 🌾 2 🪙 2 · escudero ⚒ 7 🌾 2 🪙 2 · caballero ⚒ 9 🌾 3 🪙 4 · berserker ⚒ 9 🌾 3 🪙 3 · ariete y lanzapiedras ⚒ 10 🌾 2 🪙 3. La producción de las tropas con arma incluye su **equipo** (arco 3, escudo 5, caballo y hacha 7); *Cuartel de instrucción* resta ⚒ 1 y 🌾 1.
+  - **Generales (campeones):** un **civil que tú eliges** asciende a general de un tipo (soldado, arquero, escudero, caballero o berserker; en **cualquier zona propia**, sin Cuartel) pagando el mismo costo que reclutar. Un general tiene **+2 de vida, +1 de fuerza y +1 de ataque**, es el **último en morir de su tipo** en una pelea, **cobra 🪙 1 más** y **lidera**: suma 1 dado a su grupo (hasta 2 generales por grupo). Conserva sus rasgos y su zona natal. 💡 Medido: un general vale unas 2 tropas normales; con 2 soldados rinden como 4.
+  - **Equipar:** un soldado que ya tienes recibe su arma (solo pagas el equipo y la diferencia de oro).
+  - La interfaz permite **elegir quién asciende** (con rasgos y «aptitud para pelear» = fuerza + salud); sin elección, asciende el más apto. En Población, el puesto **Ejército** lleva a esa elección.
 
 ### 5.3 Estados de una unidad
 
@@ -242,7 +244,7 @@ Detalles:
 
 - ✅ **Zona básica:** especializar es barato, **1 de producción por persona** que se especializa.
 - ~~**Zona industrial:** usa producción local y, si no alcanza, la de la vecina.~~ ✅ 🆕 **Obras con producción de zonas vecinas:** una obra gasta la producción guardada de su zona y, si no alcanza, trae la de las zonas vecinas. Cada espacio de distancia cuesta **1 de oro por unidad de producción** movida (la regla es la misma de antes, pero ya no depende de una zona industrial).
-- ✅ **Agricultura:** civiles no militares consumen 1 de comida, militares 2. El consumo es **local**.
+- ✅ **Agricultura:** los civiles consumen 1 de comida; las tropas, según su tipo (ver 5.2). El consumo es **local**.
 - ✅ 🆕 **Capital (26/10/2026, decidido por Alejandro: la mitad de antes):** atributo de la zona inicial de cada jugador. Genera **+2 de producción, +2 de comida, +2 de tecnología y +2 de oro**, adicional a cualquier especialización. *Capital próspera* lo sube a **+3**. (Antes: +4 y +6.)
 - ✅ El atributo de capital **se mantiene en la zona aunque sea conquistada** (son zonas muy especiales y perderlas debe doler). Se entiende que sus bonos pasan al conquistador. ❓ Confirmar esa interpretación.
 - ❓ ¿Qué pasa con un bono de zona si la mayoría deja de ser de esa especialización?
@@ -577,7 +579,7 @@ Detalles:
 
 ### 14.1 Árbol de tecnologías: 12 ramas con columna vertebral (💡 propuesta, para corregir)
 
-El catálogo completo está en **Tecnologias_v0.2.xlsx** (hojas *Reglas*, *Tecnologías*, *Ramas* y *Resumen*): 203 tecnologías con nivel, costo, tipo, rama, si son vertebrales u opcionales, efecto, prerrequisitos, origen, valoración de 1 a 5 y comentario.
+El catálogo completo está en **Tecnologias_v0.2.xlsx** (hojas *Reglas*, *Tecnologías*, *Ramas* y *Resumen*): 209 tecnologías con nivel, costo, tipo, rama, si son vertebrales u opcionales, efecto, prerrequisitos, origen, valoración de 1 a 5 y comentario.
 
 **Reglas del árbol:**
 
@@ -665,15 +667,16 @@ El catálogo completo está en **Tecnologias_v0.2.xlsx** (hojas *Reglas*, *Tecno
 | **Biblioteca** | Civiles (científicos) | Bibliotecas | +1 de tecnología por trabajador | 4: +2, +3 y +5, y una especialización |
 | **Maravilla** | Ninguno | 🆕 Vertebral de nivel 5 de su rama (12 maravillas, una por rama) | 500 de producción; da el efecto de esa vertebral; cuenta para la victoria; ocupa un espacio | 2: más barata, más defensa |
 
-**Equipar y entrenar** (propuesta, para completar lo que faltaba sobre cuánto cuesta un militar):
+**Reclutar y equipar** (🆕 27/10/2026; ver 5.2): el costo de producción de una tropa es **el soldado (2) + su equipo**, y se paga además comida y oro:
 
-| Acción | Costo de producción |
-|---|---|
-| Convertir un civil en soldado básico (en un Cuartel) | 2 |
-| Equipar con arco | 3 |
-| Equipar con escudo | 4 |
-| Equipar con hacha | 4 |
-| Equipar con caballo | 6 |
+| Tropa | ⚒ producción (soldado + equipo) | 🌾 comida | 🪙 oro |
+|---|---|---|---|
+| Soldado | 2 | 2 | 1 |
+| Arquero | 2 + 3 (arco) | 2 | 2 |
+| Escudero | 2 + 5 (escudo) | 2 | 2 |
+| Caballero | 2 + 7 (caballo) | 3 | 4 |
+| Berserker | 2 + 7 (hacha) | 3 | 3 |
+| Ariete / Lanzapiedras | 10 | 2 | 3 |
 
 - Con la tecnología *Arsenal*, las armas cuestan la mitad.
 - ✅ El movimiento extra del Cuartel **sigue costando oro** (1 por unidad por espacio).
@@ -881,7 +884,7 @@ Es la misma idea que los científicos automáticos (sección 14.0), aplicada a l
 19. ❓ **Terrenos:** qué terrenos son riesgosos o muy riesgosos para los eventos.
 20. ❓ **Mapas:** elegir cuáles probar primero; definir especialización y tamaño de cada tribu.
 21. ✅ 🆕 **Maravillas:** resuelto el máximo (una de cada, 12 en total) y el efecto (el de la vertebral de nivel 5 de su rama), ver 15.3. ❓ Sigue pendiente si cuentan para la condición de Desarrollo.
-22. ❓ **Tecnologías y edificios:** revisar y corregir el catálogo de 203 tecnologías (Tecnologias_v0.2.xlsx) y los edificios de la sección 15.1. 🆕 Los textos de Almacén, Intereses del almacén y Capital próspera ya se actualizaron en el juego; falta pasarlos al Excel.
+22. ❓ **Tecnologías y edificios:** revisar y corregir el catálogo de 209 tecnologías (Tecnologias_v0.2.xlsx) y los edificios de la sección 15.1. 🆕 Los textos de Almacén, Intereses del almacén y Capital próspera ya se actualizaron en el juego; falta pasarlos al Excel.
 23. ❓ **Máquinas de asedio:** movimiento, comida, qué pasa si pierdes la zona, si cuentan como población y si se pueden licenciar (sección 9.1).
 24. ❓ **Eventos y recursos:** revisar el catálogo de eventos (13.1) y la lista de recursos estratégicos (6.3), y añadirlos de forma simétrica al atlas.
 25. ❓ **Arte:** revisar el estilo del prototipo (secciones 19.1 y 23). 🆕 El mapa pasó a ser un valle continuo: ¿se sigue en esa dirección?
@@ -980,7 +983,7 @@ Es la misma idea que los científicos automáticos (sección 14.0), aplicada a l
 **Errores corregidos:** los botones «Ir» aparecían en todas las zonas; *Reservistas* figuraba como simulada pero no hacía nada; al repartir trabajadores entre varios edificios se podía saltar a una persona o dejar a otra en dos lugares.
 
 ### 23.2 Qué todavía NO tiene efecto simulado
-19 de las 203 tecnologías aparecen como «aún sin efecto»: Embajadas comerciales, Exportaciones, Intercambio académico, Espionaje científico, Atajo del sabio, Enciclopedia, Embajadores, Aliados de ultratumba, Tratados de paz, Cultura tribal, Maestros de la paz, Censo, Mercenarios, Jinetes veloces, Exploradores, Contraespionaje, Caballos de carga, Guerra relámpago e Intimidación. Se pueden investigar (cuentan para la columna vertebral y los mínimos), pero no hacen nada.
+19 de las 209 tecnologías aparecen como «aún sin efecto»: Embajadas comerciales, Exportaciones, Intercambio académico, Espionaje científico, Atajo del sabio, Enciclopedia, Embajadores, Aliados de ultratumba, Tratados de paz, Cultura tribal, Maestros de la paz, Censo, Mercenarios, Jinetes veloces, Exploradores, Contraespionaje, Caballos de carga, Guerra relámpago e Intimidación. Se pueden investigar (cuentan para la columna vertebral y los mínimos), pero no hacen nada.
 
 ### 23.3 Simplificaciones
 - Los oponentes son bots sencillos: investigan, especializan, construyen, entrenan, anexan, se ponen en Alerta con quien tiene tropas cerca y a veces atacan.
@@ -1067,3 +1070,13 @@ Todo se aplicó a pedido de Alejandro. Los **valores** marcados 💡 son estimac
 - ✅ 🆕 **Eventos con duración y tribus menos insistentes (sección 13 y 12):** ver arriba. Se corrigió además un texto que decía «si nadie paga, invade», cuando la regla es que no pasa nada; el evento «Exigencia de tributo» pasó a llamarse «Pedido de tribu».
 - ✅ 🆕 **Años con parte cierta y variable, y tribus con relación −3 a +3 (sección 13 y 12):** el primer año es de fundación; desde el 2.º, cada año trae Prosperidad o Escasez (±15 %) y un evento del mismo signo, y las dos partes duran 12 pasos. Las tribus piden cada 8 pasos, descansan 12 tras cumplir uno, la relación baja 1 por cada pedido ignorado y en −3 atacan. Se corrigió un texto que decía «si nadie paga, invade» cuando todavía no era así.
 - ✅ 🆕 **Historias (13.3), ampliación:** 20 historias, varias por partida con descanso entre ellas (ver arriba). ❓ Probar jugando si 2 o 3 historias por partida se sienten bien o si los capítulos llegan demasiado seguidos con los encuentros normales.
+- ✅ 🆕 **Entrenar eligiendo a quién (9, 27/10/2026, pedido por Alejandro):** en **Militar** eliges la tropa (tarjetas con su costo) y **las personas** que se entrenan (cada una con sus rasgos de ❤ salud y ⚔ fuerza y su «aptitud para pelear» = fuerza + salud; botones «Los N más aptos»). También se puede **arrastrar gente al puesto «Ejército» en Población**, que te lleva a Militar con esas personas ya elegidas. La orden lleva las personas elegidas (`ids`). ~~Antes: se entrenaba a la primera persona libre de la lista.~~ 💡 **Si no se elige a nadie** (órdenes de bots o antiguas), se entrena a los **más aptos para pelear**, primero los pobladores sin oficio y después el resto de los civiles.
+- ✅ 🆕 **Avisos en vez de la barra de sugerencias (interfaz):** las sugerencias ya no ocupan una línea arriba del panel. Aparece un **❗** en la pestaña correspondiente (rojo si es urgente) y, dentro de una zona, en la subpestaña (Edificios si hay espacio para construir, Población si falta un científico, Moverse si se puede poblar una zona vecina…); al abrir la pestaña se ve la lista corta y al tocar una fila te lleva al lugar. Nuevo aviso: un rival que cumple una condición de victoria y está cerca de otra (en Victoria).
+- ✅ 🆕 **Eventos del año como insignias (interfaz):** arriba, junto al paso, cada evento activo es una insignia (ícono, pasos que quedan) con una ficha al pasar el mouse: nombre, «parte cierta» o «extra de este año», efecto, terrenos que afecta y una barra del año. 
+- ✅ 🆕 **Batalla como mapa (interfaz):** el visor de batallas muestra un campo del terreno de la zona con las tropas de cada bando en formación (cuerpo a cuerpo adelante, distancia y máquinas atrás), que avanzan al golpear, flechas y piedras que vuelan, números de daño y las tropas caídas tendidas; el registro por oleadas sigue debajo.
+- ✅ 🆕 **Rótulos más chicos (interfaz):** la flecha de mover, las placas de zona, las etiquetas de órdenes y los recursos son más pequeños y crecen menos al alejar el mapa, para no tapar lo que ocurre.
+- ✅ 🆕 **Reclutar sin gastar civiles, generales y mantenimiento por tipo (5.2 y 9, 27/10/2026, pedido por Alejandro):** ver 5.2 (mantenimiento, dar de baja, reclutar, generales, equipar). La victoria **Económica cuenta solo civiles** (las tropas no suman población). Resultado medido con bots (28 partidas de 80 pasos): batallas por partida de 2,0 a 9,4; civiles por jugador a los 80 pasos de 11,8 a 17,9; tropas de 5,4 a 8,1. 💡 Los costos, la paga y el valor de los generales se confirman jugando.
+- ✅ 🆕 **Repoblación (8, 27/10/2026, decidido por Alejandro):** cuando **muere o es capturado un civil o un general que nació en una zona por crecimiento propio**, esa zona (si sigue siendo tuya) gana una reducción de **50 %** en el costo del **próximo crecimiento**; si mueren 2, los **2 siguientes**, hasta 8 (💡 `REPOP_PCT`, `REPOP_MAX`). **No cuentan** los civiles capturados, los de encuentros, subastas, historias o tribus, ni las tropas reclutadas; tampoco la migración (solo morir o ser capturado). Una baja en otra zona no abarata la del que migró: cuenta su zona natal. El tamaño de la zona **no baja** (sigue siendo el freno contra «fábricas de gente»). Se muestra en el resumen de la zona.
+- ✅ 🆕 **Tecnologías de reclutar y repoblar (27/10/2026):** nuevas: *Levas* (+1 recluta por Cuartel y paso), *Intendencia militar* (paga −50 %), *Campeones* (general a mitad de producción y comida, +1 de fuerza), *Mando* (generales +1 de vida y +1 de defensa a las tropas de su tipo), *Memoria del pueblo* (repoblación +15 puntos) y *Raíces profundas* (cada baja abarata 2 crecimientos). Rehechas: *Cuarteles*, *Cuartel de instrucción*, *Mercenarios*, *Reservistas*, *Guarniciones*, *Suministros de campaña*, *Ejército permanente* (ahora sí implementada), *Campo de entrenamiento* (ahora sí implementada) y los textos de las armas y máquinas. Con esto el catálogo pasa de 203 a **209** tecnologías.
+- ✅ 🆕 Los **bots** también ascienden generales (medido: 0,44 por jugador a los 80 pasos) y *Guardia de élite* ya funciona (+1 de defensa a los militares que trabajan en ese Cuartel). 💡 Caso de referencia: atacar a una tribu típica con 5 soldados reclutados cuesta ⚒ 10 🌾 10 🪙 5, no gasta ningún civil y gana el 74 % de las veces (94 % si uno de ellos es general).
+- ❓ Pendiente: revisar los costos de reclutar jugando (¿ejércitos demasiado baratos?); *Camino militar II* sigue sin efecto; el Excel de tecnologías quedó atrás.

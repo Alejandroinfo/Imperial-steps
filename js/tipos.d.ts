@@ -16,6 +16,9 @@ type TipoEdificio = 'almacen' | 'camino' | 'hospital' | 'cuartel' | 'fort' | 'mo
 type Postura = 'paz' | 'alerta';
 
 interface Unidad {
+  gen?: number;      // 1 si es un general (campeón): un civil que ascendió
+  home?: number;     // zona donde nació por crecimiento propio (para la repoblación)
+  free?: number; unp?: number;   // sin mantenimiento (trabaja en un Cuartel) / sin paga este paso
   t: TipoUnidad;
   hp: number;        // vida actual
   w: number;         // heridas (pasos para curarse)
@@ -54,7 +57,7 @@ interface Zona {
   lastBy?: any; sp?: { spec: string; lvl: number; n: number };
   // equipo militar guardado y recursos estratégicos
   eq?: { [t: string]: number }; eqPend?: { [t: string]: number };
-  resHeld?: number; resOwner?: Jugador | null; resGain?: { res: Recurso; n: number }; resO?: string | null; paidAt?: { [f: number]: number }; resGains?: { key: string; tier: string; res: Recurso; n: number }[];
+  resHeld?: number; resOwner?: Jugador | null; resGain?: { res: Recurso; n: number }; resO?: string | null; repop?: number; recruited?: number; paidAt?: { [f: number]: number }; resGains?: { key: string; tier: string; res: Recurso; n: number }[];
   frontGain?: { [f: number]: number };
 }
 
@@ -99,7 +102,7 @@ type Orden = { f?: Jugador } & (
   | { t: 'stance'; target: Jugador; stance: Postura }
   | { t: 'spec'; zone: ZonaId; from: Civil; to: Civil; n: number; ids?: number[] }
   | { t: 'demob'; zone: ZonaId; u: Militar; to: Civil; n: number }
-  | { t: 'train'; zone: ZonaId; u: Militar; n: number; from?: 'pob' | 'sol' }
+  | { t: 'train'; zone: ZonaId; u: Militar; n: number; from?: 'new' | 'civ' | 'sol' | 'pob'; ids?: number[] }
   | { t: 'build'; zone: ZonaId; bt: TipoEdificio; spec?: string | null }
   | { t: 'wonder'; zone: ZonaId; w: string }
   | { t: 'upgrade'; zone: ZonaId; bi: number }

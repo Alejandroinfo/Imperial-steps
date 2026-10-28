@@ -34,7 +34,7 @@ function fm(n){ return Math.round(n*10)/10; }
 
 function queuedMove(zid,t){ let n=0; ui.orders.forEach(o=>{ if(o.t==='move'&&o.from===zid) n+=(o.u[t]||0); }); return n; }
 function queuedUnits(zid,t){ // unidades de ese tipo que ya tienen una orden de gasto
-  let n=queuedMove(zid,t); ui.orders.forEach(o=>{ if(o.zone===zid&&o.t==='spec'&&o.from===t) n+=o.n; if(o.zone===zid&&o.t==='train'&&o.from===t) n+=o.n; if(o.zone===zid&&o.t==='demob'&&o.u===t) n+=o.n; });
+  let n=queuedMove(zid,t); ui.orders.forEach(o=>{ if(o.zone===zid&&o.t==='spec'&&o.from===t) n+=o.n; if(o.zone===zid&&o.t==='train'){ if(o.ids){ const us=G.zones[zid].units[ME]||[]; o.ids.forEach(id=>{ const u=us.find(x=>x.id===id); if(u&&u.t===t) n++; }); } else if(o.from===t) n+=o.n; } if(o.zone===zid&&o.t==='demob'&&o.u===t) n+=o.n; });
   return n;
 }
 // ---- Personas con rasgos: fichas, íconos y bordes ----
@@ -88,20 +88,26 @@ function depCardsHTML(z){
   const ds=zoneDeps(z); if(!ds.length) return '';
   return '<div class="depcards">'+ds.map(d=>`<div class="depc ${d.tier}">${depBadge(d,true)}<div><b>${RES[d.k].n} <small>${RES_TIER[d.tier].ic} ${RES_TIER[d.tier].n.toLowerCase()}</small></b><span>${esc(d.mul===2?RES[d.k].d2:RES[d.k].d)}</span><small>${RES[d.k].sc==='global'?'🌍 sirve a todo tu imperio':'📍 solo en esta zona'} · rinde ${depYieldText(d)}</small></div></div>`).join('')+'</div>';
 }
+// ---- Eventos del año: insignias y ficha ----
+function evBadge(e,left,now,big){ return `<span class="eb ${e.k==='+'?'pos':'neg'}${e.year?' year':''}${big?' big':''}" data-ev="${e.id}" data-left="${left}" data-now="${now?1:0}" tabindex="0" aria-label="${esc(e.n+(now?', empieza este paso':', quedan '+left+' pasos'))}"><i>${e.ic||'•'}</i><em>${now?'¡ya!':left}</em></span>`; }
+function evFichaHTML(id,left,now){
+  const e=EVT[id]; const dur=YEAR_STEPS; const pips=Array.from({length:dur},(_,k)=>`<b class="${k<dur-left+(now?0:0)?'':'on'}"></b>`).join('');
+  return `<div class="fh">${evBadge(e,left,now,true)}<div><b>${esc(e.n)}</b><small>${e.year?'la parte cierta del año':'el extra de este año'} · ${e.k==='+'?'bueno':'malo'}</small></div></div><div class="fr ${e.k==='+'?'p':'n'}"><div><b>${esc(e.d)}</b><small>${e.terr&&!e.terr.includes('all')&&e.terr.length?'afecta a: '+e.terr.map(t=>TERRN[t]).join(', '):'afecta a todas las zonas'}</small></div></div><div class="evpips" title="${now?'empieza este paso':'quedan '+left+' de '+dur+' pasos'}">${pips}</div><div class="hint">${now?'Empieza este paso y dura todo el año.':'Quedan <b>'+left+'</b> de '+dur+' pasos.'}</div>`;
+}
 let FICHA=null;
 function fichaMove(e,el){ const r=el.getBoundingClientRect(); const w=FICHA.offsetWidth, h=FICHA.offsetHeight; let x=r.left+r.width/2-w/2, y=r.top-h-8; if(y<6) y=r.bottom+8; x=Math.max(6,Math.min(innerWidth-w-6,x)); FICHA.style.left=x+'px'; FICHA.style.top=y+'px'; }
 document.addEventListener('mouseover',e=>{
-  const t=e.target.closest&&e.target.closest('.token[data-id],.db[data-dep]'); if(!t||typeof G==='undefined'||!G) return;
-  let html=''; if(t.dataset.dep) html=depFichaHTML(t.dataset.dep,t.dataset.tier); else { const u=personById(Number(t.dataset.id)); if(!u||!u.tr) return; html=fichaHTML(u); }
+  const t=e.target.closest&&e.target.closest('.token[data-id],.db[data-dep],.eb[data-ev]'); if(!t||typeof G==='undefined'||!G) return;
+  let html=''; if(t.dataset.ev) html=evFichaHTML(t.dataset.ev,Number(t.dataset.left),t.dataset.now==='1'); else if(t.dataset.dep) html=depFichaHTML(t.dataset.dep,t.dataset.tier); else { const u=personById(Number(t.dataset.id)); if(!u||!u.tr) return; html=fichaHTML(u); }
   if(!FICHA){ FICHA=document.createElement('div'); FICHA.id='ficha'; FICHA.setAttribute('role','tooltip'); document.body.appendChild(FICHA); }
   FICHA.innerHTML=html; FICHA.classList.add('on'); fichaMove(e,t);
 });
-document.addEventListener('mouseout',e=>{ const t=e.target.closest&&e.target.closest('.token[data-id],.db[data-dep]'); if(t&&FICHA) FICHA.classList.remove('on'); });
+document.addEventListener('mouseout',e=>{ const t=e.target.closest&&e.target.closest('.token[data-id],.db[data-dep],.eb[data-ev]'); if(t&&FICHA) FICHA.classList.remove('on'); });
 document.addEventListener('dragstart',()=>{ if(FICHA) FICHA.classList.remove('on'); });
 // Personas libres de un oficio (menos las ya elegidas para una orden), las mejores primero.
 function availListQ(zid,t){
   const z=G.zones[zid]; const used=new Set(); let idq=0;
-  ui.orders.forEach(o=>{ if(o.t==='spec'&&o.zone===zid&&o.from===t&&o.ids){ o.ids.forEach(i=>used.add(i)); idq+=o.n; } });
+  ui.orders.forEach(o=>{ if(o.t==='spec'&&o.zone===zid&&o.from===t&&o.ids){ o.ids.forEach(i=>used.add(i)); idq+=o.n; } if(o.t==='train'&&o.zone===zid&&o.ids){ const us=z.units[ME]||[]; o.ids.forEach(i=>{ const u=us.find(x=>x.id===i); if(u&&u.t===t){ used.add(i); idq++; } }); } });
   const l=(z.units[ME]||[]).filter(u=>u.t===t&&u.w===0&&!u.busy&&!used.has(u.id));
   const other=Math.max(0,queuedUnits(zid,t)-idq);
   return l.slice(0,Math.max(0,l.length-other)).sort((a,b)=>traitScore(b)-traitScore(a));
@@ -113,11 +119,12 @@ function moveGold(u,hops){
   return Math.ceil(n*(M.milMoveHalf?0.5:1)*Math.max(1,hops||1));
 }
 function commits(){
-  const c={tech:0,prod:{},gold:0};
+  const c={tech:0,prod:{},food:{},gold:0};
   ui.orders.forEach(o=>{
     const z=G.zones[o.zone!==undefined?o.zone:o.from];
     if(o.t==='spec'){ c.prod[o.zone]=(c.prod[o.zone]||0)+specPer(G,ME,z,o.from,o.to)*o.n; }
-    else if(o.t==='train'){ const st=Math.min(o.n,stockOf(z,o.u)), fr=o.from==='sol'?'sol':null; c.prod[o.zone]=(c.prod[o.zone]||0)+trainCost(G,ME,z,o.u,fr,true)*st+trainCost(G,ME,z,o.u,fr,false)*(o.n-st); }
+    else if(o.t==='train'){ const md=o.from==='sol'?'sol':(o.from==='civ'||o.from==='pob')?'civ':'new'; const st=WEAPON_T.includes(o.u)?Math.min(o.n,stockOf(z,o.u)):0; const k1=recruitCost(G,ME,z,o.u,md,true), k0=recruitCost(G,ME,z,o.u,md,false);
+      c.prod[o.zone]=(c.prod[o.zone]||0)+k1.prod*st+k0.prod*(o.n-st); c.food[o.zone]=(c.food[o.zone]||0)+k0.food*o.n; c.gold+=k0.gold*o.n; }
     else if(o.t==='demob'){ c.prod[o.zone]=(c.prod[o.zone]||0)+demobCost(G,ME,o.to)*o.n; }
     else if(o.t==='move'){ const M=G.M[ME]; const hops=1+(o.via?o.via.length:0); Object.keys(o.u).forEach(t=>{ if(MIL.includes(t)) c.gold+=Math.ceil(o.u[t]*(M.milMoveHalf?0.5:1)*hops); }); }
     else if(o.t==='send'){ const p=ownPath(G,ME,o.from,o.to,12); if(p) c.gold+=Math.ceil(o.q*shipFactor(G,p)); }
@@ -131,8 +138,8 @@ function ordText(o){
     case 'cancelres': return 'Cancelar la investigación de «'+o.name+'»';
     case 'stance': return 'Postura con '+PLN[o.target].name+': '+(o.stance==='alerta'?'Alerta':'Paz');
     case 'spec': return zname(Z[o.zone])+': especializar '+o.n+' '+UNP[o.from].toLowerCase()+' → '+UNP[o.to].toLowerCase();
-    case 'train': return zname(Z[o.zone])+': entrenar '+o.n+' '+UNP[o.u].toLowerCase()+(o.from==='sol'?' (equipar soldados)':'');
-    case 'demob': return zname(Z[o.zone])+': licenciar '+o.n+' '+(o.n>1?UNP[o.u]:UN[o.u]).toLowerCase()+' → '+(o.n>1?UNP[o.to]:UN[o.to]).toLowerCase();
+    case 'train': return zname(Z[o.zone])+': '+(o.from==='sol'?'equipar '+o.n+' '+UNP[o.u].toLowerCase():(o.from==='civ'||o.from==='pob')?'nombrar '+o.n+' general'+(o.n>1?'es':'')+' de '+UNP[o.u].toLowerCase():'reclutar '+o.n+' '+UNP[o.u].toLowerCase());
+    case 'demob': return zname(Z[o.zone])+': '+(o.to==='baja'?'dar de baja a ':'retirar a ')+o.n+' '+(o.n>1?UNP[o.u]:UN[o.u]).toLowerCase()+(o.to==='baja'?'':' (general → '+(o.n>1?UNP[o.to]:UN[o.to]).toLowerCase()+')');
     case 'build': { const l=buildLevel(G,ME,o.bt); return zname(Z[o.zone])+': construir '+BT[o.bt].n+(l>1?' de nivel '+l:'')+(o.spec?' ('+SPEC_NAMES[o.spec]+')':''); }
     case 'upgrade': return zname(Z[o.zone])+': mejorar '+BT[Z[o.zone].b[o.bi].t].n+' a nivel '+(Z[o.zone].b[o.bi].l+1);
     case 'bspec': return zname(Z[o.zone])+': especializar '+BT[Z[o.zone].b[o.bi].t].n+' → '+SPEC_NAMES[o.spec];

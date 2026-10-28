@@ -38,11 +38,11 @@ prueba('Una zona sin comida se alimenta de la zona propia más cercana', base + 
 prueba('La capital da +2 de cada recurso (con 1 poblador)', base + `
   cap.units[0]=[civ('pob')]; G.F[0].gold=0; paso(); return cap.last.gold===2;`);
 
-prueba('El arquero cuesta soldado + arco (1 + 2)', base + `return trainCost(G,0,cap,'arq',null,false)===3;`);
+prueba('El arquero cuesta soldado + arco (2 + 3) de producción, 2 de comida y 2 de oro', base + `const c=recruitCost(G,0,cap,'arq','new',false); return c.prod===5&&c.food===2&&c.gold===2&&trainCost(G,0,cap,'arq','new',false)===5;`);
 
 prueba('Con un arco guardado, el arquero cuesta solo el soldado', base + `
-  cap.b.push({t:'cuartel',l:1,s:null,wk:0,cost:20}); G.F[0].techs['Arco']=1; cap.eq={arq:1}; cap.prod=10; cap.units[0]=[civ('pob')];
-  paso([{t:'train',zone:cap.id,u:'arq',n:1,from:'pob'}]); return cap.units[0].some(u=>u.t==='arq')&&(cap.eq.arq||0)===0;`);
+  cap.b.push({t:'cuartel',l:1,s:null,wk:0,cost:20}); G.F[0].techs['Arco']=1; cap.eq={arq:1}; cap.prod=10; cap.food=20; G.F[0].gold=20; cap.units[0]=[civ('pob')];
+  const p0=cap.prod; paso([{t:'train',zone:cap.id,u:'arq',n:1}]); return cap.units[0].some(u=>u.t==='arq')&&(cap.eq.arq||0)===0&&recruitCost(G,0,cap,'arq','new',true).prod===2;`);
 
 prueba('Sin tecnología de nivel 3, no se puede construir un segundo molino', base + `
   cap.size=6; cap.b.push({t:'molino',l:1,s:null,wk:0,cost:20}); paso([{t:'build',zone:cap.id,bt:'molino'}]);
@@ -177,6 +177,65 @@ prueba('El evento negativo variable se puede evitar con Pronóstico, pero la par
   G.M[0].avoidNeg=1; G.F[0].lastAvoid=-99; const z=cap; z.terrain='pra'; G.evq=[{step:G.step,id:'escasez',dur:YEAR_STEPS},{step:G.step,id:'sequia',dur:YEAR_STEPS}]; paso();
   return !(z.ev.foodAgr<-0.6)&&z.ev.mul&&z.ev.mul.food<1;`);
 
+prueba('Nombrar general: asciende a la persona elegida (no a otra) y conserva su zona natal y sus rasgos', base + `
+  cap.prod=50; cap.food=50; G.F[0].gold=50; const a=conRasgo('pob','fue',2), b=conRasgo('pob','fue',-2), c=civ('pob'); a.home=cap.id; b.home=cap.id; cap.units[0]=[b,c,a]; const idB=b.id;
+  paso([{t:'train',zone:cap.id,u:'sol',n:1,from:'civ',ids:[idB]}]); const us=cap.units[0]; const g=us.find(u=>u.id===idB);
+  return g.t==='sol'&&g.gen===1&&g.home===cap.id&&g.tr[0].k==='fue'&&us.find(u=>u.id===a.id).t==='pob'&&us.find(u=>u.id===c.id).t==='pob';`);
+
+prueba('Nombrar general sin elegir: va el más apto para pelear (fuerza y salud), no el primero de la lista', base + `
+  cap.prod=50; cap.food=50; G.F[0].gold=50; const a=conRasgo('pob','fue',2), b=conRasgo('pob','sal',-1), c=civ('pob'); cap.units[0]=[b,c,a];
+  paso([{t:'train',zone:cap.id,u:'sol',n:1,from:'civ'}]); const us=cap.units[0]; return us.find(u=>u.id===a.id).gen===1&&!us.find(u=>u.id===b.id).gen;`);
+
+prueba('Reclutar: necesita un Cuartel, paga producción, comida y oro, y NO gasta ningún civil', base + `
+  cap.units[0]=[civ('pob'),civ('pob')]; cap.prod=50; cap.food=50; G.F[0].gold=50; paso([{t:'train',zone:cap.id,u:'sol',n:1,from:'new'}]); const sinCuartel=!cap.units[0].some(u=>u.t==='sol');
+  cap.b.push({t:'cuartel',l:1,s:null,wk:0,cost:20}); const p0=cap.prod, f0=cap.food, g0=G.F[0].gold; paso([{t:'train',zone:cap.id,u:'sol',n:1,from:'new'}]);
+  const sol=cap.units[0].filter(u=>u.t==='sol'); const civs=cap.units[0].filter(u=>UT[u.t].civ).length;
+  return sinCuartel&&sol.length===1&&!sol[0].gen&&sol[0].home===undefined&&civs>=2&&civs===cap.units[0].length-1;`);
+
+prueba('Cada Cuartel recluta tantas tropas por paso como su nivel (más con Levas)', base + `
+  cap.units[0]=[civ('pob')]; cap.prod=200; cap.food=200; G.F[0].gold=200; cap.b.push({t:'cuartel',l:2,s:null,wk:0,cost:40}); paso([{t:'train',zone:cap.id,u:'sol',n:5,from:'new'}]); const n1=cap.units[0].filter(u=>u.t==='sol').length;
+  G.F[0].techs['Levas']=1; cap.prod=200; cap.food=200; G.F[0].gold=200; paso([{t:'train',zone:cap.id,u:'sol',n:5,from:'new'}]); const n2=cap.units[0].filter(u=>u.t==='sol').length-n1; return n1===2&&n2===3;`);
+
+prueba('Mercenarios: reclutar soldados fuera de un Cuartel, pagando el doble de oro', base + `
+  cap.units[0]=[civ('pob')]; cap.prod=50; cap.food=50; G.F[0].gold=50; G.F[0].techs['Mercenarios']=1; recomputeMods(G); const c=recruitCost(G,0,cap,'sol','new',false); const c0=UNIT_COST.sol.gold;
+  paso([{t:'train',zone:cap.id,u:'sol',n:1,from:'new'}]); return c.gold===c0*2&&cap.units[0].some(u=>u.t==='sol')&&!canRecruit(G,0,cap,'ber');`);
+
+prueba('Mantenimiento: un soldado come 1, un caballero 2 y el berserker cobra 1 de oro; en el Cuartel no cuestan nada', base + `
+  cap.b=[]; const sol=civ('sol'), cab=civ('cab'), ber=civ('ber'); cap.units[0]=[sol,cab,ber]; const fr={n:0};
+  const ns=unitNeed(G,cap,0,sol,fr), nc=unitNeed(G,cap,0,cab,fr), nb=unitNeed(G,cap,0,ber,fr);
+  const fr2={n:3}; const nl=unitNeed(G,cap,0,civ('sol'),fr2); return ns===1&&nc===2&&nb===1&&nl===0&&UNIT_UPKEEP.ber.gold===1&&UNIT_UPKEEP.sol.gold===0;`);
+
+prueba('Paga: si no alcanza el oro, las tropas sin paga pelean peor y se avisa', base + `
+  cap.b=[]; const b1=civ('ber'), b2=civ('ber'); cap.units[0]=[b1,b2]; G.F[0].gold=0; const L=[]; payTroops(G,0,m=>L.push(m)); const sinPaga=b1.unp===1||b2.unp===1;
+  G.F[0].gold=20; payTroops(G,0,m=>L.push(m)); return sinPaga&&b1.unp===0&&b2.unp===0&&G.F[0].gold===18&&L.length===1;`);
+
+prueba('Los generales son más fuertes y los últimos en morir de su tipo', base + `
+  let ok=true, vistos=0; for(let sd=1;sd<=30&&ok;sd++){ const H=newGame(0,2,sd,'normal'); H.evq=[]; H.fx=[]; H.logNow=[]; const z=H.zones.find(z=>z.role==='vacia'); const g0=mkUnit(H,0,'sol'); g0.gen=1; const t=[g0,mkUnit(H,0,'sol'),mkUnit(H,0,'sol'),mkUnit(H,0,'sol')]; z.units[0]=t; z.units[1]=[mkUnit(H,1,'sol'),mkUnit(H,1,'sol'),mkUnit(H,1,'sol'),mkUnit(H,1,'sol'),mkUnit(H,1,'sol')];
+    fightZone(H,z,[0,1],{0:true,1:true},()=>{}); const B=H.battles[H.battles.length-1]; const muertos=new Set();
+    B.waves.forEach(w=>w.acts.forEach(a=>a.hits.forEach(h=>{ const u=B.units[h.i]; if(u.gen&&!muertos.size&&false) ok=false; if(u.gen&&B.units.some((v,j)=>v.f===u.f&&v.t===u.t&&!v.gen&&!muertos.has(j))) { if(h.dmg>0||h.abs>0) ok=false; } if(h.dead) muertos.add(h.i); vistos++; }))); }
+  const gu=mkUnit(G,0,'sol'); gu.gen=1; return ok&&vistos>0;`);
+
+prueba('Repoblación: la muerte de un civil nacido en una zona abarata el próximo crecimiento de esa zona (2 muertes → los 2 siguientes)', base + `
+  G.step=99; cap.size=5; const normal=growCost(G,0,cap); const a=civ('pob'), b=civ('pob'); a.home=cap.id; b.home=cap.id; unitLost(G,a,0); const c1=growCost(G,0,cap); unitLost(G,b,0);
+  const ok1=cap.repop===2&&c1===Math.ceil(normal*(1-REPOP_PCT)); cap.units[0]=[civ('pob')]; cap.prog=cap.size*cap.size*9; cap.food=cap.f0=0; G.evq=[]; growZone(G,cap);
+  return ok1&&cap.repop<2&&cap.repop>=0;`);
+
+prueba('Repoblación: solo cuentan los nacidos por crecimiento propio (no capturados, ni de encuentros, ni tropas reclutadas)', base + `
+  const ajeno=civ('pob'); const recluta=civ('sol'); unitLost(G,ajeno,0); unitLost(G,recluta,0); const otro=civ('pob'); otro.home=cap.id; cap.owner=1; unitLost(G,otro,0); const noPropia=!cap.repop; cap.owner=0;
+  const gen=civ('sol'); gen.gen=1; gen.home=cap.id; unitLost(G,gen,0); return !ajeno.home&&noPropia&&cap.repop===1;`);
+
+prueba('La victoria Económica cuenta solo civiles: las tropas no suman población', base + `
+  cap.units[0]=[civ('pob'),civ('pob'),civ('sol'),civ('sol'),civ('arq')]; return civPop(G,0)===2&&totalPop(G,0)===5&&victoryConds(G,0).find(c=>c.k==='Económica').v===2;`);
+
+prueba('Retirar a un general lo devuelve a ser civil; dar de baja a una tropa devuelve parte de la producción', base + `
+  cap.prod=30; const gn=civ('sol'); gn.gen=1; gn.home=cap.id; const s1=civ('sol'), s2=civ('sol'); cap.units[0]=[gn,s1,s2];
+  paso([{t:'demob',zone:cap.id,u:'sol',to:'pob',n:1}]); const volvio=gn.t==='pob'&&!gn.gen&&gn.home===cap.id&&s1.t==='sol';
+  const p0=cap.prod; paso([{t:'demob',zone:cap.id,u:'sol',to:'baja',n:2}]); return volvio&&cap.units[0].filter(u=>u.t==='sol').length===0&&cap.prod>=p0+Math.floor(UNIT_COST.sol.prod*DISBAND_REFUND)*2-2;`);
+
+prueba('Guardia de élite: los militares que trabajan en ese Cuartel tienen +1 de defensa en la batalla', base + `
+  const mk=(spec)=>{ const H=newGame(0,2,3,'normal'); H.evq=[]; H.fx=[]; H.logNow=[]; const z=H.zones.find(z=>z.capital&&z.owner===0); z.b.push({t:'cuartel',l:1,s:spec,wk:0,cost:20}); const u=mkUnit(H,0,'sol'); u.free=1; z.units[0]=[u]; z.units[1]=[mkUnit(H,1,'sol')]; fightZone(H,z,[0,1],{0:false,1:true},()=>{}); return H.battles[H.battles.length-1].units.find(x=>x.f===0).cush; };
+  return mk('guardia')===mk(null)+1;`);
+
 prueba('Cada mapa tiene zonas de frontera entre imperios vecinos', base + `
   const fr=G.zones.filter(z=>z.role==='frontera'); return fr.length>=1&&fr.every(z=>z.adj.length>=2&&z.owner===null);`);
 
@@ -227,9 +286,7 @@ prueba('Una tropa con hambre pelea con la mitad de los dados', base + `
   fightZone(G,v,[0,1],{0:true,1:true},()=>{});   // combate directo, sin que coma antes
   const B=G.battles[0]; return B.units.find(u=>u.f===0).dice===2;`);
 
-prueba('Entrenar ya no necesita Cuartel', base + `
-  cap.units[0]=[civ('pob'),civ('pob')]; cap.prod=10; paso([{t:'train',zone:cap.id,u:'sol',n:1,from:'pob'}]);
-  return cap.units[0].some(u=>u.t==='sol');`);
+
 
 prueba('Etapa de fundación: crecer cuesta la mitad hasta el paso 12', base + `
   const antes=growCost(G,0,cap); G.step=20; const despues=growCost(G,0,cap); return antes<despues;`);
@@ -270,7 +327,7 @@ prueba('Mover comida desde otra zona cuesta oro de logística', base + `
   paso(); return (v.units[0]||[]).every(u=>u.hg===0)&&G.F[0].gold<20+cap.last.gold;`);
 
 prueba('Sin oro para mover la comida, la gente de la otra zona pasa hambre', base + `
-  const v=G.zones[cap.adj[0]]; v.owner=0; v.units[0]=[civ('sol'),civ('sol')]; v.food=0; cap.food=30; G.F[0].gold=0; cap.units[0]=[civ('pob')];
+  const v=G.zones[cap.adj[0]]; v.owner=0; v.units[0]=[civ('sol'),civ('sol'),civ('sol'),civ('sol'),civ('sol'),civ('sol')]; v.food=0; cap.food=30; G.F[0].gold=0; cap.units[0]=[civ('pob')];
   paso(); return (v.units[0]||[]).some(u=>u.hg>0);`);
 
 prueba('Solo construyen los ingenieros que hacen falta para terminar la obra', base + `

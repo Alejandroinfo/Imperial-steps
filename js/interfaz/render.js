@@ -23,9 +23,9 @@ function renderPanel(){
   document.querySelectorAll('.tabs button').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===ui.tab));
   { const sel=document.querySelector('.tabs button[aria-selected="true"]'); const tb=document.querySelector('.tabs'); if(sel&&tb&&tb.scrollWidth>tb.clientWidth) tb.scrollLeft=Math.max(0,sel.offsetLeft-tb.clientWidth/2+sel.offsetWidth/2); }   // si las pestañas no caben, la elegida queda a la vista
   if(typeof FICHA!=='undefined'&&FICHA) FICHA.classList.remove('on');
-  const sc=$('tabBody').scrollTop; $('tabBody').innerHTML=tabs[ui.tab](); $('tabBody').scrollTop=sc;
+  const sc=$('tabBody').scrollTop; drawTabAlerts(); $('tabBody').innerHTML=alertBoxHTML(ui.tab)+tabs[ui.tab](); $('tabBody').scrollTop=sc;
   $('ordCount').textContent=ui.orders.length||'';
   $('encBar').innerHTML=encPillHTML(); encPopup();
   setTimeout(tutRender,0);
-  $('sugBar').innerHTML=sugBarHTML();
+  $('sugBar').innerHTML='';
 }

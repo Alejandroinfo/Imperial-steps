@@ -33,7 +33,7 @@ css/estilos.css             Todo el aspecto visual
 js/
   datos/                    Datos puros, sin lógica
     mapas.js                Los 12 mapas para 2, 3 y 4 jugadores (zonas y caminos)
-    tecnologias.js          Las 203 tecnologías y las 12 ramas
+    tecnologias.js          Las 209 tecnologías y las 12 ramas
   config/                   Números de balance: cambiarlos cambia el juego sin tocar el motor
     reglas.js               Unidades, costos, terrenos, edificios, recursos y eventos
     efectos_tecnologias.js  Qué hace cada tecnología

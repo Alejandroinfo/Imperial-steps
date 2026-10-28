@@ -15,7 +15,8 @@ function fig(t,x,y,col,s,quiet,ring){
     return g+'</g>';
   }
   g+=`<ellipse cx="0" cy="1.4" rx="3.6" ry="1.2" fill="rgba(0,0,0,.28)"/>`;
-  if(ring) g+=`<ellipse cx="0" cy="-4.6" rx="5.6" ry="9.4" fill="none" stroke="${ring==='tg'?'#E2B93B':'#C3CAD1'}" stroke-width="${ring==='tg'?1.3:0.9}" opacity=".95"/>`;
+  if(ring==='gen') g+=`<ellipse cx="0" cy="-4.6" rx="5.8" ry="9.6" fill="none" stroke="#E2B93B" stroke-width="1.2" opacity=".95"/><path d="M0,-19 l1.5,3 3.3,.5 -2.4,2.3 .6,3.3 -3,-1.6 -3,1.6 .6,-3.3 -2.4,-2.3 3.3,-.5 z" fill="#F2CF5B" stroke="${I}" stroke-width=".5"/>`;
+  else if(ring) g+=`<ellipse cx="0" cy="-4.6" rx="5.6" ry="9.4" fill="none" stroke="${ring==='tg'?'#E2B93B':'#C3CAD1'}" stroke-width="${ring==='tg'?1.3:0.9}" opacity=".95"/>`;
   const mil=!!UT[t]&&!UT[t].civ;
   const bodyCol=mil?col:JOBC[t];
   // acceso trasero (sacos, arcos)
@@ -73,7 +74,7 @@ function figRows(z,f,col){
     for(let j=0;j<n;j++){
       const r=Math.floor(j/per), c=j%per, inRow=Math.min(per,n-r*per); const hx=cx+(c-(inRow-1)/2)*sp, hy=cy+r*13; const u=ppl[t][j];
       // cada persona es un grupo propio («pp») para que el pueblo vivo (vida.js) pueda moverla y animarla
-      s+=`<g class="pp" data-u="${u.id}" data-t="${t}" data-hx="${f1(hx)}" data-hy="${f1(hy)}" data-hg="${u.hg>0?1:0}" data-w="${u.w>0?1:0}" style="transform:translate(${f1(hx)}px,${f1(hy)}px)"><g class="bob"><g class="act"><g class="fl">${fig(t,0,0,col,big?1.5:1.8,false,(f===ME&&CIV.includes(t))?traitBorder(u):'')}<g class="prop"></g></g></g></g><g class="fx"></g></g>`;
+      s+=`<g class="pp" data-u="${u.id}" data-t="${t}" data-hx="${f1(hx)}" data-hy="${f1(hy)}" data-hg="${u.hg>0?1:0}" data-w="${u.w>0?1:0}" style="transform:translate(${f1(hx)}px,${f1(hy)}px)"><g class="bob"><g class="act"><g class="fl">${fig(t,0,0,col,big?1.5:1.8,false,u.gen?'gen':((f===ME&&CIV.includes(t))?traitBorder(u):''))}<g class="prop"></g></g></g></g><g class="fx"></g></g>`;
     }
   });
   s+='</g>';

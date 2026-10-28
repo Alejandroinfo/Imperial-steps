@@ -1,12 +1,12 @@
 #!/bin/sh
 # Uso, desde la raíz de tu copia del repositorio (con lo anterior ya aplicado):
 #   git pull
-#   unzip -o ruta/cambios_arte1_cierre_28-10-2026.zip
+#   unzip -o ruta/cambios_arte2_mesa_28-10-2026.zip
 #   sh aplicar_cambios.sh
 #   git push
 set -e
 rm -f aplicar_cambios.sh
 npm test && npm run check
 git add -A
-git commit -m "Close art option 1: 67 custom icons incl. SVG map text, visual polish"
+git commit -m "Game-table style: paper nameplates, wax seals, figure bases, table minimap and network plan"
 echo "Listo. Falta solo: git push"

@@ -131,35 +131,53 @@ function edgeSVG(e){
   for(let k=0;k<=n;k++){ const t=k/n; const x=a[0]+(b[0]-a[0])*t+(r()-.5)*8, y=a[1]+(b[1]-a[1])*t+(r()-.5)*8; h+=rock(x,y+4,0.9+r()*0.6); }
   return h+'</g>';
 }
+// Estilo del mapa: «valle» (el dibujo de siempre) o «mesa» (tablero de juego: mesa de madera, tapete y fichas de cartón con grosor).
+let MAPSTYLE='valle'; try{ const e=localStorage.getItem('pasos_estilo_mapa'); if(e==='mesa'||e==='valle') MAPSTYLE=e; }catch(e){}
+function setMapStyle(st){
+  MAPSTYLE=st==='mesa'?'mesa':'valle'; try{ localStorage.setItem('pasos_estilo_mapa',MAPSTYLE); }catch(e){}
+  const vp=$('vp'); if(vp) vp.dataset.estilo=MAPSTYLE;
+  ['stValle','stMesa'].forEach(id=>{ const b=$(id); if(b) b.setAttribute('aria-pressed',String((id==='stMesa')===(MAPSTYLE==='mesa'))); });
+  if(G&&ui&&WORLD.bounds){ buildTerritoryDOM(); ui.miniSig=null; drawMini(); render(); }
+}
+const MESA_DEFS=`<defs><pattern id="forest" width="170" height="130" patternUnits="userSpaceOnUse"><rect width="170" height="130" fill="#6B4A2E"/><path d="M0 0v130M85 0v130" stroke="#4A301C" stroke-width="3"/><path d="M10 14c26-6 46 6 66 0M96 30c26 6 46-6 66 0M12 52c30 6 50-6 70 0M100 74c24-6 44 6 64 0M8 100c28 6 48-6 72 0M98 116c22-6 44 6 62 0" stroke="#7D5A38" stroke-width="1.6" fill="none" stroke-linecap="round"/><path d="M36 30c10-3 20 3 30 0M120 92c10-3 20 3 30 0" stroke="#5A3C24" stroke-width="1.2" fill="none"/></pattern><filter id="tblur" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="7"/></filter><filter id="grainF" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="4" result="n"/><feColorMatrix in="n" type="matrix" values="0 0 0 0 .1  0 0 0 0 .06  0 0 0 0 .04  0 0 0 .16 0" result="g"/><feComposite in="g" in2="SourceGraphic" operator="in"/></filter>`;
+// una zona como ficha de cartón: sombra, canto con grosor, cara impresa con borde punteado y grano de papel
+function tileBase(i,T){
+  const P=ptsStr(WORLD.poly[i],0.955), Q=ptsStr(WORLD.poly[i],0.9);
+  return `<polygon points="${P}" transform="translate(0,16)" fill="#000" opacity=".42" filter="url(#tblur)"/>`
+    +`<polygon points="${P}" transform="translate(0,10)" fill="#4A3426" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/>`
+    +`<polygon points="${P}" transform="translate(0,5)" fill="#6A5240" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>`
+    +`<polygon points="${P}" fill="${T}" stroke="${INK}" stroke-width="3.6" stroke-linejoin="round"/>`
+    +`<polygon points="${Q}" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="2.6" stroke-dasharray="2 8" stroke-linecap="round" stroke-linejoin="round"/>`;
+}
 function buildTerritoryDOM(){
-  const Z=G.zones, B=WORLD.bounds; let h='';
-  h+=`<defs><pattern id="forest" width="90" height="90" patternUnits="userSpaceOnUse"><rect width="90" height="90" fill="#4E6B3C"/><circle cx="18" cy="20" r="14" fill="#5A7A45"/><circle cx="62" cy="54" r="16" fill="#456236"/><circle cx="34" cy="74" r="11" fill="#5A7A45"/><circle cx="78" cy="12" r="9" fill="#456236"/></pattern>`;
-  h+=`<radialGradient id="fog" cx="50%" cy="50%" r="70%"><stop offset="60%" stop-color="#2A1B16" stop-opacity="0"/><stop offset="100%" stop-color="#1E2A18" stop-opacity=".55"/></radialGradient>`;
+  const Z=G.zones, B=WORLD.bounds; let h=''; const mesa=MAPSTYLE==='mesa';
+  h+=mesa?MESA_DEFS:`<defs><pattern id="forest" width="90" height="90" patternUnits="userSpaceOnUse"><rect width="90" height="90" fill="#4E6B3C"/><circle cx="18" cy="20" r="14" fill="#5A7A45"/><circle cx="62" cy="54" r="16" fill="#456236"/><circle cx="34" cy="74" r="11" fill="#5A7A45"/><circle cx="78" cy="12" r="9" fill="#456236"/></pattern>`;
+  h+=mesa?'':`<radialGradient id="fog" cx="50%" cy="50%" r="70%"><stop offset="60%" stop-color="#2A1B16" stop-opacity="0"/><stop offset="100%" stop-color="#1E2A18" stop-opacity=".55"/></radialGradient>`;
   Z.forEach((z,i)=>{ h+=`<clipPath id="cp${i}"><polygon points="${ptsStr(WORLD.poly[i])}"/></clipPath>`; });
   h+=`</defs><rect x="${B.x0}" y="${B.y0}" width="${WORLD.W}" height="${WORLD.H}" fill="url(#forest)"/>`;
+  if(mesa) h+=`<rect x="${f1(B.x0+40)}" y="${f1(B.y0+40)}" width="${f1(WORLD.W-80)}" height="${f1(WORLD.H-80)}" rx="70" fill="#2B2018" opacity=".45" transform="translate(0,10)" filter="url(#tblur)"/><rect x="${f1(B.x0+40)}" y="${f1(B.y0+40)}" width="${f1(WORLD.W-80)}" height="${f1(WORLD.H-80)}" rx="70" fill="#3B7355" stroke="${INK}" stroke-width="8"/><rect x="${f1(B.x0+70)}" y="${f1(B.y0+70)}" width="${f1(WORLD.W-140)}" height="${f1(WORLD.H-140)}" rx="50" fill="none" stroke="rgba(255,255,255,.28)" stroke-width="4" stroke-dasharray="3 12" stroke-linecap="round"/><rect x="${f1(B.x0+40)}" y="${f1(B.y0+40)}" width="${f1(WORLD.W-80)}" height="${f1(WORLD.H-80)}" rx="70" fill="#000" filter="url(#grainF)" pointer-events="none"/>`;
   // copas del bosque que rodea el valle
-  WORLD.rim.forEach(t=>{ h+=tree(f1(t.x),f1(t.y),t.s); });
+  if(!mesa) WORLD.rim.forEach(t=>{ h+=tree(f1(t.x),f1(t.y),t.s); });
   // el valle: borde oscuro y campo silvestre (todo lo que no es una zona)
-  WORLD.wild.forEach(c=>{ h+=`<circle cx="${f1(c.x)}" cy="${f1(c.y)}" r="${f1(c.r+10)}" fill="#3E5530"/>`; });
-  WORLD.wild.forEach(c=>{ h+=`<circle cx="${f1(c.x)}" cy="${f1(c.y)}" r="${f1(c.r)}" fill="#A3B26E"/>`; });
-  WORLD.wildDecor.forEach(it=>{ h+=it.t==='tree'?tree(f1(it.x),f1(it.y),it.s):it.t==='rock'?rock(it.x,it.y,it.s):bush(it.x,it.y,it.s*0.8); });
+  if(!mesa) WORLD.wild.forEach(c=>{ h+=`<circle cx="${f1(c.x)}" cy="${f1(c.y)}" r="${f1(c.r+10)}" fill="#3E5530"/>`; });
+  if(!mesa) WORLD.wild.forEach(c=>{ h+=`<circle cx="${f1(c.x)}" cy="${f1(c.y)}" r="${f1(c.r)}" fill="#A3B26E"/>`; });
+  if(!mesa) WORLD.wildDecor.forEach(it=>{ h+=it.t==='tree'?tree(f1(it.x),f1(it.y),it.s):it.t==='rock'?rock(it.x,it.y,it.s):bush(it.x,it.y,it.s*0.8); });
   // parcelas de cada zona, a ras de suelo
   Z.forEach((z,i)=>{
     const T=TCOL[z.terrain];
     h+=`<g transform="translate(${f1(sx(i))},${f1(sy(i))})">`;
-    h+=`<polygon points="${ptsStr(WORLD.poly[i])}" fill="${T}" stroke="rgba(42,27,22,.28)" stroke-width="2" stroke-linejoin="round"/>`;
+    h+=mesa?tileBase(i,T):`<polygon points="${ptsStr(WORLD.poly[i])}" fill="${T}" stroke="rgba(42,27,22,.28)" stroke-width="2" stroke-linejoin="round"/>`;
     h+=`<g class="decor" clip-path="url(#cp${i})">`;
     if(z.terrain==='rio') h+=`<path class="water" d="M-290,-30 C-150,-110 -60,40 20,-10 S170,-100 290,10" stroke="#3C86A2" stroke-width="46" fill="none" stroke-linecap="round"/><path d="M-290,-30 C-150,-110 -60,40 20,-10 S170,-100 290,10" stroke="#5BA6C0" stroke-width="38" fill="none" stroke-linecap="round"/><path class="flow" d="M-270,-24 C-150,-96 -60,28 20,-8 S170,-86 270,6" stroke="#E9F4F7" stroke-width="2.4" fill="none" stroke-dasharray="8 16" stroke-linecap="round"/>`;
     WORLD.decor[i].forEach(it=>{ h+=terrDecor(it); });
-    h+=`</g></g>`;
+    h+=mesa?`</g><polygon points="${ptsStr(WORLD.poly[i],0.955)}" fill="#000" filter="url(#grainF)" pointer-events="none"/></g>`:`</g></g>`;
   });
   // bordes: cercas donde hay paso, barrancos donde no
-  WORLD.edges.filter(e=>!e.road).forEach(e=>{ h+=edgeSVG(e); });
-  WORLD.edges.filter(e=>e.road).forEach(e=>{ h+=edgeSVG(e); });
+  if(!mesa){ WORLD.edges.filter(e=>!e.road).forEach(e=>{ h+=edgeSVG(e); }); WORLD.edges.filter(e=>e.road).forEach(e=>{ h+=edgeSVG(e); }); }
   WORLD.roads.forEach(r=>{ h+=`<path d="${r.d}" stroke="#6B4528" stroke-width="20" fill="none" stroke-linecap="round"/>`; });
   WORLD.roads.forEach(r=>{ h+=`<path d="${r.d}" stroke="#E2C79B" stroke-width="13" fill="none" stroke-linecap="round"/><path d="${r.d}" stroke="#C9A878" stroke-width="2" fill="none" stroke-dasharray="10 12"/>`; });
-  h+=`<rect x="${B.x0}" y="${B.y0}" width="${WORLD.W}" height="${WORLD.H}" fill="url(#fog)" pointer-events="none"/>`;
-  for(let k=0;k<6;k++){ const r=mulberry32(300+k); const cx=B.x0+r()*WORLD.W, cy=B.y0+r()*WORLD.H; h+=`<g class="cloud" style="animation-delay:${-k*9}s"><ellipse cx="${f1(cx)}" cy="${f1(cy)}" rx="${90+r()*60}" ry="26" fill="rgba(0,0,0,.07)"/><ellipse cx="${f1(cx+40)}" cy="${f1(cy-14)}" rx="60" ry="22" fill="rgba(0,0,0,.07)"/></g>`; }
+  if(!mesa) h+=`<rect x="${B.x0}" y="${B.y0}" width="${WORLD.W}" height="${WORLD.H}" fill="url(#fog)" pointer-events="none"/>`;
+  if(!mesa) for(let k=0;k<6;k++){ const r=mulberry32(300+k); const cx=B.x0+r()*WORLD.W, cy=B.y0+r()*WORLD.H; h+=`<g class="cloud" style="animation-delay:${-k*9}s"><ellipse cx="${f1(cx)}" cy="${f1(cy)}" rx="${90+r()*60}" ry="26" fill="rgba(0,0,0,.07)"/><ellipse cx="${f1(cx+40)}" cy="${f1(cy-14)}" rx="60" ry="22" fill="rgba(0,0,0,.07)"/></g>`; }
   h+=`<g id="zonesT">`;
   [...Z.keys()].sort((a,b)=>sy(a)-sy(b)).forEach(i=>{
     h+=`<g class="zone" data-id="${i}" tabindex="0" role="button" transform="translate(${f1(sx(i))},${f1(sy(i))})"><polygon class="hit" points="${ptsStr(WORLD.poly[i])}" fill="transparent"/><g class="own"></g><g class="dyn"></g><g class="mvb" role="button" aria-label="Ir a esta zona" style="transform:translate(-120px,-60px) scale(calc(var(--inv,1)*.7))"><title>Ir a esta zona</title><circle r="27" fill="#2F8F4F" stroke="#fff" stroke-width="4"/><path d="M-11,2 H8 M1,-8 L11,2 L1,12" stroke="#fff" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>`
@@ -263,7 +281,23 @@ function zoneContent(z,i){
   return s;
 }
 const ROMAN=['','I','II','III'];
+// Sello de cera con el color del dueño (la capital lleva estrella)
+function waxSeal(col,cap,r){
+  const R=[1,.93,1.07,.96,1.05,.92,1.06,.95,1.04,.94,1.08,.97]; let pts=''; R.forEach((k,n)=>{ const a=n/12*Math.PI*2; pts+=f1(Math.cos(a)*r*k)+','+f1(Math.sin(a)*r*k)+' '; });
+  const star=cap?`<path d="M0,-8.4 l2.4,5.2 5.7,.7 -4.2,3.9 1.1,5.7 -5,-2.8 -5,2.8 1.1,-5.7 -4.2,-3.9 5.7,-.7z" fill="rgba(0,0,0,.28)" stroke="rgba(255,255,255,.35)" stroke-width=".8"/>`:`<path d="M0,-7 l6,7 -6,7 -6,-7z" fill="rgba(0,0,0,.26)" stroke="rgba(255,255,255,.3)" stroke-width=".8"/>`;
+  return `<g class="seal"><polygon points="${pts}" fill="${col}" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/><circle r="${f1(r*.66)}" fill="rgba(255,255,255,.07)" stroke="rgba(0,0,0,.3)" stroke-width="1.6"/>${star}<path d="M${f1(-r*.55)},${f1(-r*.45)} A${f1(r*.7)},${f1(r*.7)} 0 0 1 ${f1(-r*.1)},${f1(-r*.72)}" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="2" stroke-linecap="round"/></g>`;
+}
 function nameplate(z,i){
+  let s=nameplateBase(z,i); if(MAPSTYLE!=='mesa') return s;
+  // placa de papel: fondo crema, texto de tinta, cinta adhesiva y el sello del dueño
+  const m=s.match(/<rect x="([-0-9.]+)" y="-27" width="([0-9.]+)" height="([0-9.]+)" rx="15" fill="#2A1B16" stroke="[^"]+" stroke-width="4"\/>/);
+  s=s.replace(/(<rect x="[-0-9.]+" y="-27" width="[0-9.]+" height="[0-9.]+" rx="15") fill="#2A1B16" stroke="[^"]+" stroke-width="4"\/>/,'$1 fill="#F3E7CF" stroke="#2A1B16" stroke-width="3.6"/>').replace(/#FBF8F2/g,'#2A1B16').replace(/#D9CDB8/g,'#6B5B50').replace(/#C9E59A/g,'#3F7A2A').replace(/#E6C9A8/g,'#7A4A22').replace(/#F0A06B/g,'#B3541E').replace(/rgba\(255,255,255,\.18\)/g,'rgba(0,0,0,.14)').replace(/#9DC764/g,'#4E8C34');
+  if(m){ const L=parseFloat(m[1]), W=parseFloat(m[2]); const tape=`<rect x="${f1(L+W/2-20)}" y="-35" width="40" height="12" fill="rgba(226,196,120,.85)" stroke="rgba(42,27,22,.35)" stroke-width="1" transform="rotate(-2 ${f1(L+W/2)} -29)"/>`;
+    const seal=(z.owner!==null)?`<g transform="translate(${f1(L-8)},-16)">${waxSeal(z.owner===TRIBE?PLN[TRIBE].col:PLN[z.owner].col,z.role==='capital',17)}</g>`:'';
+    s=s.replace(/(<g class="lbl"[^>]*>)/,'$1'+tape).replace(/<\/g>$/,seal+'</g>'); }
+  return s;
+}
+function nameplateBase(z,i){
   const owner=z.owner, col=owner===null?'#8B7B6B':PLN[owner].col; const sp=zspec(z); const mine=ownPop(z);
   const vis=(owner!==TRIBE)||tribeVisibleFor(z); const own=owner===ME;
   const slots=isPl(owner)?slotsOf(G,z):0; const built=z.b.length, inProg=z.proj.filter(p=>p.k!=='u').length;
@@ -379,9 +413,9 @@ function myCapital(){ const z=G.zones.find(z=>z.capital&&z.sector===ME); return 
 
 /* ---------- minimapa (solo se redibuja si cambia algo) ---------- */
 function drawMini(){
-  const sig=G.zones.map(z=>z.owner+(z.conflict?'c':'')).join(',')+'|'+G.step; if(ui.miniSig===sig) return; ui.miniSig=sig;
+  const sig=G.zones.map(z=>z.owner+(z.conflict?'c':'')).join(',')+'|'+G.step+'|'+MAPSTYLE; if(ui.miniSig===sig) return; ui.miniSig=sig;
   const B=WORLD.bounds, Z=G.zones; let h='';
-  h+=`<rect x="${B.x0}" y="${B.y0}" width="${WORLD.W}" height="${WORLD.H}" fill="#4E6B3C"/>`;
+  h+=`<rect x="${B.x0}" y="${B.y0}" width="${WORLD.W}" height="${WORLD.H}" fill="${MAPSTYLE==='mesa'?'#3B7355':'#4E6B3C'}"/>`;
   Z.forEach((z,i)=>{ const col=isPl(z.owner)?PLN[z.owner].col:(z.owner===TRIBE?'#8A5A3A':TCOL[z.terrain]); h+=`<polygon transform="translate(${f1(sx(i))},${f1(sy(i))})" points="${ptsStr(WORLD.poly[i])}" fill="${col}" stroke="#2A1B16" stroke-width="10"/>`; });
   WORLD.edges.filter(e=>!e.road).forEach(e=>{ h+=`<line x1="${f1(e.p[0][0])}" y1="${f1(e.p[0][1])}" x2="${f1(e.p[1][0])}" y2="${f1(e.p[1][1])}" stroke="#2A1B16" stroke-width="26"/>`; });
   WORLD.roads.forEach(r=>{ h+=`<path d="${r.d}" stroke="#F3E7C9" stroke-width="16" fill="none"/>`; });

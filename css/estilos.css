@@ -651,3 +651,7 @@ header.top h1{letter-spacing:.015em}
 .viewport.frame{border-radius:10px}
 
 .icsvg{pointer-events:none}
+
+.viewport[data-estilo="mesa"]{background:#6B4A2E}
+
+.viewport[data-estilo="mesa"] .mini{background:#6B4A2E;border-color:#2A1B16}

@@ -14,7 +14,9 @@ function fig(t,x,y,col,s,quiet,ring){
     g+=`<ellipse cx="0" cy="2" rx="10" ry="2.4" fill="rgba(0,0,0,.28)"/><rect x="-9" y="-3" width="18" height="3" fill="#8A5A3A" stroke="${I}" stroke-width=".6"/><circle cx="-6" cy="1" r="2.4" fill="#5E3E29" stroke="${I}" stroke-width=".6"/><circle cx="6" cy="1" r="2.4" fill="#5E3E29" stroke="${I}" stroke-width=".6"/><path d="M-2,-3 L-6,-13 M-2,-3 L2,-13" stroke="#B5844E" stroke-width="1.6" fill="none"/><g${an('catap')}><path d="M-3,-4 L8,-12" stroke="#8A5A3A" stroke-width="1.8"/><circle cx="8.6" cy="-12.4" r="2.4" fill="#8C857C" stroke="${I}" stroke-width=".6"/></g><rect x="-9" y="-6" width="5" height="2.6" fill="${col}" stroke="${I}" stroke-width=".5"/>`;
     return g+'</g>';
   }
-  g+=`<ellipse cx="0" cy="1.4" rx="3.6" ry="1.2" fill="rgba(0,0,0,.28)"/>`;
+  g+=(!quiet&&typeof MAPSTYLE!=='undefined'&&MAPSTYLE==='mesa')
+    ?`<ellipse cx="0" cy="2.6" rx="5.4" ry="1.9" fill="rgba(0,0,0,.3)"/><ellipse cx="0" cy="2" rx="5.4" ry="1.9" fill="${col}" stroke="${I}" stroke-width=".5" style="filter:brightness(.7)"/><ellipse cx="0" cy="1.2" rx="5.4" ry="1.9" fill="${col}" stroke="${I}" stroke-width=".6"/>`
+    :`<ellipse cx="0" cy="1.4" rx="3.6" ry="1.2" fill="rgba(0,0,0,.28)"/>`;
   if(ring==='gen') g+=`<ellipse cx="0" cy="-4.6" rx="5.8" ry="9.6" fill="none" stroke="#E2B93B" stroke-width="1.2" opacity=".95"/><path d="M0,-19 l1.5,3 3.3,.5 -2.4,2.3 .6,3.3 -3,-1.6 -3,1.6 .6,-3.3 -2.4,-2.3 3.3,-.5 z" fill="#F2CF5B" stroke="${I}" stroke-width=".5"/>`;
   else if(ring) g+=`<ellipse cx="0" cy="-4.6" rx="5.6" ry="9.4" fill="none" stroke="${ring==='tg'?'#E2B93B':'#C3CAD1'}" stroke-width="${ring==='tg'?1.3:0.9}" opacity=".95"/>`;
   const mil=!!UT[t]&&!UT[t].civ;

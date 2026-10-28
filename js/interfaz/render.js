@@ -19,7 +19,7 @@ function drawChips(){
 function render(){ renderMap(); renderPanel(); }
 function renderMap(){ if(ui.view==='terr'){ updateTerritory(); drawMini(); } else drawPlan(); drawChips(); }
 function renderPanel(){
-  const tabs={zona:panelZona,imperio:panelImperio,tec:panelTech,vic:panelVictoria,hist:panelHistorial,ord:panelOrdenes};
+  const tabs={zona:panelZona,imperio:panelImperio,recursos:panelRecursos,tec:panelTech,vic:panelVictoria,hist:panelHistorial,ord:panelOrdenes};
   document.querySelectorAll('.tabs button').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===ui.tab));
   { const sel=document.querySelector('.tabs button[aria-selected="true"]'); const tb=document.querySelector('.tabs'); if(sel&&tb&&tb.scrollWidth>tb.clientWidth) tb.scrollLeft=Math.max(0,sel.offsetLeft-tb.clientWidth/2+sel.offsetWidth/2); }   // si las pestañas no caben, la elegida queda a la vista
   if(typeof FICHA!=='undefined'&&FICHA) FICHA.classList.remove('on');

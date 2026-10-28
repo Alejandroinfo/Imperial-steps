@@ -23,14 +23,8 @@
   </header>
   <main>
     <section class="stage">
-      <div class="toolbar">
-        <span class="seg"><button id="vTerr" aria-pressed="true">Territorio</button><button id="vPlan" aria-pressed="false">Plan de red</button></span>
-        <button class="btn" id="bCap" title="Ir a tu capital">Mi capital</button>
-        <button class="btn" id="bSel" title="Ir a la zona seleccionada">Zona elegida</button>
-        <button class="btn" id="bAll" title="Ver todo el mapa">Todo el mapa</button>
-        <span class="hint tip">Arrastra para recorrer · rueda para acercar · doble clic para centrar</span>
-      </div>
       <div class="viewport frame" id="vp">
+        <div class="vmode" role="group" aria-label="Vista del mapa"><button id="vTerr" aria-pressed="true" title="Mapa de territorio" aria-label="Mapa de territorio">🗺</button><button id="vPlan" aria-pressed="false" title="Plan de red: vista funcional de tus zonas" aria-label="Plan de red">🕸</button></div>
         <div id="cam" class="cam"><svg id="terr" role="group" aria-label="Mapa de territorio"><g id="worldT"></g><g id="ordT"></g><g id="fxT"></g></svg></div>
         <svg id="plan" class="hide" viewBox="0 0 1100 1060" role="group" aria-label="Plan de red"><g id="worldP"></g><g id="fxP"></g></svg>
         <svg id="mini" class="mini" aria-label="Minimapa"></svg>
@@ -49,12 +43,13 @@
       <div id="encBar" aria-live="polite"></div>
       <div id="sugBar" aria-live="polite"></div>
       <div class="tabs" role="tablist">
-        <button data-tab="zona" role="tab">Zona</button>
-        <button data-tab="imperio" role="tab">Imperio</button>
-        <button data-tab="tec" role="tab">Tecnologías</button>
-        <button data-tab="vic" role="tab">Victoria<span class="cnt vic"><b id="vicCnt">0</b></span></button>
-        <button data-tab="hist" role="tab">Historial</button>
-        <button data-tab="ord" role="tab">Órdenes<span class="cnt" id="ordCount"></span></button>
+        <button data-tab="zona" role="tab" title="Zona"><span class="ti">📍</span><span class="tl">Zona</span></button>
+        <button data-tab="imperio" role="tab" title="Imperio"><span class="ti">👑</span><span class="tl">Imperio</span></button>
+        <button data-tab="recursos" role="tab" title="Recursos: subasta, maravillas y recursos del mapa"><span class="ti">💎</span><span class="tl">Recursos</span></button>
+        <button data-tab="tec" role="tab" title="Tecnologías"><span class="ti">🔬</span><span class="tl">Tecnología</span></button>
+        <button data-tab="vic" role="tab" title="Victoria"><span class="ti">🏆</span><span class="tl">Victoria</span><span class="cnt vic"><b id="vicCnt">0</b></span></button>
+        <button data-tab="hist" role="tab" title="Historial"><span class="ti">📜</span><span class="tl">Historial</span></button>
+        <button data-tab="ord" role="tab" title="Órdenes"><span class="ti">📋</span><span class="tl">Órdenes</span><span class="cnt" id="ordCount"></span></button>
       </div>
       <div id="tabBody"></div>
     </aside>
@@ -165,9 +160,11 @@
 <script src="js/interfaz/dibujo/terreno.js"></script>
 <script src="js/interfaz/estado_interfaz.js"></script>
 <script src="js/interfaz/dibujo/figuras.js"></script>
+<script src="js/interfaz/dibujo/ilustraciones.js"></script>
 <script src="js/interfaz/sonido.js"></script>
 <script src="js/interfaz/animaciones.js"></script>
 <script src="js/interfaz/mapa/territorio.js"></script>
+<script src="js/interfaz/mapa/plan.js"></script>
 <script src="js/interfaz/vida.js"></script>
 <script src="js/interfaz/paneles/especializar.js"></script>
 <script src="js/interfaz/paneles/mapa_tecnologias.js"></script>
@@ -176,6 +173,7 @@
 <script src="js/interfaz/formularios.js"></script>
 <script src="js/interfaz/paneles/zona.js"></script>
 <script src="js/interfaz/paneles/imperio.js"></script>
+<script src="js/interfaz/paneles/recursos.js"></script>
 <script src="js/interfaz/paneles/tecnologias.js"></script>
 <script src="js/interfaz/paneles/ordenes.js"></script>
 <script src="js/interfaz/batalla.js"></script>

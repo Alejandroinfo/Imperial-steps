@@ -2,6 +2,14 @@
 // Traduce los botones de la interfaz en órdenes.
 
 function addOrder(o){ ui.orders.push(o); }
+// Ctrl+Z (o el botón ↶): quita la última orden que diste en este paso.
+function undoOrder(){ if(!ui||!ui.orders.length) return false; const o=ui.orders.pop(); toast('↶ Orden deshecha',ordText(o),'info','↶'); render(); return true; }
+// Tab / Mayús+Tab: pasa a la siguiente (o anterior) zona tuya, sin cambiar la subpestaña en la que estás (para comparar zonas).
+function cycleZone(dir){
+  if(!G||!ui) return false; const zs=zonesOf(G,ME).map(z=>z.id).sort((a,b)=>a-b); if(!zs.length) return false;
+  const i=zs.indexOf(ui.sel); const n=i<0?(dir>0?0:zs.length-1):(i+dir+zs.length)%zs.length;
+  ui.mv=null; ui.sel=zs[n]; ui.tab='zona'; goZone(ui.sel,VIEW.w>1500?900:VIEW.w,450); render(); return true;
+}
 function act(a,d){
   const z=ui.sel!==null?G.zones[ui.sel]:null;
   switch(a){
@@ -42,6 +50,9 @@ function act(a,d){
     case 'encounter': ui.orders=ui.orders.filter(o=>o.t!=='encounter'); addOrder({t:'encounter',choice:d.v}); break;
     case 'growmode': ui.orders=ui.orders.filter(o=>!(o.t==='growmode'&&o.zone===z.id)); if(d.v!==(z.growMode||GROW_MODE_DEFAULT)) addOrder({t:'growmode',zone:z.id,mode:d.v}); break;
     case 'pausebuild': { const zz=G.zones[Number(d.zone)]; if(!zz||zz.owner!==ME) break; const pd=ui.orders.filter(o=>o.t==='pausebuild'&&o.zone===zz.id).pop(); const cur=pd?pd.on:!!zz.pauseBuild; ui.orders=ui.orders.filter(o=>!(o.t==='pausebuild'&&o.zone===zz.id)); if(!cur!==!!zz.pauseBuild) addOrder({t:'pausebuild',zone:zz.id,on:!cur}); break; }
+    case 'undo': undoOrder(); return;
+    case 'vall': ui.vall=!ui.vall; break;
+    case 'bidadj': { const i=Number(d.i); const el=document.querySelector('[data-f="bid_'+i+'"]'); const amt=Math.max(0,Math.floor((Number(el?el.value:0)||0)+Number(d.d))); ui.orders=ui.orders.filter(o=>!(o.t==='bid'&&o.item===i)); addOrder({t:'bid',item:i,amount:amt}); break; }
     case 'bid': { const i=Number(d.i); const el=document.querySelector('[data-f="bid_'+i+'"]'); const amt=Math.max(0,Math.floor(Number(el?el.value:0)||0)); ui.orders=ui.orders.filter(o=>!(o.t==='bid'&&o.item===i)); addOrder({t:'bid',item:i,amount:amt}); break; }
     case 'autospec': ui.orders=ui.orders.filter(o=>!(o.t==='autospec'&&o.zone===z.id)); if(d.v!==(z.autoSpec||'pob')) addOrder({t:'autospec',zone:z.id,to:d.v==='pob'?null:d.v}); break;
     case 'route': { const from=d.from!==undefined?Number(d.from):z.id;
@@ -100,7 +111,7 @@ function act(a,d){
     case 'desel': ui.sel=null; ui.mv=null; break;
     case 'zprev': selectNextMine(-1); return;
     case 'znext': selectNextMine(1); return;
-    case 'gozone': ui.mv=null; ui.sel=Number(d.id); ui.tab='zona'; ui.zsub='resumen'; if(ui.view==='terr') goZone(ui.sel,VIEW.w>1500?900:VIEW.w,600); break;
+    case 'gozone': ui.mv=null; ui.sel=Number(d.id); ui.tab='zona'; ui.zsub='resumen'; goZone(ui.sel,VIEW.w>1500?900:VIEW.w,600); break;
     case 'openmv': openMove(Number(d.from),Number(d.to)); break;
   }
   render(); if($('dlgTech').open) renderTechMap();
@@ -114,5 +125,5 @@ function onZone(id){
 }
 function selectNextMine(dir){
   const mz=G.zones.filter(z=>z.owner===ME); if(!mz.length) return; let i=mz.findIndex(z=>z.id===ui.sel); i=(i+dir+mz.length)%mz.length; if(i<0) i=0;
-  ui.mv=null; ui.sel=mz[i].id; ui.tab='zona'; render(); if(ui.view==='terr') goZone(ui.sel,VIEW.w,500);
+  ui.mv=null; ui.sel=mz[i].id; ui.tab='zona'; render(); goZone(ui.sel,VIEW.w,500);
 }

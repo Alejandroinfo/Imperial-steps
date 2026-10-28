@@ -162,6 +162,8 @@ const BT = {
   biblio:{n:'Biblioteca',unlock:'Bibliotecas',sr:'Biblioteca',col:'#5B7FA6',l:'B'},
   mar:{n:'Maravilla',unlock:'Maravillas',sr:'Maravilla',col:'#E9C46A',l:'★'}
 };
+// Quién trabaja en cada edificio (28/10/2026, decidido por Alejandro): los edificios que producen los trabajan los especialistas de su oficio; Almacén, Camino y Hospital, cualquier civil.
+const BLD_WORKER = {molino:'agr', taller:'ing', mercado:'com', biblio:'cie'};
 // Las 12 maravillas (15.3): una por rama, únicas en toda la partida. La vertebral de nivel 5 de la rama solo
 // desbloquea su construcción; el efecto lo da la maravilla mientras controles su zona.
 const WONDERS = {

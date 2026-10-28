@@ -53,9 +53,9 @@ prueba('Con una tecnología de nivel 3 del molino, sí se puede un segundo (nive
   paso([{t:'build',zone:cap.id,bt:'molino'}]); const p=cap.proj.find(p=>p.bt==='molino'); return !!p&&p.lvl===3&&p.tot===90&&p.dup===1;`);
 
 prueba('Dos edificios toman trabajadores distintos (sin perder a nadie)', base + `
-  cap.size=6; cap.units[0]=[civ('pob'),civ('pob'),civ('pob'),civ('pob')];
+  cap.size=6; cap.units[0]=[civ('agr'),civ('agr'),civ('ing'),civ('ing')];
   cap.b.push({t:'molino',l:1,s:null,wk:0,cost:20},{t:'taller',l:1,s:null,wk:0,cost:20}); paso();
-  const b=cap.lastBy.blds; return b.length===2&&b.every(x=>x.wk===2)&&cap.lastBy.jobs.pob.n===4;`);
+  const b=cap.lastBy.blds; return b.length===2&&b.every(x=>x.wk===2)&&b[0].who.agr===2&&b[1].who.ing===2;`);
 
 prueba('En Paz, dos jugadores conviven en una zona sin pelear', base + `
   const v=G.zones.find(z=>z.owner===null); v.units[0]=[civ('sol')]; v.units[1]=[mkUnit(G,1,'sol')];
@@ -84,7 +84,7 @@ prueba('Proyección: no cambia la partida real', base + `
   return cap.food===f0&&Object.keys(G.F[0].techs).length===t0&&!G.F[0].techs['Arado'];`);
 
 prueba('Proyección: Molino de piedra se nota al mejorar el molino que ya tienes', base + `
-  cap.units[0]=[civ('pob'),civ('pob'),civ('pob'),civ('pob')]; cap.b.push({t:'molino',l:1,s:null,wk:0,cost:20});
+  cap.units[0]=[civ('agr'),civ('agr'),civ('agr'),civ('agr')]; cap.b.push({t:'molino',l:1,s:null,wk:0,cost:20});
   const r=techImpact(G,0,'Molino de piedra'); return r.ups.length===1&&r.ups[0].to===2&&r.out.food===6;`);   // nivel 1: 2 trabajadores × 1; nivel 2: 4 × 2
 
 prueba('Trabajadores por nivel: nivel 1 = 2 puestos, nivel 2 = 4, nivel 3 = 6', base + `
@@ -602,6 +602,15 @@ prueba('Tratos de bots: reciben al menos el mismo valor que dan, no usan la mone
   G.offers=[]; const s0=G.step; G.step=OFFER_BOT_FROM-1; const antes=botTradeOffer(G,f)===null; G.step=s0+1; const ritmo=botTradeOffer(G,f)===null; G.step=s0;
   G.rng=()=>0.99; const azar=botTradeOffer(G,f)===null;
   return valido&&sinSubasta&&tope&&antes&&ritmo&&azar;`);
+
+prueba('Edificios: Molino, Taller, Mercado y Biblioteca solo los trabajan los especialistas de su oficio; Almacén y Camino, cualquiera', base + `
+  const z=cap; const us=z.units[0]; const pob=us.filter(u=>u.t==='pob');
+  z.b=[{t:'molino',l:1,s:null,wk:0},{t:'almacen',l:1,s:null,wk:0}]; z.proj=[];
+  const wk=()=>{ produceZone(G,z); return {mol:z.b[0].wk,alm:z.b[1].wk}; };   // pobladores solos
+  const a=wk();
+  pob[0].t='agr'; const b=wk();                 // un agricultor: trabaja en el Molino, el resto de pobladores en el Almacén
+  pob[1].t='agr'; pob[2].t='agr'; pob[3].t='agr'; const c=wk();   // todos agricultores: el Molino (2 puestos) los toma antes que el Almacén
+  return a.mol===0&&a.alm===2&&b.mol===1&&b.alm===2&&c.mol===2&&c.alm===2;`);
 
 prueba('Subasta: gana la oferta más alta y solo el ganador paga', base + SUB + `
   G.auction={step:20,cur:'gold',items:[item('car',0,{res:'food'})],bids:{0:{0:30},1:{0:20}}}; G.F[0].gold=100; G.F[1].gold=100; const p0=cap.prog; auctionResolve(G,L);

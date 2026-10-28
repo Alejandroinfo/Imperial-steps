@@ -8,26 +8,23 @@ function vicNeighbors(){
   const fs=Object.keys(best).map(Number); if(!fs.length) return [];
   const m=Math.min(...fs.map(f=>best[f])); return fs.filter(f=>best[f]<=m+1).sort((a,b)=>best[a]-best[b]);
 }
-// Tarjeta del avance de un rival: una barra por condición; avisa si está cerca de ganar.
-function vicRivalHTML(f,conds,compact){
-  const n=conds.filter(c=>c.ok).length; const near=n>=1&&conds.some(c=>!c.ok&&c.v/c.t>=0.7);
-  const rows=conds.map(c=>{ const pct=Math.max(0,Math.min(100,Math.round(100*c.v/c.t))); return `<div class="vrw ${c.ok?'ok':''}" title="${esc(c.d)}"><span>${c.k}</span><div class="bar"><i style="width:${pct}%;background:${PLN[f].col}"></i></div><b>${c.ok?'✓':c.v}<small>/${c.t}</small></b></div>`; }).join('');
-  return `<div class="vrival ${near?'near':''}"><div class="vrh"><span class="dot" style="background:${PLN[f].col}"></span><b>${esc(PLN[f].name)}</b><span class="vrn">${n}/2 cumplidas</span>${near?'<span class="vrwarn">⚠ cerca de ganar</span>':''}</div>${compact?`<details><summary>Ver su avance</summary>${rows}</details>`:rows}</div>`;
-}
+// Victoria: un solo gráfico. Una fila por condición con una barra por jugador (tú y tus vecinos; «ver a todos» agrega al resto).
+const VIC_ICON = {Comercial:'🪙', Económica:'👥', Tecnología:'🔬', Territorial:'🗺', Militar:'⚔', Desarrollo:'🏗', Maravillas:'🏛'};
 function panelVictoria(){
-  const T=thrOf(G); const all=[...Array(G.N).keys()].map(f=>victoryConds(G,f));
-  let h=`<h3>Condiciones de victoria</h3><div class="hint">Gana quien cumpla <b>2 al mismo tiempo</b>. Si pierdes una, deja de contar. Modo: <b>${G.thr==='prueba'?'prueba (umbrales bajos)':'normal'}</b>. <a href="#" data-wiki="victoria" class="wlink">Más detalles</a></div>`;
-  h+='<table class="vt"><tr><th>Condición</th>'+[...Array(G.N).keys()].map(f=>`<th style="color:${PLN[f].col}">${f===ME?'Tú':PLN[f].name.replace('Bot ','')}</th>`).join('')+'</tr>';
-  all[0].forEach((c,i)=>{ h+=`<tr><td title="${c.d}">${c.k}<small> ${c.d}</small></td>`+all.map((a,f)=>`<td class="${a[i].ok?'ok':''}${ui.justCond&&ui.justCond[f+'_'+i]?' pop':''}">${a[i].ok?'✓':a[i].v}<small>/${a[i].t}</small></td>`).join('')+'</tr>'; });
-  h+='<tr><td><b>Cumplidas</b></td>'+all.map(a=>`<td><b>${a.filter(c=>c.ok).length}</b>/2</td>`).join('')+'</tr></table>';
-  h+='<h4>Tu avance</h4>';
-  all[ME].forEach(c=>{ const pct=Math.max(0,Math.min(100,Math.round(100*c.v/c.t))); h+=`<div class="vprog ${c.ok?'ok':''}"><div class="vph"><b>${c.k}</b><span>${c.v} / ${c.t}</span></div><div class="bar"><i style="width:${pct}%"></i></div><small>${c.d}</small></div>`; });
-  // el avance de los demás: primero tus vecinos (los que tocan tu territorio, directo o por una zona peligrosa)
-  const nb=vicNeighbors(); const others=[...Array(G.N).keys()].filter(f=>f!==ME&&!nb.includes(f));
-  if(nb.length) h+='<h4>Tus vecinos</h4>'+nb.map(f=>vicRivalHTML(f,all[f])).join('');
-  if(others.length) h+='<h4>Otros jugadores</h4>'+others.map(f=>vicRivalHTML(f,all[f],true)).join('');
-  const l5=TECHS.filter(t=>G.F[ME].techs[t.n]&&t.l===5);
-  if(l5.length) h+=`<div class="hint">Tecnologías de nivel 5 que tienes: ${l5.map(t=>esc(t.n)+' ('+esc(t.r)+')').join(', ')}.</div>`;
+  const all=[...Array(G.N).keys()].map(f=>victoryConds(G,f));
+  const nb=vicNeighbors(), others=[...Array(G.N).keys()].filter(f=>f!==ME&&!nb.includes(f)&&!G.F[f].out);
+  const show=[ME,...nb,...(ui.vall?others:[])].filter((f,i,a)=>a.indexOf(f)===i);
+  const nameOf=f=>f===ME?'Tú':PLN[f].name.replace('Bot ','');
+  let h=`<div class="vhead"><b>Gana quien cumpla 2 a la vez</b><a href="#" data-wiki="victoria" class="wlink" title="Si pierdes una condición, deja de contar. Modo: ${G.thr==='prueba'?'prueba (umbrales bajos)':'normal'}.">ⓘ</a></div>`;
+  h+='<div class="vleg">'+show.map(f=>{ const n=all[f].filter(c=>c.ok).length, near=n>=1&&all[f].some(c=>!c.ok&&c.v/c.t>=0.7);
+    return `<span class="${near&&f!==ME?'near':''}" title="${near&&f!==ME?'Está cerca de ganar':''}"><i class="dot" style="background:${PLN[f].col}"></i>${esc(nameOf(f))} <b>${n}/2</b>${near&&f!==ME?' ⚠':''}</span>`; }).join('')+'</div>';
+  h+='<div class="vchart">';
+  all[ME].forEach((c0,i)=>{
+    h+=`<div class="vrow" title="${esc(c0.d)} · meta ${c0.t}"><div class="vlab"><span class="vi">${VIC_ICON[c0.k]||'•'}</span><b>${c0.k}</b><small>${esc(c0.d)} · meta ${c0.t}</small></div><div class="vbars">`
+      +show.map(f=>{ const a=all[f][i], pct=Math.max(0,Math.min(100,Math.round(100*a.v/a.t)));
+        return `<div class="vb ${a.ok?'ok':''}${ui.justCond&&ui.justCond[f+'_'+i]?' pop':''}"><i style="width:${Math.max(a.v>0?3:0,pct)}%;background:${PLN[f].col}"></i><em>${a.ok?'✓ ':''}${a.v}</em></div>`; }).join('')+'</div></div>'; });
+  h+='</div>';
+  if(others.length) h+=`<div class="row"><button class="btn sm" data-act="vall">${ui.vall?'Ver solo a mis vecinos':'Ver a todos ('+others.length+' más)'}</button></div>`;
   return h;
 }
 function panelHistorial(){
@@ -49,7 +46,7 @@ function panelHistorial(){
 }
 function panelOrdenes(){
   const cm=commits(), F=G.F[ME];
-  let h='<h4>Órdenes de este paso</h4>';
+  let h='<h4>Órdenes de este paso'+(ui.orders.length?' <button class="btn sm" data-act="undo" title="Quita la última orden (Ctrl+Z)">↶ Deshacer</button>':'')+'</h4>';
   h+=ui.orders.length?'<ul class="ord">'+ui.orders.map((o,i)=>`<li><span>${esc(ordText(o))}</span><button data-act="del" data-i="${i}" aria-label="Quitar">×</button></li>`).join('')+'</ul>':'<div class="hint">Sin órdenes: tus zonas siguen trabajando solas.</div>';
   if(cm.tech>F.tech) h+=`<div class="warn">Las órdenes de investigación gastan ${cm.tech} de tecnología y tienes ${Math.floor(F.tech)}.</div>`;
   if(cm.gold>F.gold) h+=`<div class="warn">Las órdenes gastan ${cm.gold} de oro y tienes ${Math.floor(F.gold)}: algunas no se harán completas.</div>`;

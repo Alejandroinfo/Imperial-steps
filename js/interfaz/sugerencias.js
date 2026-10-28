@@ -17,10 +17,10 @@ function suggestions(){
   const out=[], F=G.F[ME], mz=zonesOf(G,ME);
   if(F.out&&!F.ghost) return [];
   // Subasta próxima
-  if(G.auction&&G.step<=G.auction.step&&!(G.auction.bids[ME]&&Object.keys(G.auction.bids[ME]).length)&&!queued('bid')) out.push({k:'tip',t:`Subasta en ${G.auction.step-G.step||'0'} paso(s): se paga con ${RN[G.auction.cur]}. Mira los objetos y haz tus ofertas en Imperio.`,go:{tab:'imperio'}});
+  if(G.auction&&G.step<=G.auction.step&&!(G.auction.bids[ME]&&Object.keys(G.auction.bids[ME]).length)&&!queued('bid')) out.push({k:'tip',t:`Subasta en ${G.auction.step-G.step||'0'} paso(s): se paga con ${RN[G.auction.cur]}. Mira los cofres y haz tus ofertas en Recursos.`,go:{tab:'recursos'}});
   // Avisos
   { const short=hungerRisk(); if(short){ const cap=mz.find(z=>z.capital)||mz[0]; out.push({k:'warn',t:`Tu gente podría pasar hambre: entre todas tus zonas faltan unos ${short} de comida. Haz agricultores o reduce tropas.`,go:{zone:cap?cap.id:mz[0].id,sub:'poblacion'}}); } }
-  (G.tributes||[]).forEach(tr=>{ if(tr.targets.includes(ME)&&!tr.paid[ME]&&!queued('tribute',o=>o.tribe===tr.zone)) { const rl=((G.zones[tr.zone].rel||{})[ME])||0; out.push({k:rl<=-1?'warn':'idea',t:`La tribu de ${zname(G.zones[tr.zone])} pide ${tr.amount} de ${TSPEC_N[tr.res]} (quedan ${tr.due-G.step+1} paso${tr.due-G.step+1===1?'':'s'}). Si lo ignoras, la relación baja a ${Math.max(TRIBE_REL_MIN,rl-1)}${rl-1<=TRIBE_REL_MIN?' y te ataca':''}.`,go:{zone:tr.zone,sub:'resumen'}}); } });
+  (G.tributes||[]).forEach(tr=>{ if(tr.targets.includes(ME)&&!tr.paid[ME]&&!queued('tribute',o=>o.tribe===tr.zone)) { const rl=((G.zones[tr.zone].rel||{})[ME])||0; out.push({k:rl<=-1?'warn':'idea',t:`La tribu de ${zname(G.zones[tr.zone])} pide ${tr.amount} de ${TSPEC_N[tr.res]} (quedan ${tr.due-G.step+1} paso${tr.due-G.step+1===1?'':'s'}). Si lo ignoras, la relación baja a ${Math.max(TRIBE_REL_MIN,rl-1)}${rl-1<=TRIBE_REL_MIN?' y te ataca':''}.`,go:{tab:'imperio'},req:1}); } });
   upcomingEvents(G,ME).forEach(e=>{
     if(!e.ev||!e.ev.terr) return; const hit=mz.filter(z=>e.ev.terr.includes('all')||e.ev.terr.includes(z.terrain)); if(!hit.length) return;
     const n=e.step-G.step; out.push({k:'warn',t:`${n<=0?'Este paso':n===1?'En 1 paso':'En '+n+' pasos'}: ${e.ev.n}${e.ev.terr.includes('all')?' en todo tu imperio':' en '+TERRN[hit[0].terrain]+' ('+hit.map(zname).join(', ')+')'}. ${e.ev.d}.`,go:{zone:hit[0].id,sub:'resumen'}});
@@ -102,15 +102,15 @@ function encPopup(){
 // Las sugerencias ya no ocupan una barra arriba: salen como un ❗ en la pestaña a la que pertenecen (y en la subpestaña de la zona),
 // y al abrir la pestaña aparece la lista corta de lo pendiente. Cada fila lleva al lugar exacto.
 function alertInfo(){
-  const s=suggestions(), tabs={zona:[],imperio:[],tec:[],vic:[],hist:[],ord:[]}, subs={};
+  const s=suggestions(), tabs={zona:[],imperio:[],recursos:[],tec:[],vic:[],hist:[],ord:[]}, subs={};
   s.forEach((it,i)=>{ const g=it.go||{}; let tab='zona', sub=null, zone=null;
     if(g.tab) tab=g.tab; else if(g.move){ zone=g.move[0]; sub='mover'; } else { zone=g.zone; sub=g.sub||'resumen'; }
-    (tabs[tab]||tabs.zona).push({i,t:it.t,k:it.k}); if(zone!==null&&zone!==undefined&&sub) subs[zone+'|'+sub]=1; });
+    (tabs[tab]||tabs.zona).push({i,t:it.t,k:it.k,req:it.req}); if(zone!==null&&zone!==undefined&&sub) subs[zone+'|'+sub]=1; });
   return {s,tabs,subs};
 }
 function alertBoxHTML(tab){
-  const L=(ui.alerts&&ui.alerts.tabs[tab])||[]; if(!L.length) return '';
-  const show=L.slice(0,3); return `<div class="albox">${show.map(a=>`<button class="alrow ${a.k}" data-act="sug" data-i="${a.i}"><b>❗</b><span>${esc(a.t)}</span></button>`).join('')}${L.length>3?`<div class="hint">…y ${L.length-3} aviso${L.length-3>1?'s':''} más</div>`:''}</div>`;
+  const L=((ui.alerts&&ui.alerts.tabs[tab])||[]).filter(a=>!(tab==='imperio'&&a.req)); if(!L.length) return '';   // los pedidos de tribu ya tienen su línea en Imperio
+  const show=L.slice(0,2); return `<div class="albox">${show.map(a=>`<button class="alrow ${a.k}" data-act="sug" data-i="${a.i}" title="${esc(a.t)}"><b>❗</b><span>${esc(a.t)}</span></button>`).join('')}${L.length>2?`<div class="hint" title="${esc(L.slice(2).map(a=>a.t).join('\n'))}">…y ${L.length-2} aviso${L.length-2>1?'s':''} más</div>`:''}</div>`;
 }
 function drawTabAlerts(){
   const A=ui.alerts=alertInfo();
@@ -122,7 +122,7 @@ function drawTabAlerts(){
 }
 function goSuggestion(i){
   const s=suggestions()[i]; if(!s) return; const g=s.go;
-  if(g.move){ openMove(g.move[0],g.move[1]); if(ui.view==='terr') goZone(g.move[0],VIEW.w,500); return; }
+  if(g.move){ openMove(g.move[0],g.move[1]); goZone(g.move[0],VIEW.w,500); return; }
   if(g.tab){ ui.tab=g.tab; return; }
-  ui.mv=null; ui.sel=g.zone; ui.tab='zona'; ui.zsub=g.sub||'resumen'; if(ui.view==='terr') goZone(g.zone,VIEW.w>1500?900:VIEW.w,500);
+  ui.mv=null; ui.sel=g.zone; ui.tab='zona'; ui.zsub=g.sub||'resumen'; goZone(g.zone,VIEW.w>1500?900:VIEW.w,500);
 }

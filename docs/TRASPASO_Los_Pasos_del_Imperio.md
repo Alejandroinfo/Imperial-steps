@@ -324,9 +324,14 @@ Reglas en `docs/Reglas_v0.1.md`, sección 25.
 | Excel de tecnologías | `Tecnologias_v0.2.xlsx` (209; hojas Ramas y Resumen con rangos hasta la fila 210) |
 | Raíz limpia y CI | 33 archivos borrados de la raíz; `.github/workflows/pruebas.yml`. También borrados: `docs/TRASPASO_sesion_2026-10-26.md` y `..._27.md`, `docs/balance_economia.md` (de la v0.11), y 8 funciones/constantes sin uso (`TRAIT_LV`, `TERMS`, `cntT`, `netOffAll`, `panKey`, `sugBarHTML`, `sugBarHTML_old`, `encGainText`) |
 | Tribus: sin Inquietud ni Furia; crecen solas cada año | `tribesGrow` en `js/motor/eventos.js` (se llama en `resolver_paso.js`); `TRIBE_YEAR_CIV`, `TRIBE_YEAR_BAR` en `reglas.js` |
+| Interfaz: pestaña Recursos, cofres, maravillas con imagen, Tab entre zonas | `js/interfaz/paneles/recursos.js` (`auctionHTML`, `wondersHTML`, `mapResourcesHTML`); `js/interfaz/dibujo/ilustraciones.js` (`wonderArt`, `chestArt`); `cycleZone` en `acciones.js` y tecla Tab en `main.js`; estilos al final de `css/estilos.css` |
+| Mapa sin barra, plan de red con zoom, pestañas con ícono | `js/interfaz/mapa/plan.js` (`PV`, `planFly`, `planFit`); íconos `.vmode` en `index.html`; `goZone` y `fitAll` sirven a las dos vistas en `territorio.js`; atajos C, F, Tab y Ctrl+Z en `main.js` y `acciones.js` (`cycleZone`, `undoOrder`) |
+| Pedidos de tribu en Imperio, Victoria en un gráfico, resumen y envío compactos | `requestsHTML` en `paneles/imperio.js`; `panelVictoria` en `paneles/ordenes.js`; `zoneOverview` y `sendCardHTML` en `paneles/zona.js`; estilos al final de `css/estilos.css` |
+| Quién trabaja en los edificios | `BLD_WORKER` en `config/reglas.js`; asignación en `produceZone` (`motor/economia.js`) |
 | Pruebas | 7 casos nuevos en `pruebas/probar_reglas.js` (valor esperado, puja de bots, acumulación, cargamento variable, aviso a 10 pasos, inundación, registro) y 7 comprobaciones nuevas en `pruebas/probar_interfaz.py` (+ 1 caso de tratos de bots) |
 
 **Pendientes que dejó la sesión:**
+- ❓ Ver jugando la regla de **especialistas en edificios** (Reglas 25): arrancar sin edificios productivos puede resultar lento; el Hospital quedó abierto a cualquiera (💡).
 - ✅ Los bots ya **proponen tratos** (🤝): `botTradeOffer` en `js/motor/bots.js`, constantes `OFFER_BOT_*` y `OFFER_VAL` en `reglas.js` (Reglas 25). ❓ Ver jugando si 10 tratos por partida entre bots son muchos o pocos para quien juega.
 - ✅ Confirmado por Alejandro (28/10/2026): varianza 10 en unidades de la moneda, rangos del cargamento y **sin tope de bárbaros** por tribu; los baja él después de probar.
 - ✅ Las subastas en comida y producción ya no quedan vacías (los bots acumulan desde el anuncio: objetos sin puja 40 → 3). Falta ver jugando si los bots que reservan crecen demasiado lento.

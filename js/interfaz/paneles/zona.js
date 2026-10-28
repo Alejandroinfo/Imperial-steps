@@ -29,40 +29,20 @@ function relBarHTML(rel){
   return '<span class="relb">'+[-3,-2,-1,0,1,2,3].map(i=>`<i class="${i===0?'mid':i<0?'neg':'pos'}${(i<0&&rel<=i)||(i>0&&rel>=i)?' on':''}"></i>`).join('')+'</span>';
 }
 // Qué pasa con tu relación según lo que hagas con el pedido: cumplir sube 1 e ignorar baja 1 (a −3 ataca).
-function relConsequence(rel){
-  const dn=Math.max(TRIBE_REL_MIN,rel-1);
-  return `Si lo cumples, tu relación sube a <b>${Math.min(TRIBE_REL_MAX,rel+1)}</b>. Si lo ignoras, baja a <b>${dn}</b>${dn<=TRIBE_REL_MIN?' y <b>te ataca</b>':dn<0?` (insatisfacción ${-dn} de ${-TRIBE_REL_MIN}; con ${-TRIBE_REL_MIN} ataca)`:''}.`;
-}
-function tributeHTML(z){
-  const t=(G.tributes||[]).find(x=>x.zone===z.id&&x.targets.includes(ME)); if(!t) return '';
-  const res=t.res, local=(res==='food'||res==='prod'); const F=G.F[ME];
-  const inQ=ui.orders.some(o=>o.t==='tribute'&&o.tribe===z.id);
-  const rel=((z.rel||{})[ME])||0; let h=`<div class="tribute"><div class="trh">🤝 <b>Pide ${rq(res,t.amount)}</b> · quedan <b>${t.due-G.step+1} paso${t.due-G.step+1===1?'':'s'}</b></div><div class="tmbar ${(t.due-G.step+1)<=2?'war':''}" title="Pasos que quedan para cumplir el pedido"><i style="width:${Math.max(6,Math.round(100*(t.due-G.step+1)/TRIBE_REQ_EVERY))}%"></i></div><div class="hint">Relación ${relBarHTML(rel)} <b>${TRIBE_REL_N[rel+3]}</b> (${rel>0?'+':''}${rel}). ${relConsequence(rel)}</div>`;
-  if(t.paid[ME]) return h+'<div class="ok">✓ Ya pagaste tu parte.</div></div>';
-  if(inQ) return h+'<div class="ok">✓ El pago está en cola: se hace al presionar ¡Listo!</div></div>';
-  const mine=zonesOf(G,ME).filter(a=>z.adj.includes(a.id));
-  if(!mine.length) return h+'<div class="hint">Necesitas una zona tuya vecina para pagar.</div></div>';
-  h+='<div class="row">';
-  if(local) mine.forEach(a=>{ const have=Math.floor(a[res]); h+=have>=t.amount?btnHTML('tribute',`Pagar desde ${esc(zname(a))} <small>(${RI[res]} ${have})</small>`,`data-tribe="${z.id}" data-from="${a.id}"`,'primary'):`<span class="hint">${esc(zname(a))} solo tiene ${have}.</span>`; });
-  else { const have=Math.floor(res==='gold'?F.gold:F.tech); h+=have>=t.amount?btnHTML('tribute',`Pagar ${RI[res]} ${t.amount} <small>(tienes ${have})</small>`,`data-tribe="${z.id}" data-from="${mine[0].id}"`,'primary'):`<span class="warn">Te faltan ${t.amount-have} de ${TSPEC_N[res]}.</span>`; }
-  return h+'</div></div>';
-}
 function annexHTML(z){
   if(z.owner!==TRIBE) return '';
   if(!tribeVisible(z)) return '<div class="hint">Acércate con una unidad para ver qué piden.</div>';
   const price=annexPrice(G,ME,z), res=TSPEC_RES[z.tspec]; const near=nearOwnZones(G,ME,z), have=annexHave(G,ME,z), p=tribePop(z);
   const rel=((z.rel||{})[ME])||0, war=(G.wars||[]).find(w=>w.tribe===z.id&&w.f===ME);
-  let h=`<div class="box"><b>Tribu ${esc(({agr:'agrícola',ing:'de producción',com:'comercial',cie:'de tecnología'})[z.tspec]||'')}</b> · ${p.civ} civiles y ${p.mil} guerreros<div class="hint">Para unirse piden <b>${rq(res,price)}</b>${z.tmult>1?' (×2 por un empate)':''} · conquistarla da ${rq(res,conquestReward(z))}</div>`;
-  h+=`<div class="relbar" title="Cumplir un pedido sube 1; ignorarlo baja 1. Con +${TRIBE_REL_MAX} puedes anexarla; con ${TRIBE_REL_MIN} te ataca.">Relación: ${relBarHTML(rel)} <b>${TRIBE_REL_N[rel+3]}</b> (${rel>0?'+':''}${rel})</div>`;
-  { const na=tribeNextAsk(G,z,ME); if(!war) h+=`<div class="${rel<=-2?'warn':'hint'}">${rel<0?'😠 <b>Insatisfacción '+(-rel)+' de '+(-TRIBE_REL_MIN)+'</b>: '+(rel<=-2?'un pedido más ignorado y te ataca. ':'')+'':''}⏳ ${na===null?'No te pedirá más por ahora.':na===0?'Te pide algo este mismo paso.':'Próximo pedido en <b>'+na+' paso'+(na===1?'':'s')+'</b>.'} Cumplir sube la relación; ignorar la baja.</div>`; }
-  if(war) return h+`<div class="warn">⚔ <b>En guerra contigo</b>: sus civiles se volvieron guerreros y atacan tus zonas cercanas con todos los suyos. Quedan <b>${war.left} paso${war.left===1?'':'s'}</b> de guerra, o hasta que la conquistes.</div><div class="tmbar war"><i style="width:${Math.round(100*war.left/TRIBE_WAR_STEPS)}%"></i></div></div>`;
-  if(rel<TRIBE_REL_MAX) return h+`<div class="hint">Todavía no puedes anexarla: primero cumple sus pedidos hasta tener relación ${TRIBE_REL_MAX} (hoy ${rel}). Atacarla es entrar en guerra con ella.</div></div>`;
-  if(near.length){
-    const where=(res==='food'||res==='prod')?` (suma de ${near.length} zona${near.length>1?'s':''} tuya${near.length>1?'s':''} cerca)`:' (global)';
-    h+=`<div class="${have>=price?'hint':'warn'}">Tienes ${Math.floor(have)}${where}.</div>`;
-    if(have>=price) h+=`<div class="row">${btnHTML('annex','Anexar · '+RI[res]+' '+price,`data-zone="${z.id}" data-from="${near[0].id}"`)}</div>`;
-    else h+=`<div class="hint">Te faltan ${Math.ceil(price-have)}. Las reservas de comida y producción están limitadas por el almacenamiento de cada zona.</div>`;
-  } else h+='<div class="hint">Necesitas una zona tuya vecina para pagar.</div>';
+  const na=tribeNextAsk(G,z,ME);
+  let h=`<div class="box tribox"><div class="trt"><b>Tribu ${esc(({agr:'agrícola',ing:'de producción',com:'comercial',cie:'de tecnología'})[z.tspec]||'')}</b><span>${p.civ} civiles · ${p.mil} guerreros</span></div>`;
+  h+=`<div class="trrow" title="Cumplir un pedido sube 1; ignorarlo baja 1. Con +${TRIBE_REL_MAX} puedes anexarla; con ${TRIBE_REL_MIN} te ataca."><span>Relación ${relBarHTML(rel)} <b>${TRIBE_REL_N[rel+3]}</b></span><span class="${rel<=-2?'neg':''}" title="${na===null?'No te pedirá más por ahora':na===0?'Te pide algo este paso':'Próximo pedido en '+na+' pasos'}">⏳ ${na===null?'—':na===0?'ya':na+' p.'}</span></div>`;
+  if(war) return h+`<div class="warn">⚔ <b>En guerra contigo</b>: atacan tus zonas cercanas. Quedan <b>${war.left} paso${war.left===1?'':'s'}</b> o hasta que la conquistes.</div><div class="tmbar war"><i style="width:${Math.round(100*war.left/TRIBE_WAR_STEPS)}%"></i></div></div>`;
+  h+=`<div class="trrow"><span title="Anexarla exige relación ${TRIBE_REL_MAX}">Anexar: <b>${rq(res,price)}</b>${z.tmult>1?' (×2)':''}</span><span title="Si la conquistas">⚔ ${rq(res,conquestReward(z))}</span></div>`;
+  if(rel<TRIBE_REL_MAX) return h+`<div class="hint">Cumple sus pedidos hasta relación ${TRIBE_REL_MAX} para poder anexarla (hoy ${rel}). Atacarla es entrar en guerra.</div></div>`;
+  if(!near.length) return h+'<div class="hint">Necesitas una zona tuya vecina para pagar.</div></div>';
+  if(have>=price) h+=`<div class="row">${btnHTML('annex','Anexar · '+RI[res]+' '+price,`data-zone="${z.id}" data-from="${near[0].id}"`,'primary')}<span class="hint">tienes ${Math.floor(have)}</span></div>`;
+  else h+=`<div class="warn">Te faltan ${Math.ceil(price-have)} de ${RI[res]} (tienes ${Math.floor(have)}).</div>`;
   return h+'</div>';
 }
 function buildingsHTML(z){
@@ -184,18 +164,15 @@ function barHTML(v,max,col){ const p=max>0?Math.max(0,Math.min(100,Math.round(10
 // Qué está pasando en una zona propia: lo producido, las reservas, quién trabaja y dónde.
 function zoneOverview(z){
   const L=z.lastBy, last=z.last, fd=(z.feed||{})[ME]; let h='';
-  // --- este paso ---
-  if(last){
-    const need=fd?fd.need:0, net=last.food-need-(z.feedOut||0);
-    h+=`<div class="zstep"><div class="zst"><span class="zi">🌾</span><b class="${net>=0?'pos':'neg'}">${net>=0?'+':''}${net}</b><small>neta</small><em>+${last.food} −${need}${z.feedOut?` −${z.feedOut}📦`:''}</em></div>`
-      +`<div class="zst"><span class="zi">⚒</span><b>+${last.prod}</b></div><div class="zst"><span class="zi">🪙</span><b>+${last.gold}</b></div><div class="zst"><span class="zi">🔬</span><b>+${last.tech}</b></div></div>`;
-  } else h+='<div class="hint">Después del primer paso verás aquí lo que produce la zona.</div>';
-  // --- reservas ---
+  // --- este paso y reservas, en poco espacio: cuatro fichas (lo que rinde la zona) y una línea de crecimiento ---
   const cf=capStore(G,z,'food'), cp=capStore(G,z,'prod'), gc=growCost(G,z.owner,z);
   const rt=(z.routes||[]); const gm=z.growMode||GROW_MODE_DEFAULT;
-  if((z.repop||0)>0) h+=`<div class="hint repop" title="Murieron o fueron capturadas personas nacidas aquí: los próximos nacimientos de esta zona cuestan menos">🕊 <b>Repoblación:</b> los próximos ${z.repop} nacimiento${z.repop>1?'s':''} cuestan un ${Math.round(100*Math.min(0.9,REPOP_PCT+G.M[ME].repopBonus))} % menos.</div>`;
-  h+=`<div class="hint" style="margin:-2px 0 4px">${gm==='crecer'?'👶 El sobrante va a <b>crecer</b>':'⏸ El crecimiento está <b>en pausa</b>: el sobrante se guarda'}${z.autoSpec?` · los que nacen serán <b>${UNP[z.autoSpec].toLowerCase()}</b>`:''}${rt.length?` · 🔁 ${rt.length} envío${rt.length>1?'s':''} automático${rt.length>1?'s':''}`:''} <a href="#" data-act="zsub" data-s="recursos" class="wlink">cambiar</a></div>`;
-  h+=`<div class="zres3"><div><span title="comida">🌾</span><b>${Math.floor(z.food)}/${cf}</b>${barHTML(z.food,cf,'#9DC764')}</div><div><span title="producción">⚒</span><b>${Math.floor(z.prod)}/${cp}</b>${barHTML(z.prod,cp,'#C9A878')}</div><div><span title="crecimiento">👶</span><b>${Math.floor(z.prog)}/${gc}</b>${barHTML(z.prog,gc,'#7FB2E5')}<small>${growText(z)}</small></div></div>`;
+  const need=fd?fd.need:0, net=last?last.food-need-(z.feedOut||0):0;
+  const chip=(ic,val,sub,tip,bar)=>`<div class="zc" title="${esc(tip||'')}"><span class="zi">${ic}</span><b class="${val<0?'neg':val>0?'pos':''}">${last?(val>0?'+':'')+val:'–'}</b>${sub?`<em>${sub}</em>`:''}${bar||''}</div>`;
+  h+=`<div class="zline">${chip('🌾',net,`${Math.floor(z.food)}/${cf}`,last?`Comida: produce +${last.food}, se come ${need}${z.feedOut?', salen '+z.feedOut:''}; guardas ${Math.floor(z.food)} de ${cf}`:'Comida guardada',barHTML(z.food,cf,'#9DC764'))}${chip('⚒',last?last.prod:0,`${Math.floor(z.prod)}/${cp}`,'Producción por paso y guardada',barHTML(z.prod,cp,'#C9A878'))}${chip('🪙',last?last.gold:0,'','Oro por paso')}${chip('🔬',last?last.tech:0,'','Ciencia por paso')}</div>`;
+  h+=`<div class="zgrow" title="${esc(growText(z))}"><span class="zi">👶</span>${barHTML(z.prog,gc,'#7FB2E5')}<b>${Math.floor(z.prog)}/${gc}</b><small>${esc(growShort(z))}</small><a href="#" data-act="zsub" data-s="recursos" class="wlink" title="Elegir si el sobrante de comida va a crecer o se guarda">${gm==='crecer'?'crece':'⏸ guarda'} ⇄</a></div>`;
+  if((z.repop||0)>0) h+=`<div class="hint repop" title="Murieron o fueron capturadas personas nacidas aquí: los próximos nacimientos de esta zona cuestan menos">🕊 Repoblación: los próximos ${z.repop} nacimiento${z.repop>1?'s':''} cuestan un ${Math.round(100*Math.min(0.9,REPOP_PCT+G.M[ME].repopBonus))} % menos.</div>`;
+  if(z.autoSpec||rt.length) h+=`<div class="hint" style="margin:-2px 0 4px">${z.autoSpec?`Los que nacen serán <b>${UNP[z.autoSpec].toLowerCase()}</b>`:''}${z.autoSpec&&rt.length?' · ':''}${rt.length?`🔁 ${rt.length} envío${rt.length>1?'s':''} automático${rt.length>1?'s':''}`:''}</div>`;
   // --- quién trabaja y dónde ---
   const us=z.units[ME]||[]; const cnt={}; us.forEach(u=>{ cnt[u.t]=(cnt[u.t]||0)+1; });
   const blds=(L&&L.blds)||[]; const pl=researchPlan(G,ME)[z.id]||{n:0,sci:0};
@@ -228,6 +205,7 @@ function zoneOverview(z){
   return h;
 }
 function projName(z,p){ return p.k==='b'?BT[p.bt].n:p.k==='w'?(p.w?WONDERS[p.w].n:'Maravilla'):'mejora de '+BT[z.b[p.bi]?z.b[p.bi].t:'almacen'].n; }
+function growShort(z){ const n=growETA(G,z); return n===undefined?'':n===null?'sin comida':n===1?'nace ya':'en '+n+' pasos'; }
 function growText(z){ const n=growETA(G,z); return n===undefined?'se calcula después del primer paso':n===null?'no crece (le falta comida)':n===1?'nace un poblador el próximo paso':'próximo poblador en '+n+' pasos'; }
 function subResumen(z){
   let h='';
@@ -236,7 +214,7 @@ function subResumen(z){
   else h+=`<div class="kv"><span>Tamaño</span><span>${z.size}</span><span>Control</span><span>${z.owner===null?'sin dueño':z.owner===TRIBE?'tribu':esc(PLN[z.owner].name)}</span></div>`;
   h+=depCardsHTML(z);
   if(z.role==='frontera') h+=frontierHTML(z);
-  if(z.owner===TRIBE) h+=tributeHTML(z)+annexHTML(z);
+  if(z.owner===TRIBE) h+=annexHTML(z);   // los pedidos de la tribu se ven y se pagan en Imperio, no aquí
   if(hasUnitsHere(z)){ h+='<h4>Ir a una zona vecina</h4>'+neighborsHTML(z); }
   else { const r=nearestSource(z.id); if(r&&r.length>1) h+=`<div class="hint">Tus unidades más cercanas están en <b>${esc(zname(G.zones[r[0]]))}</b> (${r.length-1} paso${r.length>2?'s':''}). Mira la pestaña «Moverse».</div>`; }
   return h;
@@ -374,7 +352,7 @@ function demobHTML(z){
 function growModeHTML(z){
   const pend=ui.orders.filter(o=>o.t==='growmode'&&o.zone===z.id).pop(); const cur=pend?pend.mode:(z.growMode||GROW_MODE_DEFAULT);
   const ST=cur==='crecer'?'Después de alimentar a todos y de los envíos automáticos, <b>todo el sobrante va a crecer</b>. Las reservas no aumentan.':'Después de alimentar a todos y de los envíos, <b>el sobrante se guarda</b> en el almacén; solo lo que no cabe va a crecer. Útil para juntar comida para una tribu, un tributo o una guerra.';
-  return `<h4>Comida que sobra${infoBtn('sobra',ST)}</h4><div class="row"><span class="seg"><button data-act="growmode" data-v="crecer" aria-pressed="${cur==='crecer'}">👶 Crecer</button><button data-act="growmode" data-v="guardar" aria-pressed="${cur==='guardar'}">⏸ Pausar crecimiento (guardar)</button></span></div>`+infoBody('sobra',ST)+``;
+  return `<div class="row gmrow"><span class="hint">Sobrante de comida${infoBtn('sobra',ST)}</span><span class="seg"><button data-act="growmode" data-v="crecer" aria-pressed="${cur==='crecer'}">👶 Crecer</button><button data-act="growmode" data-v="guardar" aria-pressed="${cur==='guardar'}">⏸ Pausar crecimiento (guardar)</button></span></div>`+infoBody('sobra',ST)+``;
 }
 // Envíos: una sola tarjeta para mandar una vez o cada paso. Todo con toques: recurso, destino y cantidad.
 function routeListHTML(z){
@@ -391,16 +369,16 @@ function sendCardHTML(z){
   const path=ownPath(G,ME,z.id,dsel,12); const fac=path?shipFactor(G,path):0;
   let q=fv('sd_q',5); if(q!=='sobrante') q=Math.max(0,Math.min(Number(q)||0,mode==='once'?stock:99));
   let h=`<h4>Enviar</h4><div class="sendcard">`;
-  h+=`<div class="sdmode"><button data-act="sdset" data-k="sd_mode" data-v="once" aria-pressed="${mode==='once'}">Una vez</button><button data-act="sdset" data-k="sd_mode" data-v="each" aria-pressed="${mode==='each'}">🔁 Cada paso</button></div>`;
-  h+=`<div class="sdres">${['food','prod'].map(r=>`<button data-act="sdset" data-k="sd_res" data-v="${r}" aria-pressed="${res===r}"><span>${RI[r]}</span><b>${Math.floor(z[r])}</b><small>${RN[r]}</small></button>`).join('')}</div>`;
+  h+=`<div class="sdtop"><div class="sdmode"><button data-act="sdset" data-k="sd_mode" data-v="once" aria-pressed="${mode==='once'}">Una vez</button><button data-act="sdset" data-k="sd_mode" data-v="each" aria-pressed="${mode==='each'}">🔁 Cada paso</button></div>`;
+  h+=`<div class="sdres">${['food','prod'].map(r=>`<button data-act="sdset" data-k="sd_res" data-v="${r}" aria-pressed="${res===r}"><span>${RI[r]}</span><b>${Math.floor(z[r])}</b><small>${RN[r]}</small></button>`).join('')}</div></div>`;
   h+=`<div class="sddest">${others.map(a=>{ const pa=ownPath(G,ME,z.id,a.id,12); const f2=pa?shipFactor(G,pa):null; return `<button class="dtile" data-act="sdset" data-k="sd_to" data-v="${a.id}" aria-pressed="${a.id===dsel}" ${pa?'':'disabled'}><span class="nband" style="background:${TCOL[a.terrain]}"></span><b>${esc(zname(a))}</b><span class="dbars"><i style="--v:${Math.min(100,100*a.food/Math.max(1,capStore(G,a,'food')))}%;--c:#9DC764"></i><i style="--v:${Math.min(100,100*a.prod/Math.max(1,capStore(G,a,'prod')))}%;--c:#C9A878"></i></span><small>${pa?(f2?fm(f2)+' 🪙 c/u':'gratis'):'sin camino'}</small></button>`; }).join('')}</div>`;
   const quick=mode==='once'?[1,5,10,Math.floor(stock/2),stock].filter((v,i,a)=>v>0&&a.indexOf(v)===i):[1,2,5,10,'sobrante'];
-  h+=`<div class="sdq"><button class="qs" data-act="sdq" data-d="-1" aria-label="Menos">－</button><span class="qn">${q==='sobrante'?'todo el sobrante':'<b>'+q+'</b> '+RI[res]}</span><button class="qs" data-act="sdq" data-d="1" aria-label="Más">＋</button></div>`;
-  h+=`<div class="row sdchips">${quick.map(v=>`<button class="chip ${String(q)===String(v)?'on':''}" data-act="sdset" data-k="sd_q" data-v="${v}">${v==='sobrante'?'todo el sobrante':(mode==='once'&&v===stock&&stock>5?'todo':(mode==='once'&&v===Math.floor(stock/2)&&stock>5?'mitad':v))}</button>`).join('')}</div>`;
+  h+=`<div class="sdqrow"><div class="sdq"><button class="qs" data-act="sdq" data-d="-1" aria-label="Menos">－</button><span class="qn">${q==='sobrante'?'todo el sobrante':'<b>'+q+'</b> '+RI[res]}</span><button class="qs" data-act="sdq" data-d="1" aria-label="Más">＋</button></div>`;
+  h+=`<div class="row sdchips">${quick.map(v=>`<button class="chip ${String(q)===String(v)?'on':''}" data-act="sdset" data-k="sd_q" data-v="${v}">${v==='sobrante'?'todo el sobrante':(mode==='once'&&v===stock&&stock>5?'todo':(mode==='once'&&v===Math.floor(stock/2)&&stock>5?'mitad':v))}</button>`).join('')}</div></div>`;
   const cst=q==='sobrante'?0:Math.ceil((Number(q)||0)*fac);
-  h+=path?`<div class="cost ${cst>G.F[ME].gold?'bad':''}"><b>${q==='sobrante'||!cst?(q==='sobrante'?'🪙 según lo enviado':'Gratis'):rq('gold',cst)}</b><small>${esc(zname(z))} ➜ ${esc(zname(to))} · ${path.length} zona${path.length>1?'s':''}${path.some(i=>G.zones[i].b.some(b=>b.t==='camino'))?' (el Camino abarata)':''}${mode==='each'?' · se repite cada paso, después de alimentar y antes de crecer':''}</small></div>`:'<div class="warn">No hay camino de zonas tuyas hasta ahí.</div>';
+  h+='<div class="sdgo">'; h+=path?`<div class="cost ${cst>G.F[ME].gold?'bad':''}"><b>${q==='sobrante'||!cst?(q==='sobrante'?'🪙 según lo enviado':'Gratis'):rq('gold',cst)}</b><small>${esc(zname(z))} ➜ ${esc(zname(to))} · ${path.length} zona${path.length>1?'s':''}${path.some(i=>G.zones[i].b.some(b=>b.t==='camino'))?' (el Camino abarata)':''}${mode==='each'?' · se repite cada paso, después de alimentar y antes de crecer':''}</small></div>`:'<div class="warn">No hay camino de zonas tuyas hasta ahí.</div>';
   const can=path&&(q==='sobrante'||Number(q)>0);
-  h+=`<div class="row">${btnHTML('sendgo',mode==='each'?'🔁 Enviar cada paso':'Enviar'+(cst?' · 🪙 '+cst:''),can?'':'disabled','primary')}</div></div>`;
+  h+=`${btnHTML('sendgo',mode==='each'?'🔁 Cada paso':'Enviar',can?'':'disabled','primary')}</div></div>`;
   return h;
 }
 // Encabezado que se abre y se cierra (el panel recuerda cómo lo dejaste).
@@ -410,7 +388,7 @@ function fold(key,title,extra){
 }
 function subRecursos(z){
   if(!mine(z)) return '<div class="hint">Solo puedes enviar recursos desde tus propias zonas.</div>';
-  let h=`<div class="zres3"><div><span>🌾</span><b>${Math.floor(z.food)}/${capStore(G,z,'food')}</b>${barHTML(z.food,capStore(G,z,'food'),'#9DC764')}</div><div><span>⚒</span><b>${Math.floor(z.prod)}/${capStore(G,z,'prod')}</b>${barHTML(z.prod,capStore(G,z,'prod'),'#C9A878')}</div><div></div></div>`;
+  let h='';
   h+=growModeHTML(z)+sendCardHTML(z)+routeListHTML(z);
   return h;
 }

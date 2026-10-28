@@ -3,6 +3,14 @@
 All notable changes, newest first. The game and the design documents are in Spanish; this log is in English.
 
 ## Unreleased
+- **Who works in buildings**: Mill → farmers, Workshop → engineers, Market → traders, Library → scientists; Storehouse, Road and Hospital accept any civilian (`BLD_WORKER`). Specialist buildings are staffed first. Over 24 bot games at step 60: population 18.5 → 16.1, gold 248 → 199.
+- **Map header removed**: the *My capital / Chosen zone / Whole map* buttons and the help text are gone; the two view modes are small icons in the map corner; **C** and **F** center on your capital / fit the whole map.
+- **Network plan is now usable**: zoom (wheel, ＋/－), drag, arrows/WASD and centering on zones (new `js/interfaz/mapa/plan.js`).
+- **Tabs are icons** (the name only on the selected one; icons only on narrow screens); alerts are shorter (max 2).
+- **Compact panels**: zone summary (four chips + one growth line), send-resources form (fits without scrolling), single comparative Victory chart (you and your neighbours; "see all" adds the rest).
+- **Tribe requests** moved out of the zone tab to one line each at the top of *Empire* (with pay buttons); the tribe card in its zone is much shorter.
+- **Ctrl+Z / "Undo"** removes the last order of the step.
+- **Interface**: new *Resources* tab (auction, wonders, map resources) so *Empire* is no longer an endless scroll; auction shown as bronze/silver/gold chests with ＋/－ bids and the rules moved to the help icon; the story is a one-line card; wonders are cards with their own illustration (12) and a green ✓ icon instead of the word "free"; **Tab** / **Shift+Tab** cycle through your zones keeping the current sub-tab.
 - **Bots propose trades**: every 8 steps (staggered per bot), from step 24, with 50 % chance, a bot offers up to 30 % of what it holds most of and asks for something of equal or greater value in what it holds least (rounded up); never with the currency of the upcoming auction. Measured over 24 bot games of 85 steps: 251 offers, 70 closed, none losing value (`botTradeOffer`, `OFFER_BOT_*`).
 - **Tribe events reworked**: *Tribal unrest* and *Tribal fury* are removed. Instead every tribe grows by itself at the start of each year (from year 2): +1 civilian of its trade and +2 barbarians (berserkers) (`TRIBE_YEAR_CIV`, `TRIBE_YEAR_BAR`, `tribesGrow`). Measured over 24 bot games of 85 steps: people per tribe at step 80 2.7 → 18.3, unclaimed tribes at step 80 3.6 → 5.0, battles per game 6.3 → 8.7. Only *Tribal request* and *Tribal exodus* remain as yearly tribe events.
 - Bot auction bids now use a variance of 10 (was 3).

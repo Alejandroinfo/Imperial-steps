@@ -373,8 +373,8 @@ function flyTo(x,y,w,ms){
   const step=t=>{ const k=Math.min(1,(t-t0)/ms), e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2; setView(cx0+(x-cx0)*e,cy0+(y-cy0)*e,w0+(w-w0)*e); if(k<1) VIEW.anim=requestAnimationFrame(step); else VIEW.anim=null; };
   VIEW.anim=requestAnimationFrame(step);
 }
-function fitAll(ms){ const B=WORLD.bounds; const w=Math.max(WORLD.W,WORLD.H/VIEW.ratio); flyTo((B.x0+B.x1)/2,(B.y0+B.y1)/2,w*1.02,ms); }
-function goZone(i,w,ms){ flyTo(sx(i),sy(i)+20,w||820,ms===undefined?650:ms); }
+function fitAll(ms){ if(ui&&ui.view==='plan'){ planFit(ms); return; } const B=WORLD.bounds; const w=Math.max(WORLD.W,WORLD.H/VIEW.ratio); flyTo((B.x0+B.x1)/2,(B.y0+B.y1)/2,w*1.02,ms); }
+function goZone(i,w,ms){ if(ui&&ui.view==='plan'){ const z=G.zones[i]; planFly(zx(z),zy(z),Math.min(PV.w,620),ms===undefined?650:ms); return; } flyTo(sx(i),sy(i)+20,w||820,ms===undefined?650:ms); }
 function myCapital(){ const z=G.zones.find(z=>z.capital&&z.sector===ME); return z?z.id:0; }
 
 /* ---------- minimapa (solo se redibuja si cambia algo) ---------- */
@@ -398,7 +398,7 @@ let DRAG=null, SUPPRESS=false, EDGEV=[0,0], PANQ=false;
 function schedView(){ if(PANQ) return; PANQ=true; requestAnimationFrame(()=>{ PANQ=false; clampView(); applyView(); }); }
 function initTerrInput(){
   const vp=$('vp');
-  vp.addEventListener('pointerdown',e=>{ if(e.button!==0||e.target.closest('.mini,.toolbar')) return; DRAG={x:e.clientX,y:e.clientY,vx:VIEW.x,vy:VIEW.y,moved:false}; if(VIEW.anim){ cancelAnimationFrame(VIEW.anim); VIEW.anim=null; } });
+  vp.addEventListener('pointerdown',e=>{ if(e.button!==0||e.target.closest('.mini,.vmode,.dpad')) return; DRAG={x:e.clientX,y:e.clientY,vx:VIEW.x,vy:VIEW.y,moved:false}; if(VIEW.anim){ cancelAnimationFrame(VIEW.anim); VIEW.anim=null; } });
   window.addEventListener('pointermove',e=>{
     if(DRAG&&ui&&ui.view==='terr'){ const dx=e.clientX-DRAG.x, dy=e.clientY-DRAG.y; if(!DRAG.moved&&Math.hypot(dx,dy)>5){ DRAG.moved=true; vp.classList.add('dragging'); }
       if(DRAG.moved){ const r=vpRect(); VIEW.x=DRAG.vx-dx*VIEW.w/r.width; VIEW.y=DRAG.vy-dy*VIEW.h/r.height; schedView(); } }
@@ -427,7 +427,7 @@ function startPan(){
   const step=t=>{
     const dt=Math.min(50,t-last)/1000; last=t; let dx=DPAD[0],dy=DPAD[1];
     KEYS.forEach(k=>{ dx+=KMAP[k][0]; dy+=KMAP[k][1]; });
-    if(dx||dy){ const n=Math.hypot(dx,dy)||1; const sp=VIEW.w*0.9*dt; VIEW.x+=dx/n*sp; VIEW.y+=dy/n*sp; clampView(); applyView(); PANLOOP=requestAnimationFrame(step); }
+    if(dx||dy){ const n=Math.hypot(dx,dy)||1; if(ui&&ui.view==='plan'){ const sp=PV.w*0.9*dt; PV.x+=dx/n*sp; PV.y+=dy/n*sp; planClamp(); planApply(); } else { const sp=VIEW.w*0.9*dt; VIEW.x+=dx/n*sp; VIEW.y+=dy/n*sp; clampView(); applyView(); } PANLOOP=requestAnimationFrame(step); }
     else PANLOOP=null;
   };
   PANLOOP=requestAnimationFrame(step);

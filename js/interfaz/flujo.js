@@ -17,12 +17,12 @@ function startGame(cfg){
   beginStep(); render(); musicPlay('plan');
   fitAll(0);
   setTimeout(()=>{ flyTo(sx(mc),sy(mc)+30,840,FXS.on?1500:0); },FXS.on?350:0);
-  const sm=$('startMsg'); sm.innerHTML=`<b>Aquí empiezas</b><div>Tu capital es <b>${esc(zname(G.zones[mc]))}</b> (borde ${ME===0?'rojo':'de tu color'}). Arrastra el mapa para recorrerlo, usa la rueda para acercar o el minimapa para saltar.</div>`; sm.className='startmsg show'; clearTimeout(sm._t); sm._t=setTimeout(()=>{ sm.className='startmsg'; },7000);
+  const sm=$('startMsg'); sm.innerHTML=`<b>Aquí empiezas</b><div>Tu capital es <b>${esc(zname(G.zones[mc]))}</b>.</div>`; sm.className='startmsg show'; clearTimeout(sm._t); sm._t=setTimeout(()=>{ sm.className='startmsg'; },7000);
 }
 function setViewMode(v,quiet){
   ui.view=v; $('cam').classList.toggle('hide',v!=='terr'); $('plan').classList.toggle('hide',v!=='plan'); $('mini').classList.toggle('hide',v!=='terr');
   $('vTerr').setAttribute('aria-pressed',v==='terr'); $('vPlan').setAttribute('aria-pressed',v==='plan');
-  if(v==='terr') resizeView();
+  if(v==='terr') resizeView(); else planApply();
   if(!quiet) render();
 }
 function beginStep(){

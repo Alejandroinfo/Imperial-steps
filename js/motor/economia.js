@@ -89,10 +89,11 @@ function produceZone(g,z){
   if(z.capital){ const c=CAPITAL_BONUS+M.capExtra; food+=c; prod+=c; gold+=c; tech+=c; by.cap=c; }
   // edificios
   let pool=act.slice();
-  z.b.forEach(b=>{
+  // primero los edificios que piden un oficio (para que Almacén o Camino no les quiten a los especialistas), luego los que admiten a cualquiera
+  [...z.b.filter(b=>BLD_WORKER[b.t]),...z.b.filter(b=>!BLD_WORKER[b.t])].forEach(b=>{
     b.wk=0; if(b.t==='mar') return; const def=BT[b.t];
     if(def.mil){ const mil=us.filter(u=>!UT[u.t].civ&&!UT[u.t].siege&&u.w===0); b.wk=Math.min(bldSlots(g,f,b),mil.length); return; }
-    const elig=b.t==='biblio'?pool.filter(u=>u.t==='cie'):pool.slice(); const w=Math.min(bldSlots(g,f,b),elig.length); b.wk=w;   // copia: pool se achica al asignar
+    const elig=BLD_WORKER[b.t]?pool.filter(u=>u.t===BLD_WORKER[b.t]):pool.slice(); const w=Math.min(bldSlots(g,f,b),elig.length); b.wk=w;   // copia: pool se achica al asignar
     const wtypes={}; for(let i=0;i<w;i++){ const u=elig[i]; pool.splice(pool.indexOf(u),1); wtypes[u.t]=(wtypes[u.t]||0)+1; }
     const pw=PERW[Math.min(5,b.l)]; const B0=[food,prod,gold,tech];
     if(b.t==='molino') food+=w*pw+(b.s==='granero'?Math.min(3,Math.floor(z.food/10)):0);

@@ -432,4 +432,3 @@ function startPan(){
   };
   PANLOOP=requestAnimationFrame(step);
 }
-function panKey(k){ return keyDown(k); }

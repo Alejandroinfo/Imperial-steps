@@ -76,7 +76,7 @@ interface EstadoJugador {
   lastAvoid: number; notes: string[];
   rq: { name: string; left: number; tot: number }[]; rcap: number; rspent?: number;
   stance: { [otro: number]: Postura };
-  enc: Encuentro | null; encNext?: number; caravanUsed?: number; story?: { id: string; ch: number; next: number; tags: string[]; done?: number; nextNew?: number }; stories?: number; storyUsed?: string[]; tres?: { key: string; until: number }[];
+  enc: Encuentro | null; encNext?: number; caravanUsed?: number; story?: { id: string; ch: number; next: number; tags: string[]; done?: number; nextNew?: number }; stories?: number; storyUsed?: string[]; tres?: { key: string; until: number }[]; botHeld?: { [zona: number]: string };
 }
 
 interface Partida {

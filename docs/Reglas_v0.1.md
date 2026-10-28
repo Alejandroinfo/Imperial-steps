@@ -9,7 +9,7 @@ Documento de trabajo para corregir y construir encima. Reúne todo lo conversado
 - ❓ **Por definir** — falta una decisión o hay ambigüedad.
 - 🆕 **Nuevo en la última sesión** (26 de octubre de 2026). Junto a ✅ o 💡 indica si lo decidieron ustedes o si es una propuesta mía.
 
-**Última actualización:** 26 de octubre de 2026 (prototipo v0.13). 🆕 El 27 de octubre de 2026 se escribieron las reglas de **maravillas únicas**, **botín** e **ingenieros automáticos** (secciones 15.2 y 15.3); el prototipo ya tiene los **ingenieros automáticos** (15.2, 27/10/2026, v0.14); las maravillas únicas y lo de 13.3 todavía no (ver 23.5).
+**Última actualización:** 26 de octubre de 2026 (prototipo v0.13). 🆕 El 28 de octubre de 2026 se añadieron las pujas de los bots por valor esperado y el registro descargable (sección 25). 🆕 El 27 de octubre de 2026 se escribieron las reglas de **maravillas únicas**, **botín** e **ingenieros automáticos** (secciones 15.2 y 15.3); el prototipo ya tiene los **ingenieros automáticos** (15.2, 27/10/2026, v0.14); las maravillas únicas y lo de 13.3 todavía no (ver 23.5).
 
 Cómo usarlo: cambien el emoji de estado cuando decidan algo, tachen lo que no les guste y escriban encima.
 
@@ -434,7 +434,7 @@ Detalles:
 - ✅ **Cómo se conoce una tribu:** al ser vecino, es decir, al tener **alguna unidad en una zona fronteriza** a la tribu en ese momento, te enteras de **qué tipo de tribu es** y de **las condiciones para anexarla**.
 - ✅ Lo que piden para unirse **no cambia** una vez revelado; cuanta más población, más piden (comida, producción u oro).
 - ✅ Si se unen, pasan a ser parte del imperio, **en el mismo trabajo** que tenían.
-- ✅ **Crecimiento y defensa:** crecen por eventos. Si las atacan, o por evento, **todos se vuelven berserkers antes del combate**.
+- ✅ **Crecimiento y defensa:** 🆕 **al empezar cada año (desde el 2.º), cada tribu gana 1 civil de su oficio y 2 bárbaros (berserkers)** (28/10/2026, decidido por Alejandro; reemplaza los eventos Inquietud y Furia). Si las atacan, **todos sus civiles se vuelven berserkers antes del combate**.
 - ✅ **Tributo y expansión:**
   - Por evento pueden pedir **tributo** a los jugadores vecinos.
   - Si hay un solo vecino, debe superar la cantidad pedida. Si hay dos o más, quien menos da recibe la invasión.
@@ -458,7 +458,7 @@ Detalles:
   - **Parte cierta:** **Prosperidad** (+15 % de comida, producción, oro y tecnología en todas las zonas) o **Escasez** (−15 % de comida y producción). Al azar, nunca tres años seguidos del mismo signo. No se puede evitar y afecta a todos por igual. 💡 El 15 % es estimación mía.
   - **Parte variable:** un evento de la lista de abajo del **mismo signo** (positivos: cosecha, veta, feria, inspiración, caminos, año fértil; negativos: sequía, plaga, derrumbe, tormenta, fiebre). Por ejemplo, un año de Prosperidad con Inspiración da un extra de tecnología. 💡 Como duran un año, los efectos por trabajador se redujeron a la cuarta parte (+0,5 en vez de +2); *Año fértil* baja el costo de crecer un 30 % (antes la mitad); *Tormenta* sube la logística un 50 % (antes ×2); *Plaga* sube el consumo un 25 % (antes +1 por persona). *Pronóstico* puede evitar la parte variable negativa, no la parte cierta.
   - ~~Antes: un evento cada 3 rondas desde la ronda 6, de un solo paso.~~
-- ✅ 🆕 **Sucesos de un solo paso:** un evento de tribu al año (Inquietud, Pedido, Éxodo o Furia) en un mes al azar y, en los años malos, con 50 % de probabilidad, una **Inundación** (los almacenes pierden la mitad). Son de un solo paso porque cambian el estado de una vez (crece una tribu, se funda otra, los guerreros se vuelven berserkers, los almacenes pierden la mitad): repetirlos 12 meses seguidos los volvería devastadores. 💡 Pendiente de confirmar con Alejandro si prefiere convertirlos en tipos de año.
+- ✅ 🆕 **Sucesos de un solo paso:** un evento de tribu al año (Pedido o Éxodo) en un mes al azar y, en los años malos, con 50 % de probabilidad, una **Inundación**. Los eventos de tribu son de un solo paso porque cambian el estado de una vez (crece una tribu, se funda otra, los guerreros se vuelven berserkers): repetirlos 12 meses seguidos los volvería devastadores. ✅ 🆕 **La inundación dura lo que queda del año (28/10/2026, decidido por Alejandro):** al empezar, los almacenes de las zonas afectadas pierden la mitad de sus reservas y, hasta el fin del año, **guardan la mitad** de su capacidad. Sigue afectando solo a Ríos (como en el catálogo) y *Pronóstico* la evita. ~~Antes: solo la pérdida de la mitad, una vez.~~ ❓ Los eventos de tribu: Alejandro pidió una descripción de cada uno para decidir qué hacer (ver sección 25).
 - ✅ 🆕 La interfaz muestra el mes y el año junto al paso y, arriba, **los eventos del año con los pasos que quedan**.
 - ✅ **Positivos:** aumentan la producción de recursos en ciertas zonas, o reducen costos logísticos ese paso.
 - ✅ **Negativos:** aumentan el consumo de recursos para tareas, o la comida consumida.
@@ -492,13 +492,12 @@ Detalles:
 | Sequía | Negativo | −1 de comida por agricultor y poblador | Praderas, Llanuras |
 | Plaga | Negativo | +1 de consumo de comida por persona | Bosques, Ríos |
 | Derrumbe | Negativo | −1 de producción por ingeniero y poblador | Montañas, Colinas |
-| Inundación | Negativo | Los almacenes pierden la mitad de sus reservas | Ríos |
+| Inundación | Negativo | 🆕 Los almacenes pierden la mitad de sus reservas y, lo que queda del año, guardan la mitad | Ríos |
 | Tormenta | Negativo | Mover comida y producción cuesta el doble ese paso | Todos |
 | Fiebre | Negativo | Los heridos tardan una ronda más en curarse | Todos |
-| Inquietud tribal | Neutral | Una tribu crece +1 de población | Tribus |
 | Pedido de tribu (antes «Exigencia de tributo») | Neutral (de un solo paso) | Una tribu pide algo a sus vecinos (ver sección 12); cumplirlo sube la relación e ignorarlo la baja | Tribus |
 | Éxodo tribal | Neutral | Una tribu funda una nueva tribu (ver sección 12) | Tribus |
-| Furia tribal | Neutral | Una tribu se vuelve berserker antes de su próximo combate | Tribus |
+| *(Inquietud y Furia tribal: quitados el 28/10/2026; ahora las tribus crecen solas cada año, ver 12 y 25)* | | | |
 
 - ✅ Se sortea **1 evento cada 3 rondas** a partir de la ronda 6 (antes era uno por ronda, y resultaba demasiado frecuente), con generador aleatorio con semilla para que las partidas se puedan repetir.
 - 💡 Conexión con las tecnologías: *Calendario*, *Astronomía* y *Pronóstico* (ver con más anticipación y evitar), *Semillas resistentes*, *Reservas de emergencia*, *Fortuna del temerario* y *Resistencia climática*.
@@ -528,12 +527,12 @@ Detalles:
 - ✅ **Cada 20 pasos** hay una subasta abierta a **todos** los jugadores. Se sabe **en qué moneda** hay que pagar, pero no exactamente qué se ofrece.
 - ✅ Se ofrecen **tantos objetos como jugadores**, y **cada objeto se subasta por separado**: ofreces lo que quieras por cada uno, en secreto.
 - ✅ Gana la oferta más alta y **a los demás se les devuelve lo que ofrecieron**. **Si hay empate arriba, todos los empatados se lo llevan.**
-- ✅ 🆕 Se anuncia **2 pasos antes** (en el juego, al empezar el paso 18 para la del paso 20), con la **moneda**: oro, ciencia, o **comida o producción de todo el imperio**. 🆕 **Pago con comida o producción (decidido por Alejandro):** se descuenta de las zonas que tienen ese recurso en su almacén, **en igual porcentaje de cada una**. Se resuelve al final del paso de la subasta; las ofertas se pueden cambiar hasta entonces. Si ofreces más de lo que tienes, se conservan tus ofertas más altas que puedas pagar. Quien no gana no paga nada.
+- ✅ 🆕 Se anuncia **10 pasos antes** (✅ 🆕 28/10/2026, decidido por Alejandro; antes 2: en el juego, al empezar el paso 10 para la del paso 20) para poder **acumular la moneda**, con la **moneda**: oro, ciencia, o **comida o producción de todo el imperio**. 🆕 **Pago con comida o producción (decidido por Alejandro):** se descuenta de las zonas que tienen ese recurso en su almacén, **en igual porcentaje de cada una**. Se resuelve al final del paso de la subasta; las ofertas se pueden cambiar hasta entonces. Si ofreces más de lo que tienes, se conservan tus ofertas más altas que puedas pagar. Quien no gana no paga nada.
 - ✅ 🆕 **Qué se ofrece (decidido por Alejandro, 27/10/2026):** 5 categorías, y de cada objeto se conoce su **categoría y su nivel (bronce, plata u oro)**, pero **no sus detalles** (cuántos soldados, qué tecnología…). Nivel al azar: 50 % bronce, 35 % plata, 15 % oro.
   - **Pelotón:** tropas con su equipo (bronce 2 soldados; plata 2 soldados y 2 arqueros; oro además 2 escuderos y 1 caballero).
   - **Poblador extraordinario:** una persona con 2 rasgos de oficio buenos (bronce +1 y +1; plata +2 y +1; oro +2 y +2).
   - **Saber:** una tecnología sin pagar su costo, de nivel hasta 2, 3 o 4 según el nivel del objeto.
-  - **Cargamento:** 30, 55 o 90 de **comida o producción**. 🆕 La comida entra **directo al crecimiento de tu capital**, no solo al almacén; la producción va al almacén y el resto, directo a una obra.
+  - **Cargamento:** 🆕 **variable** (28/10/2026): se sabe entre qué y qué (💡 bronce 20–40, plata 40–70, oro 70–110; la media sigue siendo 30, 55 o 90) y **no se sabe de qué recurso**: comida o producción. 🆕 La comida entra **directo al crecimiento de tu capital**, no solo al almacén; la producción va al almacén y el resto, directo a una obra.
   - **Recurso temporal:** el beneficio de un recurso estratégico global (hierbas o madera, hierro o sal, ruinas) durante **40 pasos** (decidido por Alejandro; yo había propuesto 15).
 
 **Encuentros de elegir entre dos**
@@ -884,7 +883,7 @@ Es la misma idea que los científicos automáticos (sección 14.0), aplicada a l
 19. ❓ **Terrenos:** qué terrenos son riesgosos o muy riesgosos para los eventos.
 20. ❓ **Mapas:** elegir cuáles probar primero; definir especialización y tamaño de cada tribu.
 21. ✅ 🆕 **Maravillas:** resuelto el máximo (una de cada, 12 en total) y el efecto (el de la vertebral de nivel 5 de su rama), ver 15.3. ❓ Sigue pendiente si cuentan para la condición de Desarrollo.
-22. ❓ **Tecnologías y edificios:** revisar y corregir el catálogo de 209 tecnologías (Tecnologias_v0.2.xlsx) y los edificios de la sección 15.1. 🆕 Los textos de Almacén, Intereses del almacén y Capital próspera ya se actualizaron en el juego; falta pasarlos al Excel.
+22. ❓ **Tecnologías y edificios:** revisar y corregir el catálogo de 209 tecnologías (Tecnologias_v0.2.xlsx) y los edificios de la sección 15.1. 🆕 ✅ 🆕 El Excel ya tiene las 209 tecnologías y los textos al día (28/10/2026).
 23. ❓ **Máquinas de asedio:** movimiento, comida, qué pasa si pierdes la zona, si cuentan como población y si se pueden licenciar (sección 9.1).
 24. ❓ **Eventos y recursos:** revisar el catálogo de eventos (13.1) y la lista de recursos estratégicos (6.3), y añadirlos de forma simétrica al atlas.
 25. ❓ **Arte:** revisar el estilo del prototipo (secciones 19.1 y 23). 🆕 El mapa pasó a ser un valle continuo: ¿se sigue en esa dirección?
@@ -894,7 +893,7 @@ Es la misma idea que los científicos automáticos (sección 14.0), aplicada a l
 29. ✅ 🆕 **Reparto del sobrante de comida:** resuelto. Cada zona elige Crecer o Guardar (sección 8).
 30. ❓ 🆕 **Segundo edificio del mismo tipo** (💡 +50 % de costo): confirmar que no rompe el balance, sobre todo con Almacén, Cuartel y Biblioteca.
 31. ❓ 🆕 **Valores del equipo** (💡 ahora 2 × nivel de la tecnología y soldado 1) y si el equipo guardado lo toma el conquistador en vez de perderse.
-32. ❓ 🆕 **Economía estancada** (sigue abierta, aunque mejoró con la etapa de fundación y las fronteras): en las simulaciones la población se queda cerca de 10 hasta el paso 60 (ver `docs/balance_economia.md`). Decidir si se cambia el costo de crecer, lo que da el agricultor o el poblador, o si basta con que los jugadores se expandan.
+32. ❓ 🆕 **Economía estancada** (sigue abierta, aunque mejoró con la etapa de fundación y las fronteras): en las simulaciones la población se queda cerca de 10 hasta el paso 60 (medición del 26/10; el informe se borró por desactualizado). Decidir si se cambia el costo de crecer, lo que da el agricultor o el poblador, o si basta con que los jugadores se expandan.
 33. ❓ 🆕 **Tecnologías muy fuertes según la simulación** (`docs/balance_tecnologias.md`): *Arado* y *Moneda* se pagan en 2 o 3 pasos; la línea de *Fortificación* sube hasta +51 puntos el % de victorias al defender; *Armaduras ligeras* +28 y +30.
 34. ❓ 🆕 **Diseño para más tensión**, en el orden que eligió Alejandro: ✅ encuentros sorpresa y recursos disputados (secciones 13.2 y 6.3) → ✅ mapas más conectados con dilema del prisionero en la frontera (secciones 4.2 y 11) → tribus como amenaza latente y tributo negociado → multijugador por videollamada.
 36. ❓ 🆕 **Fronteras:** confirmar los bonos (+3 / +4) jugando, y revisar los 11 mapas donde un camino todavía pasa por encima de otra zona (sobre todo Espiral y Dientes de sierra).
@@ -1038,7 +1037,7 @@ Es la misma idea que los científicos automáticos (sección 14.0), aplicada a l
 
 ### 23.10 Subasta (🆕 27/10/2026, v0.18)
 
-- Cada 20 pasos (paso 20, 40…), anunciada 2 pasos antes. Moneda al azar entre oro, ciencia, comida y producción; objetos de las 5 categorías con nivel visible. Panel en la pestaña Imperio, orden «Ofrecer», aviso al anunciarla y al ganar, y los bots ofertan.
+- Cada 20 pasos (paso 20, 40…), anunciada 2 pasos antes (🆕 desde el 28/10/2026, 10). Moneda al azar entre oro, ciencia, comida y producción; objetos de las 5 categorías con nivel visible. Panel en la pestaña Imperio, orden «Ofrecer», aviso al anunciarla y al ganar, y los bots ofertan.
 - En 36 partidas de bots hubo 144 subastas sin errores y las 5 categorías salieron con frecuencias parecidas.
 - 10 casos de prueba nuevos.
 
@@ -1080,3 +1079,29 @@ Todo se aplicó a pedido de Alejandro. Los **valores** marcados 💡 son estimac
 - ✅ 🆕 **Tecnologías de reclutar y repoblar (27/10/2026):** nuevas: *Levas* (+1 recluta por Cuartel y paso), *Intendencia militar* (paga −50 %), *Campeones* (general a mitad de producción y comida, +1 de fuerza), *Mando* (generales +1 de vida y +1 de defensa a las tropas de su tipo), *Memoria del pueblo* (repoblación +15 puntos) y *Raíces profundas* (cada baja abarata 2 crecimientos). Rehechas: *Cuarteles*, *Cuartel de instrucción*, *Mercenarios*, *Reservistas*, *Guarniciones*, *Suministros de campaña*, *Ejército permanente* (ahora sí implementada), *Campo de entrenamiento* (ahora sí implementada) y los textos de las armas y máquinas. Con esto el catálogo pasa de 203 a **209** tecnologías.
 - ✅ 🆕 Los **bots** también ascienden generales (medido: 0,44 por jugador a los 80 pasos) y *Guardia de élite* ya funciona (+1 de defensa a los militares que trabajan en ese Cuartel). 💡 Caso de referencia: atacar a una tribu típica con 5 soldados reclutados cuesta ⚒ 10 🌾 10 🪙 5, no gasta ningún civil y gana el 74 % de las veces (94 % si uno de ellos es general).
 - ❓ Pendiente: revisar los costos de reclutar jugando (¿ejércitos demasiado baratos?); *Camino militar II* sigue sin efecto; el Excel de tecnologías quedó atrás.
+
+---
+
+## 25. 🆕 Cambios del 28 de octubre de 2026 (pedidos por Alejandro)
+
+- ✅ 🆕 **Los bots pujan por el valor esperado del cofre (subasta, 13.3):** cada objeto tiene un **valor esperado en «oro equivalente»** calculado **solo con lo que se sabe en el anuncio** (categoría y nivel: del cargamento no mira qué recurso ni cuánto salió, promedia el rango y los dos recursos). El bot puja ese valor más un número al azar con **varianza 3** (desviación ≈ 1,7 unidades de la moneda; 💡 así lo interpreté), sin pasar del 60 % de lo que tiene en la moneda de la subasta (si la suma se pasa, baja todas sus pujas en la misma proporción). Antes repartía al azar una parte de sus fondos. Valores 💡 (estimaciones mías, en `js/config/reglas.js`):
+
+| Objeto | Valor esperado (oro equivalente) |
+|---|---|
+| Pelotón | costo de sus tropas: producción ×0,8 + comida ×0,6 + oro (bronce ≈ 8, plata ≈ 22, oro ≈ 53) |
+| Poblador extraordinario | 12 / 22 / 36 (bronce / plata / oro) |
+| Saber | 15 × el nivel máximo de la tecnología regalada (30 / 45 / 60) |
+| Cargamento | media del rango × promedio de comida (0,6) y producción (0,8): 21 / 38,5 / 63 |
+| Recurso temporal (40 pasos) | 40 / 70 / 110 |
+
+  Valor de cada moneda: oro 1, ciencia 1, comida 0,6, producción 0,8 (los mismos pesos que usan los bots en los tratos). Se convierte a la moneda de la subasta antes de pujar.
+  - ✅ 🆕 **Acumular desde el anuncio (decidido por Alejandro):** como la subasta se anuncia 10 pasos antes y se sabe la moneda, **los bots la reservan**: mientras deciden «no ven» la parte que van a pujar (así no la gastan en obras, tropas ni tecnologías; 💡 reservan el 60 % del valor esperado de todos los objetos, hasta lo que tengan), con **comida** ponen sus zonas en **Guardar** y con **producción** pausan las obras; al terminar la subasta lo deshacen. Lo que el motor gasta solo con el oro o la ciencia (la paga de las tropas, científicos que investigan) no se frena.
+  - **Medido** (96 subastas entre bots, 24 partidas de 85 pasos), antes → después: objetos sin ninguna puja 40 → 3 de ~288; fondos medianos en comida 10 → 64 y en producción 106 → 134 (el valor total de los objetos sigue en ~170: aún no alcanzan siempre). Un humano que valore el objeto más que el promedio (por ejemplo, necesita justo esa tecnología) le gana a un bot, a propósito.
+- ✅ 🆕 **Los bots proponen tratos (🤝, sección 24; decidido por Alejandro el 28/10/2026):** cada bot, cada **8 pasos** (desfasado por jugador), desde el **paso 24** (después del comienzo guiado) y con **50 %** de probabilidad, puede ofrecer un trato a otro jugador vivo (humano u otro bot), con **máximo 1 oferta suya esperando**. Da **entre 5 y 30 (hasta el 30 %)** del recurso de que más tiene (en valor) y pide el de que menos tiene, en una cantidad **de igual o mayor valor** (redondeada hacia arriba: oro y ciencia 1, comida 0,6, producción 0,8), así que **nunca recibe menos de lo que da**. **No inicia tratos con la moneda de la próxima subasta**, ni dando ni pidiendo, mientras esté anunciada (esos 10 pasos la guarda). 💡 Los números (8, 24, 50 %, 5–30, 30 %) son estimaciones mías. Un bot que recibe un trato lo acepta con las reglas de siempre (si recibe al menos el 90 % del valor, 85 % de las veces).
+  - **Medido** (24 partidas de bots de 85 pasos): 251 tratos propuestos (10,5 por partida), 70 cerrados (28 %), 0 con pérdida de valor para quien propone y 0 con la moneda de la subasta.
+- ✅ 🆕 **Inundación todo el año (13.1):** ver 13. En el juego: `z.ev.flooded` (capacidad a la mitad en `capStore`) mientras dure el evento y `z.ev.flood` (reservas a la mitad) solo el primer paso; el evento dura hasta el último paso del año.
+- ✅ 🆕 **Eventos de tribu (decidido por Alejandro el 28/10/2026):** se **quitan Inquietud y Furia**. Quedan dos eventos de tribu al año (uno, en un mes al azar, sobre una tribu al azar): **Pedido de tribu** y **Éxodo tribal** (si tiene 4 o más personas y una zona libre a su lado, la mitad de su gente funda una tribu nueva ahí). En su lugar, **cada tribu crece sola al empezar cada año (desde el 2.º): +1 civil de su oficio y +2 bárbaros** (💡 `TRIBE_YEAR_CIV = 1`, `TRIBE_YEAR_BAR = 2` en `reglas.js`; «bárbaros» = berserkers).
+  - **Medido** (24 partidas de bots de 85 pasos, sin crecimiento → con crecimiento): gente por tribu al paso 40, 3,4 → 11,8; al paso 80, 2,7 → 18,3; tribus aún sin anexar ni conquistar al paso 80, 3,6 → 5,0; zonas por jugador, 4,2 → 3,8; combates por partida, 6,3 → 8,7. Cada año la tribu cuesta unos **+13 de anexión** (3 por civil + 5 por cada bárbaro) y pelea más: ahora anexar tarde sale mucho más caro y conviene hacerlo pronto o ganarse la relación temprano. 💡 Si resulta demasiado, se puede poner un tope de bárbaros por tribu.
+- ✅ 🆕 **Registro descargable (19.2):** en **Historial** y en la pantalla de fin hay dos botones: **⬇ Registro (.txt)** (legible: mapa, jugadores, modo, semilla, condiciones de victoria al final e historial paso a paso) y **⬇ Datos (.json)** (lo mismo en datos, más el tiempo hasta ¡Listo! y las órdenes por paso de quien juega). Sirve para repasar una partida, compartirla y analizar el ritmo. Sale de `gameLogData` y `gameLogText` (`js/motor/registro.js`, sin tocar la pantalla). No guarda las batallas golpe a golpe: solo lo que dice el historial.
+- ✅ 🆕 **Excel de tecnologías al día:** 209 tecnologías (se agregaron *Levas*, *Intendencia militar*, *Campeones*, *Mando*, *Memoria del pueblo* y *Raíces profundas*; 26 textos y 4 valoraciones puestos al día). Las hojas Ramas y Resumen suman 209 (81 civiles, 54 de construcción, 74 militares).
+- ✅ 🆕 **Repositorio:** se borraron 33 copias viejas de código, documentos y audio de la raíz; el flujo de pruebas automáticas (`pruebas.yml`) estaba en la raíz y GitHub no lo leía: ahora está en `.github/workflows/`.

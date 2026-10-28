@@ -66,7 +66,6 @@ async function netFirebase(){
 }
 function netRef(p){ return NET_DB.ref('salas/' + NET.code + (p ? '/' + p : '')); }
 function netOn(p, cb){ const r = netRef(p); const h = s => cb(s.val()); r.on('value', h); NET.subs.push(() => r.off('value', h)); }
-function netOffAll(){ NET.subs.forEach(f => f()); NET.subs = []; }
 function netErr(e){
   console.error(e);
   const t = String(e && (e.code || e.message) || e);

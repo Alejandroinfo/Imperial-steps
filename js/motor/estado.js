@@ -9,7 +9,6 @@ function mulberry32(a){const r=function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(
 const zname = z => z.name||('Zona '+(z.id+1));
 const isPl = f => f!==null && f!==undefined && f>=0 && f<TRIBE;
 function lst(z,f){ return z.units[f]||(z.units[f]=[]); }
-function cntT(z,f,t){ return (z.units[f]||[]).reduce((a,u)=>a+(u.t===t?1:0),0); }
 function presentF(z){ return Object.keys(z.units).map(Number).filter(f=>z.units[f].length>0); }
 /** @param {Partida} g */
 function allied(g,a,b){ return a!==b&&isPl(a)&&isPl(b)&&(g.F[a].ally===b||g.F[b].ally===a); }
@@ -117,6 +116,7 @@ function wonderCostOf(g,f,z){ let c=g.M[f].wonderCost; if(resMul(z,'piedra')) c=
 function capStore(g,z,res){
   const s=z.size; let c=STORE_PER_SIZE*s; if(!isPl(z.owner)) return c;
   z.b.forEach(b=>{ if(b.t==='almacen'){ c+=ALMACEN_PER_SIZE*s*b.l; if(res==='food'&&b.s==='comida') c+=specVal(g,z.owner,'almacen','comida')*s; if(res==='prod'&&b.s==='produccion') c+=specVal(g,z.owner,'almacen','produccion')*s; } });
+  if(z.ev&&z.ev.flooded) c=Math.floor(c/2);   // inundación: el resto del año el almacén guarda la mitad
   return c;
 }
 /** @param {Partida} g */

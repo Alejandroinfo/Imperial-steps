@@ -34,7 +34,7 @@ function panelHistorial(){
   const hist=(G.hist||[]).slice().reverse();
   const f=ui.hf||'todo';
   const cls=l=>/Combate|conquista|captura|sorpresa|elimin|invade/.test(l)?'guerra':(/desarrolla|empieza a investigar/.test(l)?'tec':(/se termina|sube a nivel|destruye/.test(l)?'obra':(/anexa|tributo|Alianza/.test(l)?'dip':(/Evento:/.test(l)?'ev':'otro'))));
-  let h=`<h3>Historial de la partida</h3><div class="row"><span class="seg">${[['todo','Todo'],['guerra','Guerra'],['tec','Ciencia'],['obra','Obras'],['dip','Tribus'],['ev','Eventos']].map(([k,l])=>`<button data-act="hf" data-v="${k}" aria-pressed="${f===k}">${l}</button>`).join('')}</span></div>`;
+  let h=`<h3>Historial de la partida</h3><div class="row"><span class="seg">${[['todo','Todo'],['guerra','Guerra'],['tec','Ciencia'],['obra','Obras'],['dip','Tribus'],['ev','Eventos']].map(([k,l])=>`<button data-act="hf" data-v="${k}" aria-pressed="${f===k}">${l}</button>`).join('')}</span>${logButtonsHTML()}</div>`;
   if(!hist.length) return h+'<div class="hint">Todavía no ha pasado nada. Aquí se irá contando la historia de tu imperio paso a paso.</div>';
   let shown=0;
   h+='<div class="hist">';

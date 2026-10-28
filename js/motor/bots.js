@@ -27,7 +27,7 @@ function civPathNext(g,f,start,goal){
  * @param {Jugador} f
  * @returns {Orden[]}
  */
-function botOrders(g,f){
+function botOrdersCore(g,f){
   /** @type {Orden[]} */
   const o=[]; const F=g.F[f], rng=g.rng; const M=g.M[f];
   if(F.out){
@@ -45,9 +45,6 @@ function botOrders(g,f){
     cands.sort((a,b)=>(up(a.n)-up(b.n))||(b.v-a.v)||(BOT_BR[style].indexOf(a.r)-BOT_BR[style].indexOf(b.r))||(a.l-b.l));
     if(cands.length){ const pick=cands[rng()<0.7?0:Math.floor(rng()*Math.min(3,cands.length))]; o.push({t:'research',f,name:pick.n}); }
   }
-  // subasta: ofrecen una parte de lo que tienen, más por los objetos de mejor nivel
-  { const a=g.auction; if(a&&!(a.bids[f]&&Object.keys(a.bids[f]).length)&&g.step>=a.step-1){ const funds=auctionFunds(g,f,a.cur); const w=a.items.map(it=>[0.08,0.16,0.3][it.tier]*(0.6+rng()*0.8)); const sw=w.reduce((x,y)=>x+y,0);
-      a.items.forEach((it,i)=>{ const amt=Math.floor(funds*0.6*w[i]/sw*(rng()<0.7?1:0)); if(amt>0) o.push({t:'bid',f,item:i,amount:amt}); }); } }
   // tributos pendientes
   g.tributes.forEach(t=>{ if(t.targets.includes(f)&&!t.paid[f]){ const z=zonesOf(g,f).find(a=>(t.res==='food'?a.food:t.res==='prod'?a.prod:t.res==='gold'?F.gold:F.tech)>=t.amount+2&&g.zones[t.zone].adj.includes(a.id)); if(z) o.push({t:'tribute',f,tribe:t.zone,from:z.id}); } });
   const mine=zonesOf(g,f);
@@ -129,5 +126,59 @@ function botOrders(g,f){
     const near=mine.some(z=>[z.id].concat(z.adj).some(a=>(g.zones[a].units[x]||[]).some(u=>!UT[u.t].civ)));
     const betray=style==='war'&&g.zones.some(z=>z.role==='frontera'&&(z.units[f]||[]).length&&(z.units[x]||[]).length&&power(z,f)>=2*Math.max(1,power(z,x)))&&rng()<0.35;
     const want=(near||betray)&&isEnemy(g,f,x)?'alerta':'paz'; if(stanceOf(g,f,x)!==want) o.push({t:'stance',f,target:x,stance:want}); }
+  // tratos: de vez en cuando proponen uno a otro jugador. Reciben al menos el mismo valor que dan, y no tocan el recurso de la próxima subasta.
+  { const t=botTradeOffer(g,f); if(t) o.push(t); }
   return o;
+}
+
+// Subasta: desde que se anuncia, el bot acumula la moneda (no la gasta, y guarda la comida o pausa las obras) y pone sus pujas.
+/** @param {Partida} g @param {Jugador} f */
+function botAuctionHold(g,f){
+  const a=g.auction; if(!a||g.F[f].out) return null;
+  const funds=auctionFunds(g,f,a.cur), want=a.items.reduce((x,it)=>x+auctionValue(it,a.cur),0);
+  return {cur:a.cur, amt:Math.min(funds,Math.ceil(want*AUCTION_BOT_SPEND))};
+}
+// Número al azar con distribución normal (media 0, varianza `v`) usando el azar de la partida.
+/** @param {Partida} g @param {number} v */
+function randNormal(g,v){ const u=Math.max(1e-9,g.rng()), w=g.rng(); return Math.sqrt(v)*Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*w); }
+/** @param {Partida} g @param {Jugador} f */
+function botOrders(g,f){
+  const hold=botAuctionHold(g,f); const F=g.F[f]; /** @type {{z:Zona,n:number}[]} */ const hid=[]; let hidG=0;
+  if(hold&&hold.amt>0){   // mientras decide, «no ve» lo reservado: así no lo gasta en obras, tropas ni tecnologías
+    if(hold.cur==='gold'||hold.cur==='tech'){ hidG=hold.amt; F[hold.cur]-=hidG; }
+    else { const zs=zonesOf(g,f).filter(z=>z[hold.cur]>=1); let left=hold.amt; zs.forEach(z=>{ const t=Math.min(Math.floor(z[hold.cur]),left); if(t>0){ z[hold.cur]-=t; hid.push({z,n:t}); left-=t; } }); }
+  }
+  const o=botOrdersCore(g,f);
+  if(hold&&hold.amt>0){ if(hidG) F[hold.cur]+=hidG; hid.forEach(h=>{ h.z[hold.cur]+=h.n; }); }
+  if(F.out) return o;
+  // acumular lo que el motor gasta solo: la comida que sobra (en vez de crecer) y las obras (en vez de construir)
+  const want=hold&&hold.amt>0&&(hold.cur==='food'||hold.cur==='prod')&&!botAuctionBidsDone(g,f);
+  zonesOf(g,f).forEach(z=>{
+    if(want&&hold.cur==='food'&&(z.growMode||GROW_MODE_DEFAULT)!=='guardar'){ o.push({t:'growmode',f,zone:z.id,mode:'guardar'}); (F.botHeld=F.botHeld||{})[z.id]='growmode'; }
+    else if(want&&hold.cur==='prod'&&!z.pauseBuild){ o.push({t:'pausebuild',f,zone:z.id,on:true}); (F.botHeld=F.botHeld||{})[z.id]='pausebuild'; }
+    else if(!hold&&F.botHeld&&F.botHeld[z.id]){ if(F.botHeld[z.id]==='growmode') o.push({t:'growmode',f,zone:z.id,mode:'crecer'}); else o.push({t:'pausebuild',f,zone:z.id,on:false}); delete F.botHeld[z.id]; }
+  });
+  // pujas: el valor esperado de cada objeto con varianza AUCTION_BOT_VAR, sin pasar de AUCTION_BOT_SPEND de lo que tiene
+  { const a=g.auction; if(a&&g.step>=a.step-1&&!botAuctionBidsDone(g,f)){ const funds=auctionFunds(g,f,a.cur);
+      const wants=a.items.map(it=>Math.max(0,auctionValue(it,a.cur)+randNormal(g,AUCTION_BOT_VAR))); const tot=wants.reduce((x,y)=>x+y,0);
+      const k=tot>funds*AUCTION_BOT_SPEND?funds*AUCTION_BOT_SPEND/tot:1;
+      wants.forEach((w,i)=>{ const amt=Math.floor(w*k); if(amt>0) o.push({t:'bid',f,item:i,amount:amt}); }); } }
+  return o;
+}
+/** @param {Partida} g @param {Jugador} f */
+function botAuctionBidsDone(g,f){ const a=g.auction; return !!(a&&a.bids[f]&&Object.keys(a.bids[f]).length); }
+
+// Un trato que propone un bot: da una parte de lo que más tiene y pide algo de igual o más valor de lo que menos tiene. null si no toca.
+/** @param {Partida} g @param {Jugador} f @returns {Orden|null} */
+function botTradeOffer(g,f){
+  if(g.step<OFFER_BOT_FROM||(g.step+f)%OFFER_BOT_EVERY!==0||g.rng()>=OFFER_BOT_CHANCE) return null;
+  if((g.offers||[]).filter(x=>x.from===f).length>=1) return null;
+  const libres=OFFER_RES.filter(r=>!g.auction||r!==g.auction.cur);   // el recurso de la subasta que viene se guarda
+  if(libres.length<2) return null;
+  const val=r=>ownedTotal(g,f,r)*OFFER_VAL[r];
+  const orden=libres.slice().sort((a,b)=>val(b)-val(a)); const dar=orden[0], pedir=orden[orden.length-1];
+  const n=Math.min(OFFER_BOT_MAX,Math.floor(ownedTotal(g,f,dar)*OFFER_BOT_PCT)); if(n<OFFER_BOT_MIN) return null;
+  const m=Math.ceil(n*OFFER_VAL[dar]/OFFER_VAL[pedir]-1e-9);   // redondeado hacia arriba: nunca recibe menos valor del que da
+  const otros=[]; for(let x=0;x<g.N;x++) if(x!==f&&!g.F[x].out&&isPl(x)) otros.push(x); if(!otros.length) return null;
+  return {t:'offer',f,to:otros[Math.floor(g.rng()*otros.length)],give:{res:/** @type {Recurso} */(dar),n},ask:{res:/** @type {Recurso} */(pedir),n:m}};
 }

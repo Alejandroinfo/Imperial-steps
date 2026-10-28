@@ -51,6 +51,7 @@ function resolveStep(g,orders){
   // 1. evento
   { const empiezan=g.evq.filter(e=>e.step===g.step); g.evNow=empiezan[0]||null; g.evAct=(g.evAct||[]).filter(a=>a.end>=g.step); empiezan.forEach(e=>{ g.evAct.push({id:e.id,start:g.step,end:g.step+(e.dur||1)-1}); }); applyEventMods(g,g.evAct,L); }
   g.evq=g.evq.filter(e=>e.step>g.step);
+  tribesGrow(g,L);   // cada año las tribus crecen (1 civil y 2 bárbaros)
   // 2. órdenes
   /** Las órdenes de un tipo, ya con su forma exacta. @template {TipoOrden} K @param {K} t @returns {Array<Extract<Orden,{t:K}> & {f:Jugador}>} */
   function by(t){ return /** @type {any} */(orders.filter(o=>o.t===t)); }

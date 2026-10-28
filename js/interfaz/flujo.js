@@ -69,6 +69,16 @@ function finishStep(){
   if(G.over){ render(); playFx(G.fx,before); showEnd(); return; }
   beginStep(); render(); playFx(G.fx,before);
 }
+// Baja el registro de la partida como archivo: «txt» (para leerlo) o «json» (para analizarlo).
+function downloadLog(kind){
+  if(!G) return; const json=kind==='json';
+  const body=json?JSON.stringify(gameLogData(G,tele),null,2):gameLogText(G,tele);
+  const blob=new Blob([body],{type:json?'application/json':'text/plain;charset=utf-8'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='registro_pasos_del_imperio_paso'+(G.step-1)+'.'+(json?'json':'txt');
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+function logButtonsHTML(){ return '<span class="seg"><button data-act="dllog" data-v="txt" title="Registro legible de toda la partida">⬇ Registro (.txt)</button><button data-act="dllog" data-v="json" title="Los mismos datos para analizarlos (con tiempos y órdenes)">⬇ Datos (.json)</button></span>'; }
 function showEnd(){
   const w=G.winner, me=w.includes(ME);
   sfxLater(me?'victory':'defeat',600,0); if(me) confetti(); musicStinger(me?'victoria':'derrota',true);
@@ -79,7 +89,7 @@ function showEnd(){
   let t='<table class="vt"><tr><th></th>'+all.map((a,f)=>`<th style="color:${PLN[f].col}">${PLN[f].name}</th>`).join('')+'</tr>';
   all[0].forEach((c,i)=>{ t+=`<tr><td>${c.k}</td>`+all.map(a=>`<td class="${a[i].ok?'ok':''}">${a[i].ok?'✓':a[i].v}</td>`).join('')+'</tr>'; });
   t+='</table>';
-  $('endBody').innerHTML=`<p>La partida duró <b>${G.step-1} pasos</b>.</p>${t}<p class="hint">Lo que mediría el juego para decidir el reloj: tardaste en promedio <b>${avg} s</b> en dar "Listo" y diste en promedio <b>${ord} órdenes</b> por paso. Tecnologías desarrolladas por ti: ${Object.keys(G.F[ME].techs).length}.</p>`;
+  $('endBody').innerHTML=`<p>La partida duró <b>${G.step-1} pasos</b>.</p>${t}<p>${logButtonsHTML()}</p><p class="hint">Lo que mediría el juego para decidir el reloj: tardaste en promedio <b>${avg} s</b> en dar "Listo" y diste en promedio <b>${ord} órdenes</b> por paso. Tecnologías desarrolladas por ti: ${Object.keys(G.F[ME].techs).length}.</p>`;
   $('dlgEnd').showModal();
 }
 function tick(){

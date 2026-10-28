@@ -48,7 +48,6 @@ const TRAIT_INFO = {
   sal:{ic:'❤',n:'Salud',d:'los puntos de vida en combate (siempre números enteros)'},
   fue:{ic:'⚔',n:'Fuerza',d:'los dados de combate (siempre números enteros)'}
 };
-const TRAIT_LV = {'-2':'muy malo','-1':'malo','1':'bueno','2':'muy bueno'};
 // ===== Reclutar (27/10/2026, decidido por Alejandro) =====
 // Las tropas se RECLUTAN en un Cuartel pagando producción, comida y oro; ya no cuestan una persona. Cada Cuartel recluta
 // RECRUIT_PER_LEVEL unidades por paso y por nivel. Aparte, un civil puede ascender a GENERAL (campeón): es más fuerte que una tropa normal
@@ -114,15 +113,23 @@ const TRIBE_REL_N = ['furiosa','enojada','molesta','desconfianza','trato','amist
 const STORY_FIRST = 10, STORY_GAP = 8, STORY_BREAK_MIN = 6, STORY_BREAK_MAX = 10, STORY_MAX = 4;
 // Subasta a sobre cerrado (13.3): cada AUCTION_EVERY pasos, anunciada AUCTION_NOTICE pasos antes. Se sabe la moneda, la categoría y el nivel
 // (bronce, plata u oro) de cada objeto, pero no los detalles. Se paga con oro, ciencia, o comida y producción de todo el imperio.
-const AUCTION_EVERY = 20, AUCTION_NOTICE = 2, AUCTION_RES_STEPS = 40;
+const AUCTION_EVERY = 20, AUCTION_NOTICE = 10, AUCTION_RES_STEPS = 40;
 const AUCTION_CURRENCIES = ['gold','tech','food','prod'];
 const AUCTION_CATS = {pel:'Pelotón', pob:'Poblador extraordinario', sab:'Saber', car:'Cargamento', rec:'Recurso temporal'};
 const AUCTION_TIERS = ['bronce','plata','oro'], AUCTION_TIER_ICON = ['🥉','🥈','🥇'], AUCTION_TIER_ODDS = [0.5,0.35,0.15];
 const AUCTION_PEL = [{sol:2},{sol:2,arq:2},{sol:2,arq:2,esc:2,cab:1}];     // tropas con su equipo
 const AUCTION_POB = [[1,1],[2,1],[2,2]];                                    // niveles de los 2 rasgos del poblador extraordinario
 const AUCTION_SAB = [2,3,4];                                                // nivel máximo de la tecnología regalada
-const AUCTION_CAR = [30,55,90];                                             // cantidad del cargamento (comida o producción)
+const AUCTION_CAR = [30,55,90];                                             // cantidad media del cargamento (comida o producción)
+const AUCTION_CAR_RANGE = [[20,40],[40,70],[70,110]];                       // el cargamento es variable: se sabe entre qué y qué (💡 la media es AUCTION_CAR); el recurso no se sabe
 const AUCTION_REC = [['hierbas','madera'],['hierro','sal'],['ruinas']];     // recurso estratégico global temporal
+// Valor esperado de cada objeto, en «oro equivalente» (💡 estimaciones; los bots pujan por ese valor, ver auctionValue en motor/subasta.js).
+const AUCTION_VAL_RES = {gold:1, tech:1, food:0.6, prod:0.8};   // cuánto vale 1 de cada moneda en oro equivalente (igual que el valor de los tratos con bots)
+const AUCTION_VAL_POB = [12,22,36];                             // poblador extraordinario por nivel
+const AUCTION_VAL_REC = [40,70,110];                            // recurso temporal de 40 pasos por nivel
+const AUCTION_VAL_SAB = 15;                                     // por nivel de la tecnología regalada (cuesta 20 por nivel; hay que poder investigarla)
+const AUCTION_BOT_VAR = 10;                                     // los bots pujan el valor esperado con una varianza de 10 (desviación √10 ≈ 3,2), en unidades de la moneda de la subasta
+const AUCTION_BOT_SPEND = 0.6;                                  // y nunca más de este porcentaje de lo que tienen en esa moneda
 // Etapa de fundación: hasta este paso, crecer cuesta la mitad, para que el inicio no sea tan lento.
 const FOUNDING_STEPS = 12;
 // Bono de la capital: comida, producción, oro y ciencia por paso.
@@ -134,6 +141,9 @@ const RESEARCH_PER_SCI = 2;
 const DUP_LEVEL = 3, MAX_SAME = 2, DUP_COST_MULT = 1.5;
 // Ofertas entre jugadores: lo que ofreces queda en reserva; al otro le llega como un encuentro. Caducan a los OFFER_TTL pasos (y se devuelve lo reservado).
 const OFFER_TTL = 4, OFFER_MAX_OUT = 2, OFFER_RES = ['food','prod','gold','tech'];
+// Tratos que proponen los bots (28/10/2026): cada OFFER_BOT_EVERY pasos, desde el paso OFFER_BOT_FROM, con probabilidad OFFER_BOT_CHANCE; dan entre OFFER_BOT_MIN y OFFER_BOT_MAX de lo que más tienen (hasta OFFER_BOT_PCT de ello) y piden algo de igual o mayor valor (💡 todos estimaciones mías).
+const OFFER_BOT_EVERY = 8, OFFER_BOT_FROM = 24, OFFER_BOT_CHANCE = 0.5, OFFER_BOT_MIN = 5, OFFER_BOT_MAX = 30, OFFER_BOT_PCT = 0.3;
+const OFFER_VAL = {gold:1, tech:1, food:0.6, prod:0.8};   // valor de cada recurso para comparar un trato (el mismo que usan los bots al aceptar)
 // Puestos de trabajo de cada edificio por nivel: nivel 1 = 2, nivel 2 = 4, nivel 3 = 6, nivel 4 = 8, nivel 5 = 10 (Andamios y Grúas suman 1 cada una).
 const WORKERS_PER_LEVEL = 2;
 const DEMOB_COST = {basico:2,especializado:3};   // retirar a un general → civil básico 2, → civil especializado 3 (Reservistas: 0)
@@ -194,7 +204,6 @@ const SPEC_NAMES = {comida:'Almacén de comida',produccion:'Almacén de producci
 // valor por trabajador según nivel del edificio económico
 const PERW = [0,1,2,2,3,5];
 const MINC = {2:3,3:5,4:6,5:6};   // mínimo de tecnologías del nivel anterior
-const TERMS = {};  // se llena con TECH
 const TECHS = DATA.techs;
 const TECH = {}; TECHS.forEach(t=>{ TECH[t.n]=t; });
 const BRANCHES = DATA.branches;
@@ -228,19 +237,19 @@ const EVENTS = [
   {id:'sequia',ic:'☀',n:'Sequía',k:'-',terr:['pra','lla'],d:'−0,5 de comida por agricultor y poblador'},
   {id:'plaga',ic:'🦠',n:'Plaga',k:'-',terr:['bos','rio'],d:'+25 % de consumo de comida'},
   {id:'derrumbe',ic:'🪨',n:'Derrumbe',k:'-',terr:['mon','col'],d:'−0,5 de producción por ingeniero y poblador'},
-  {id:'inunda',ic:'🌊',n:'Inundación',k:'-',terr:['rio'],d:'Los almacenes pierden la mitad de sus reservas',inst:1},
+  {id:'inunda',ic:'🌊',n:'Inundación',k:'-',terr:['rio'],d:'Los almacenes pierden la mitad de sus reservas y, el resto del año, guardan la mitad',flood:1},
   {id:'tormenta',ic:'⛈',n:'Tormenta',k:'-',terr:['all'],d:'La logística cuesta un 50 % más'},
   {id:'fiebre',ic:'🤒',n:'Fiebre',k:'-',terr:['all'],d:'Los heridos tardan una ronda más en curarse'},
   {id:'prosper',ic:'🌟',n:'Prosperidad',k:'+',terr:['all'],year:1,d:'+15 % de comida, producción, oro y tecnología',year:1},
   {id:'escasez',ic:'🥀',n:'Escasez',k:'-',terr:['all'],d:'−15 % de comida y de producción',year:1},
-  {id:'inquietud',ic:'🔥',n:'Inquietud tribal',k:'t',terr:[],d:'Una tribu crece +1 de población'},
-  {id:'tributo',ic:'🤝',n:'Pedido de tribu',k:'t',terr:[],d:'Una tribu pide algo a sus vecinos (cumplirlo mejora la relación; no hacerlo no tiene castigo)'},
-  {id:'exodo',ic:'🏕',n:'Éxodo tribal',k:'t',terr:[],d:'Una tribu funda una nueva tribu'},
-  {id:'furia',ic:'😡',n:'Furia tribal',k:'t',terr:[],d:'Una tribu se vuelve berserker'}
+  {id:'tributo',ic:'🤝',n:'Pedido de tribu',k:'t',terr:[],d:'Una tribu pide algo a sus vecinos (cumplirlo sube la relación; ignorarlo la baja)'},
+  {id:'exodo',ic:'🏕',n:'Éxodo tribal',k:'t',terr:[],d:'Una tribu funda una nueva tribu'}
 ];
 // Calendario: 1 paso = 1 mes, 12 pasos = 1 año. El primer año (pasos 1 a 12) es de fundación: sin eventos.
 // Desde el año EV_FIRST_YEAR, cada año tiene dos partes que duran los 12 pasos: una CIERTA (Prosperidad o Escasez, +/- EV_BASE_PCT de lo que se produce)
-// y una VARIABLE, un evento de la lista del mismo signo (cosecha, veta, sequía…). Además hay «sucesos» de un solo paso (tribus, inundación).
+// y una VARIABLE, un evento de la lista del mismo signo (cosecha, veta, sequía…). Además hay «sucesos» de un solo paso (tribus); la inundación dura lo que queda del año.
+// Crecimiento anual de las tribus (28/10/2026): al empezar cada año (desde el 2.º) cada tribu gana TRIBE_YEAR_CIV civil(es) de su oficio y TRIBE_YEAR_BAR bárbaros (berserkers).
+const TRIBE_YEAR_CIV = 1, TRIBE_YEAR_BAR = 2;
 const YEAR_STEPS = 12, EV_FIRST_YEAR = 2, EV_BASE_PCT = 0.15, EV_FLOOD_CHANCE = 0.5, EV_FERTIL_FACTOR = 0.7, EV_TORMENTA_MULT = 1.5;
 const MONTH_N = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 const EVT = {}; EVENTS.forEach(e=>{ EVT[e.id]=e; });

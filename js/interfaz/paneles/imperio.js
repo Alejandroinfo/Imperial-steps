@@ -7,7 +7,7 @@ function auctionHTML(){
   const left=a.step-G.step, funds=auctionFunds(G,ME,a.cur), mine=a.bids[ME]||{};
   let total=0, h=`<h4>🔨 Subasta <a href="#" data-wiki="subasta" class="wlink">ⓘ</a></h4><div class="hint">${left>0?`En ${left} paso${left===1?'':'s'}`:'<b>Hoy</b>'} (paso ${a.step}) · se paga con <b>${RI[a.cur]} ${RN[a.cur]}</b> (tienes ${funds}${(a.cur==='food'||a.cur==='prod')?' en todo el imperio':''}). Las ofertas son en secreto y se resuelven al final del paso ${a.step}: gana la más alta, los empates se lo llevan todos y quien no gana no paga nada. Puedes cambiarlas hasta entonces.</div><div class="alist">`;
   a.items.forEach((it,i)=>{ const pend=ui.orders.filter(o=>o.t==='bid'&&o.item===i).pop(); const cur=pend?pend.amount:(mine[i]||0); total+=cur;
-    h+=`<div class="arow"><span class="atx"><b>${AUCTION_TIER_ICON[it.tier]} ${AUCTION_CATS[it.cat]}</b><small>nivel ${AUCTION_TIERS[it.tier]}${cur?` · tu oferta: ${cur}`:''}</small></span><input type="number" min="0" data-f="bid_${i}" value="${cur}" aria-label="Oferta por el objeto ${i+1}"> ${btnHTML('bid','Ofrecer',`data-i="${i}"`)}</div>`; });
+    h+=`<div class="arow"><span class="atx"><b>${AUCTION_TIER_ICON[it.tier]} ${AUCTION_CATS[it.cat]}</b><small>nivel ${AUCTION_TIERS[it.tier]}${it.cat==='car'?` · entre ${AUCTION_CAR_RANGE[it.tier][0]} y ${AUCTION_CAR_RANGE[it.tier][1]}, no se sabe de qué recurso`:''}${cur?` · tu oferta: ${cur}`:''}</small></span><input type="number" min="0" data-f="bid_${i}" value="${cur}" aria-label="Oferta por el objeto ${i+1}"> ${btnHTML('bid','Ofrecer',`data-i="${i}"`)}</div>`; });
   h+='</div>'; if(total>funds) h+=`<div class="warn">Ofreces más de lo que tienes: solo se conservarán tus ofertas más altas que puedas pagar.</div>`;
   return h;
 }
@@ -34,7 +34,7 @@ function panelImperio(){
   // eventos
   h+='<h4>Eventos <a href="#" data-wiki="eventos" class="wlink">ⓘ</a></h4>';
   const up=upcomingEvents(G,ME);
-  { const act=(G.evAct||[]).filter(a=>a.end>=G.step&&!EVT[a.id].inst&&EVT[a.id].k!=='t'); h+=act.length?'<div class="hint">Este año: '+act.map(a=>`<b>${EVT[a.id].n}</b> (quedan ${a.end-G.step+1} paso${a.end-G.step+1===1?'':'s'})`).join(' + ')+'.</div>':`<div class="hint">${G.step<=YEAR_STEPS?'El primer año es de fundación: sin eventos. El año que viene llega una parte cierta (Prosperidad o Escasez) y una variable.':'Ahora no hay ningún evento del año activo.'} Cada paso es un mes.</div>`; }
+  { const act=(G.evAct||[]).filter(a=>a.end>=G.step&&EVT[a.id].k!=='t'); h+=act.length?'<div class="hint">Este año: '+act.map(a=>`<b>${EVT[a.id].n}</b> (quedan ${a.end-G.step+1} paso${a.end-G.step+1===1?'':'s'})`).join(' + ')+'.</div>':`<div class="hint">${G.step<=YEAR_STEPS?'El primer año es de fundación: sin eventos. El año que viene llega una parte cierta (Prosperidad o Escasez) y una variable.':'Ahora no hay ningún evento del año activo.'} Cada paso es un mes.</div>`; }
   h+=up.length?'<ul class="evl">'+up.map(x=>`<li>Paso ${x.step} (${MONTH_N[(x.step-1)%YEAR_STEPS]}): <b>${x.ev.n}</b> — ${x.ev.d}${x.dur>=YEAR_STEPS?' · dura todo el año':''} ${x.ev.k==='+'?'<span class="tag" style="background:#2F7F4F">positivo</span>':x.ev.k==='-'?'<span class="tag" style="background:#B3541E">negativo</span>':'<span class="tag" style="background:#6B5B50">tribus</span>'}</li>`).join('')+'</ul>':'<div class="hint">No ves ningún evento próximo (tu anticipación es de '+M.foresight+' pasos).</div>';
   // tributos
   const tr=G.tributes.filter(t=>t.targets.includes(ME)&&!t.paid[ME]);

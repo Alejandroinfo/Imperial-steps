@@ -1,7 +1,7 @@
 // @ts-check
 'use strict';
 // Subasta a sobre cerrado (reglas 13.3): cada 20 pasos, a todos los jugadores a la vez.
-//  - Se anuncia 2 pasos antes: moneda y, de cada objeto, su categoría y nivel (bronce, plata u oro); nada más.
+//  - Se anuncia AUCTION_NOTICE pasos antes (para poder acumular la moneda): moneda y, de cada objeto, su categoría y nivel (bronce, plata u oro); nada más.
 //  - Hay tantos objetos como jugadores y cada uno se subasta por separado: cada quien ofrece lo que quiera, en secreto.
 //  - Gana la oferta más alta; si empatan arriba, todos los empatados se lo llevan. Los demás no pagan nada.
 //  - Con comida o producción se paga de todo el imperio, descontando el mismo porcentaje de cada zona que la tiene.
@@ -20,13 +20,26 @@ function auctionPay(g,f,cur,amount){
   zs.forEach(z=>{ const t=Math.min(Math.floor(z[cur]),Math.floor(Math.floor(z[cur])*ratio)); z[cur]-=t; paid+=t; });
   for(const z of zs){ if(paid>=amount) break; const t=Math.min(Math.floor(z[cur]),amount-paid); z[cur]-=t; paid+=t; }   // lo que sobró del redondeo
 }
+// Valor esperado de un objeto, expresado en la moneda de la subasta (💡 estimación: ver AUCTION_VAL_* en config/reglas.js).
+// Solo usa lo que se sabe en el anuncio (categoría y nivel): del cargamento no se mira qué recurso ni cuánto salió; se promedian.
+/** @param {{cat:string,tier:number,det:any}} it @param {string} cur */
+function auctionValue(it,cur){
+  const V=AUCTION_VAL_RES; let gold=0;
+  if(it.cat==='pel'){ const u=AUCTION_PEL[it.tier]; Object.keys(u).forEach(t=>{ const c=UNIT_COST[t]; gold+=u[t]*(c.prod*V.prod+c.food*V.food+c.gold*V.gold); }); }
+  else if(it.cat==='pob') gold=AUCTION_VAL_POB[it.tier];
+  else if(it.cat==='sab') gold=AUCTION_SAB[it.tier]*AUCTION_VAL_SAB*V.tech;
+  else if(it.cat==='car'){ const r=AUCTION_CAR_RANGE[it.tier]; gold=(r[0]+r[1])/2*(V.food+V.prod)/2; }
+  else if(it.cat==='rec') gold=AUCTION_VAL_REC[it.tier];
+  return gold/V[cur];
+}
 /** @param {Partida} g */
 function auctionNew(g,step){
   const alive=[]; for(let f=0;f<g.N;f++) if(!g.F[f].out) alive.push(f);
   const cats=Object.keys(AUCTION_CATS), items=[];
   for(let i=0;i<alive.length;i++){
     const cat=cats[Math.floor(g.rng()*cats.length)]; const r=g.rng(); let acc=0, tier=2; for(let k=0;k<3;k++){ acc+=AUCTION_TIER_ODDS[k]; if(r<acc){ tier=k; break; } }
-    const det={}; if(cat==='car') det.res=g.rng()<0.5?'food':'prod'; if(cat==='rec'){ const l=AUCTION_REC[tier]; det.key=l[Math.floor(g.rng()*l.length)]; }
+    // del cargamento se sortea ya cuánto toca y de qué recurso; los jugadores solo saben el rango (y del recurso, nada)
+    const det={}; if(cat==='car'){ det.res=g.rng()<0.5?'food':'prod'; const r=AUCTION_CAR_RANGE[tier]; det.n=r[0]+Math.floor(g.rng()*(r[1]-r[0]+1)); } if(cat==='rec'){ const l=AUCTION_REC[tier]; det.key=l[Math.floor(g.rng()*l.length)]; }
     items.push({cat,tier,det});
   }
   /** @type {Recurso} */
@@ -47,7 +60,7 @@ function auctionAward(g,f,it,L){
   if(it.cat==='pel'){ const u=AUCTION_PEL[it.tier]; Object.keys(u).forEach(t=>{ for(let i=0;i<u[t];i++) lst(home,f).push(mkUnit(g,f,t)); }); L(tag+Object.keys(u).map(t=>u[t]+' '+(u[t]>1?UNP[t]:UN[t]).toLowerCase()).join(', ')+' en '+zname(home)+'.'); }
   else if(it.cat==='pob'){ const u=mkUnit(g,f,'pob'); const kinds=['agr','ing','com','cie'].sort(()=>g.rng()-0.5).slice(0,2); u.tr=kinds.map((k,i)=>({k,l:AUCTION_POB[it.tier][i]})); lst(home,f).push(u); L(tag+'llega un poblador con '+u.tr.map(x=>TRAIT_INFO[x.k].n+' '+(x.l>0?'+':'')+x.l).join(' y ')+' en '+zname(home)+'.'); }
   else if(it.cat==='sab'){ grantTech(g,f,AUCTION_SAB[it.tier],L,tag); }
-  else if(it.cat==='car'){ const n=AUCTION_CAR[it.tier];
+  else if(it.cat==='car'){ const n=it.det.n||AUCTION_CAR[it.tier];
     if(it.det.res==='food'){ home.prog+=n; L(tag+n+' de comida entran directo al crecimiento de '+zname(home)+'.'); }
     else { const room=Math.max(0,capStore(g,home,'prod')-home.prod); const put=Math.min(room,n); home.prod+=put; let rest=n-put; const pr=zs.flatMap(z=>z.proj).find(p=>p.left>0); if(rest>0&&pr){ const use=Math.min(rest,pr.left); pr.left-=use; rest-=use; } L(tag+n+' de producción llegan a '+zname(home)+(rest<n-put?', y el resto va directo a una obra':'')+'.'); } }
   else if(it.cat==='rec'){ F.tres=(F.tres||[]).filter(r=>r.key!==it.det.key); F.tres.push({key:it.det.key,until:g.step+AUCTION_RES_STEPS}); L(tag+RES[it.det.key].n+' durante '+AUCTION_RES_STEPS+' pasos ('+RES[it.det.key].d+')'); }
@@ -68,11 +81,11 @@ function auctionResolve(g,L){
   g.auction=null;
 }
 const RN_AUC={gold:'oro',tech:'ciencia',food:'comida',prod:'producción'};
-// Al final de cada paso: resolver la subasta si toca, o anunciar la próxima 2 pasos antes.
+// Al final de cada paso: resolver la subasta si toca, o anunciar la próxima AUCTION_NOTICE pasos antes.
 /** @param {Partida} g */
 function auctionTick(g,L){
   if(g.auction&&g.step>=g.auction.step){ auctionResolve(g,L); return; }
-  const A=g.step+AUCTION_NOTICE+1;   // el paso en que empezaría la subasta si se anuncia ahora (aparece al empezar el paso A-2)
+  const A=g.step+AUCTION_NOTICE+1;   // el paso en que empezaría la subasta si se anuncia ahora (aparece al empezar el paso A-AUCTION_NOTICE)
   if(!g.auction&&A%AUCTION_EVERY===0&&A>=AUCTION_EVERY){ g.auction=auctionNew(g,A); g.fx.push({k:'auctionnotice',step:A,cur:g.auction.cur}); L('¡Subasta en '+AUCTION_NOTICE+' pasos (paso '+A+')! Se paga con '+RN_AUC[g.auction.cur]+'. Objetos: '+g.auction.items.map(it=>AUCTION_CATS[it.cat]+' '+AUCTION_TIER_ICON[it.tier]).join(', ')+'.'); }
 }
 // Orden de oferta: una por objeto; 0 la quita. Se puede cambiar hasta el paso de la subasta.

@@ -82,6 +82,7 @@ function act(a,d){
     case 'tab': ui.tab=d.tab; break;
     case 'zsub': ui.zsub=d.s; break;
     case 'hf': ui.hf=d.v; break;
+    case 'dllog': downloadLog(d.v); return;
     case 'batch': ui.batch=d.b==='todos'?'todos':Number(d.b); break;
     case 'pick': { const id=Number(d.id); if(!ui.pickIds||ui.pick!==d.t) ui.pickIds=[]; ui.pick=d.t;
       if(ui.pickIds.includes(id)) ui.pickIds=ui.pickIds.filter(x=>x!==id);

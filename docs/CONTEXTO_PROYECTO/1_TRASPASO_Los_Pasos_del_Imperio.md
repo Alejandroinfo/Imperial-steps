@@ -2,7 +2,7 @@
 
 **Para qué sirve este documento:** permite retomar el proyecto en una conversación nueva (o con otra persona) sin tener que volver a explicar nada. Está escrito para leerse de arriba abajo en 10 minutos.
 
-**Última actualización:** 27 de octubre de 2026, noche, con años de eventos y tribus con relación −3 a +3 (🆕 pueblo vivo, rasgos y recursos con insignias, recursos de plata y oro, crecimiento n², puestos por nivel, ofertas entre jugadores, encuentros en ventana y escenas de fin de paso; ver sección 11)
+**Última actualización:** 28 de octubre de 2026 (🆕 pujas de bots por valor esperado, registro descargable, Excel al día y raíz limpia; ver sección 12). Antes, 27 de octubre de 2026, noche, con años de eventos y tribus con relación −3 a +3 (🆕 pueblo vivo, rasgos y recursos con insignias, recursos de plata y oro, crecimiento n², puestos por nivel, ofertas entre jugadores, encuentros en ventana y escenas de fin de paso; ver sección 11)
 **Autor del diseño:** Alejandro.
 
 ⚠ **Quién escribe:** en este proyecto escribe siempre **Alejandro**, autor único del diseño y del código. Las preferencias de la cuenta de Claude están a nombre de otra persona (Pao); no la confundas con él, no le atribuyas ideas, decisiones ni partidas de prueba, y háblale a Alejandro en masculino.
@@ -32,10 +32,10 @@
 |---|---|---|
 | **`docs/Reglas_v0.1.md`** | Todas las reglas, con ✅ decidido, 💡 propuesta, ❓ por definir y 🆕 nuevo. La sección 20 lista los pendientes y la 23 el estado del prototipo. | Vivo |
 | **`docs/TRASPASO_Los_Pasos_del_Imperio.md`** | Este documento. | Vivo |
-| **`docs/TRASPASO_sesion_2026-10-26.md`** y **`..._2026-10-27.md`** | Historial detallado de esas sesiones (qué se decidió y qué cambió). **No hace falta subirlos al Proyecto**: lo que importa ya está en este documento y en las Reglas. Subirlos solo si se va a trabajar en el tutorial o en la interfaz. | Historial |
+| ~~`docs/TRASPASO_sesion_2026-10-26.md` y `..._2026-10-27.md`~~ | ✅ 🆕 Borrados el 28/10/2026 (historial de sesiones ya integrado en este documento y en las Reglas; siguen en el historial de git). | — |
 | **`docs/CONTEXTO_PROYECTO/`** | 🆕 Copias listas para subir al Proyecto de Claude (3 archivos) y una guía de qué borrar. Se regenera con `python herramientas/generar_contexto.py`; **no se edita a mano**. | Generado |
 | **`docs/Como_manejar_el_proyecto.md`** | Cómo trabajamos. | Estable |
-| **`Tecnologias_v0.2.xlsx`** | Catálogo de 209 tecnologías. ⚠ Los textos de Almacén, Intereses del almacén y Capital próspera cambiaron en el juego y falta pasarlos al Excel. | Vivo |
+| **`Tecnologias_v0.2.xlsx`** | Catálogo de 209 tecnologías. ✅ 🆕 Al día con el juego (28/10/2026). | Vivo |
 | **`index.html`, `css/`, `js/`** | El juego. `js/datos` (mapas y tecnologías), `js/config` (números de balance), `js/motor` (reglas, sin pantalla) y `js/interfaz` (lo que se ve). | Vivo |
 | **`pruebas/`** | `revisar_capas.js`, `probar_reglas.js` (37 casos), 🆕 `probar_red.js` (estado en red, 18 casos) y `simular_partidas.js` (72 partidas entre bots). Se corren con `npm test`. 🆕 `probar_en_linea.py`: partida con dos navegadores y un Firebase falso. | Vivo |
 | **`docs/multijugador.md`** | 🆕 Cómo funciona el juego en línea, cómo configurar Firebase y cómo publicarlo. | Vivo |
@@ -146,7 +146,7 @@
 ## 6. Qué falta (por prioridad)
 
 ### Alta
-0. 🆕 **La sensación de Alejandro jugando contra bots (26/10/2026): no se siente diversión.** Los bots casi no atacan, no hay tensión para invertir en lo militar, las tribus se compran baratas y los recursos pasan desapercibidos. Las simulaciones lo confirman: 0 a 3 combates por partida y población estancada cerca de 10 (`docs/balance_economia.md`). **Esto es lo primero a resolver.**
+0. 🆕 **La sensación de Alejandro jugando contra bots (26/10/2026): no se siente diversión.** Los bots casi no atacan, no hay tensión para invertir en lo militar, las tribus se compran baratas y los recursos pasan desapercibidos. Las simulaciones de ese día lo confirmaban: 0 a 3 combates por partida y población estancada cerca de 10 (el informe se borró por desactualizado; con los cambios de reclutar y tribus de 28/10, los bots dan 6 a 9 combates por partida). **Esto es lo primero a resolver.**
 1. 🆕 **Orden elegido por Alejandro para dar tensión:** (1) ✅ encuentros sorpresa y recursos disputados; (2) ✅ mapas más conectados con dilema del prisionero en zonas de frontera; (3) tribus como amenaza latente y tributo negociado (ofertas secretas; atacan al que dio menos); (4) multijugador.
 1a. ✅ 🆕 **Multijugador para el primer playtest:** cada uno en su computadora, en videollamada. Decidido por Alejandro (27/10/2026): **Firebase Realtime Database** en vez de PeerJS o un servidor propio (ver 3c).
 1b. **Jugarlo con la familia.** 🆕 Ya se trabajó lo que se sentía mal al jugar sola (opciones de partida, tecnologías, zona, mapa, edificios, combate). Falta probarlo con más personas.
@@ -158,9 +158,9 @@
 4. **17 de 209 tecnologías no tienen efecto simulado** (🆕 27/10/2026, noche: se implementaron *Mercenarios* y *Ejército permanente*; las 6 nuevas sí tienen efecto) (lista en la sección 23.2 de las reglas).
 5. **Pasar el motor a Python** con pytest y tablas de configuración; después, el simulador de balance. 🆕 La separación por capas ya lo deja preparado.
 6. ✅ 🆕 ~~Multijugador real~~ hecho con Firebase (salas con código y reconexión), ver 3c.
-7. 🆕 ✅ El código v0.13 ya está en GitHub (27/10/2026). Falta **activar GitHub Pages** (Settings → Pages → rama `main`, carpeta raíz) para que el enlace «Play it in your browser» del README funcione; para jugar en línea, esa dirección hay que autorizarla en Firebase (`docs/multijugador.md`, paso 7).
+7. 🆕 ✅ El código v0.13 ya está en GitHub (27/10/2026). ✅ GitHub Pages ya está activado (lo confirma Alejandro; no pude comprobarlo desde aquí). Para jugar en línea, esa dirección hay que autorizarla en Firebase (`docs/multijugador.md`, paso 7).
 
-3e. 🆕 **Confirmar jugando el sistema de reclutar (27/10/2026, noche):** costos de las tropas (¿demasiado baratas? con bots las batallas subieron de 2 a 9 por partida), la paga en oro, el valor de los generales (≈ 2 tropas), repoblación 50 %; los bots ya ascienden generales y *Guardia de élite* funciona; *Camino militar II* sigue sin efecto; el Excel de tecnologías quedó atrás (209 en el juego).
+3e. 🆕 **Confirmar jugando el sistema de reclutar (27/10/2026, noche):** costos de las tropas (¿demasiado baratas? con bots las batallas subieron de 2 a 9 por partida), la paga en oro, el valor de los generales (≈ 2 tropas), repoblación 50 %; los bots ya ascienden generales y *Guardia de élite* funciona; *Camino militar II* sigue sin efecto.
 3f. 🆕 **Confirmar jugando lo del 27/10/2026:** años con parte cierta (±15 %) y variable y primer año de fundación, tribus cada 8 pasos con descanso de 12 y ataque en insatisfacción 3; **decidir si la inundación y los eventos de tribu se vuelven tipos de año**; probar si 2 o 3 historias por partida (descanso 6 a 10 pasos) se sienten bien; además, el crecimiento n² baja la población de los bots un 20 % (13,5 → 10,5 a los 60 pasos) y los puestos por nivel suben el rendimiento de los edificios altos: ver si la economía queda bien o hay que compensar. Valores 💡 de plata y oro. Que los bots también hagan ofertas.
 
 ### Media
@@ -169,7 +169,7 @@
 9. **Movimientos simultáneos:** qué pasa exactamente cuando dos ejércitos se cruzan en una frontera.
 10. ✅ 🆕 **Comienzo guiado** de los primeros 20 pasos, que luego sigue como partida normal (v0.12). Falta probarlo con alguien que no conozca el juego.
 11. **Pendientes de reglas:** los ❓ de `docs/Reglas_v0.1.md` (sección 20 y repartidos).
-12. 🆕 **Pasar al Excel** los textos de tecnologías que cambiaron (pendiente 22).
+12. ✅ 🆕 ~~Pasar al Excel los textos de tecnologías que cambiaron~~ hecho el 28/10/2026 (209).
 
 ### Baja
 13. Arte definitivo y música. 🆕 Ya hay efectos de sonido y ambiente generados por código; falta música.
@@ -307,4 +307,29 @@ Reglas en `docs/Reglas_v0.1.md`, sección 24 (con ✅ y 💡). Código nuevo o t
 | Contenido: 20 historias, 40 encuentros, 20 de elegir entre dos | `js/datos/historias_extra.js`, `js/datos/encuentros_extra.js` (se unen a los de `motor/historias.js` y `motor/encuentros.js`); catálogos generados en `docs/historias.md` y `docs/encuentros.md` con `node herramientas/generar_catalogo.js` (no se editan a mano). Las historias salen una tras otra (`F.stories`, `F.storyUsed`, `STORY_BREAK_*`, `STORY_MAX` en `reglas.js`; lógica en `scheduleEncounters`) |
 | Pruebas | `pruebas/probar_reglas.js` (más casos), `pruebas/probar_interfaz.py` (14 comprobaciones de navegador) |
 
-**Cosas que conviene saber:** `hasRes` devuelve un número (no un booleano); las pruebas de reglas borran los depósitos del mapa (`base`) para aislarse; las copias sueltas de `.js` y CSS que hay en la **raíz del repositorio** son restos de una subida accidental: el juego solo usa `index.html`, `js/` y `css/` (conviene borrarlas).
+**Cosas que conviene saber:** `hasRes` devuelve un número (no un booleano); las pruebas de reglas borran los depósitos del mapa (`base`) para aislarse; las copias sueltas de `.js`, CSS, audio y documentos que había en la **raíz del repositorio** eran restos de una subida accidental: ✅ se borraron el 28/10/2026 (el juego solo usa `index.html`, `js/`, `css/`, `audio/` y `docs/`).
+
+---
+
+## 12. 🆕 Sesión del 28/10/2026: qué cambió y dónde mirar
+
+Reglas en `docs/Reglas_v0.1.md`, sección 25.
+
+| Tema | Dónde |
+|---|---|
+| Bots pujan por el valor esperado del cofre (varianza 3) y acumulan la moneda desde el anuncio | `auctionValue` en `js/motor/subasta.js`; constantes `AUCTION_VAL_*`, `AUCTION_BOT_VAR`, `AUCTION_BOT_SPEND` en `js/config/reglas.js`; `botOrders`, `botAuctionHold`, `randNormal` en `js/motor/bots.js` |
+| Subasta anunciada 10 pasos antes y cargamento variable (rango, recurso oculto) | `AUCTION_NOTICE`, `AUCTION_CAR_RANGE` en `reglas.js`; `auctionNew` y `auctionAward` en `subasta.js`; rango visible en `auctionHTML` (`paneles/imperio.js`) |
+| Inundación todo el año | evento `inunda` (`flood:1`) en `reglas.js`; `scheduleEvents` y `applyEventMods` en `motor/eventos.js`; `capStore` en `motor/estado.js` |
+| Registro descargable (.txt y .json) | `js/motor/registro.js` (`gameLogData`, `gameLogText`); `downloadLog`, `logButtonsHTML` en `js/interfaz/flujo.js`; acción `dllog` en `acciones.js`; botones en Historial (`paneles/ordenes.js`) y en `showEnd` |
+| Excel de tecnologías | `Tecnologias_v0.2.xlsx` (209; hojas Ramas y Resumen con rangos hasta la fila 210) |
+| Raíz limpia y CI | 33 archivos borrados de la raíz; `.github/workflows/pruebas.yml`. También borrados: `docs/TRASPASO_sesion_2026-10-26.md` y `..._27.md`, `docs/balance_economia.md` (de la v0.11), y 8 funciones/constantes sin uso (`TRAIT_LV`, `TERMS`, `cntT`, `netOffAll`, `panKey`, `sugBarHTML`, `sugBarHTML_old`, `encGainText`) |
+| Tribus: sin Inquietud ni Furia; crecen solas cada año | `tribesGrow` en `js/motor/eventos.js` (se llama en `resolver_paso.js`); `TRIBE_YEAR_CIV`, `TRIBE_YEAR_BAR` en `reglas.js` |
+| Pruebas | 7 casos nuevos en `pruebas/probar_reglas.js` (valor esperado, puja de bots, acumulación, cargamento variable, aviso a 10 pasos, inundación, registro) y 7 comprobaciones nuevas en `pruebas/probar_interfaz.py` (+ 1 caso de tratos de bots) |
+
+**Pendientes que dejó la sesión:**
+- ✅ Los bots ya **proponen tratos** (🤝): `botTradeOffer` en `js/motor/bots.js`, constantes `OFFER_BOT_*` y `OFFER_VAL` en `reglas.js` (Reglas 25). ❓ Ver jugando si 10 tratos por partida entre bots son muchos o pocos para quien juega.
+- ✅ Confirmado por Alejandro (28/10/2026): varianza 10 en unidades de la moneda, rangos del cargamento y **sin tope de bárbaros** por tribu; los baja él después de probar.
+- ✅ Las subastas en comida y producción ya no quedan vacías (los bots acumulan desde el anuncio: objetos sin puja 40 → 3). Falta ver jugando si los bots que reservan crecen demasiado lento.
+- ✅ La **inundación** dura el resto del año (decidido). ✅ **Eventos de tribu:** se quitaron Inquietud y Furia; las tribus ganan 1 civil y 2 bárbaros cada año (💡 pesan: unos +13 de precio de anexión por año; ver Reglas 25).
+- ❓ Confirmar que «varianza de 10» es en unidades de la moneda (desviación ≈ 3,2) y no un 10 %; y que el cargamento variable (rangos 💡) es lo que querías.
+- ❓ El flujo de pruebas automáticas solo corre `simular_partidas.js 2 40`; convendría que corra `npm test`.

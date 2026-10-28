@@ -55,7 +55,7 @@ Si ves alguno de estos nombres en el conocimiento del Proyecto, bórralo:
 |---|---|
 | `Reglas_v0_1.md`, `Reglas_v0_1 (1).md` (cualquier otra copia de las reglas) | Duplicados y desactualizados; lo vigente es `2_Reglas_v0.1.md` |
 | `TRASPASO_Los_Pasos_del_Imperio.md`, `TRASPASO_Los_Pasos_del_Imperio (1).md` | Duplicados y desactualizados; lo vigente es `1_TRASPASO_…` |
-| `TRASPASO_sesion_2026-10-26.md` y `TRASPASO_sesion_2026-10-27.md` | Es historial: lo importante ya está integrado en el traspaso general y en las Reglas. Quedan en el repositorio (`docs/`) por si hace falta |
+| `TRASPASO_sesion_2026-10-26.md` y `TRASPASO_sesion_2026-10-27.md` | Es historial: lo importante ya está integrado en el traspaso general y en las Reglas. Ya no están en el repositorio (se borraron el 28/10/2026; siguen en el historial de git) |
 | `Como_manejar_el_proyecto.md` (versión vieja) | Reemplazado por `3_Como_manejar_el_proyecto.md` |
 | `Los_Pasos_del_Imperio_v0_13.html` (cualquier juego empaquetado) | Pesa ~500 KB, está desactualizado y Claude lee el código directo en GitHub |
 | `Mapas_v0_1.html`, `atlas_mapas.html` | Pesa ~80 KB y casi nunca hace falta; está en el repositorio |

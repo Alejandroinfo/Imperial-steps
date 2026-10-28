@@ -48,15 +48,6 @@ function suggestions(){
 }
 
 // Tarjeta del encuentro pendiente: quién llegó, qué piden, qué dan y qué pasa si no aceptas.
-function encGainText(gn){
-  if(!gn) return '';
-  if(gn.units) return Object.keys(gn.units).map(t=>`${gn.units[t]} ${(gn.units[t]>1?UNP[t]:UN[t]).toLowerCase()}`).join(' y ');
-  if(gn.res) return `${gn.n} de ${TSPEC_N[gn.res]}`;
-  if(gn.eq) return Object.keys(gn.eq).map(t=>`${gn.eq[t]} ${EQUIP_N[t][gn.eq[t]>1?1:0]} guardados`).join(' y ');
-  if(gn.prog) return `+${gn.prog} de crecimiento`;
-  if(gn.gamble) return `${Math.round(gn.gamble.p*100)} % de probabilidad de ganar ${gn.gamble.n} de ${TSPEC_N[gn.gamble.res]}`;
-  return '';
-}
 function encGainIcons(gn){
   let h='';
   if(gn.units) h+=unitsIcons(gn.units);
@@ -94,8 +85,8 @@ function encBarHTML(){
 // Eventos que están actuando (o que empiezan este paso), con los pasos que quedan. Para que se vea de un vistazo qué pasa «este mes».
 function evChipsHTML(){
   if(!G||G.over) return '';
-  const run=(G.evAct||[]).filter(a=>a.end>=G.step&&EVT[a.id].k!=='t'&&!EVT[a.id].inst).map(a=>({e:EVT[a.id],left:a.end-G.step+1,now:0}));
-  const start=(G.evq||[]).filter(x=>x.step===G.step&&EVT[x.id].k!=='t'&&!EVT[x.id].inst).map(x=>({e:EVT[x.id],left:x.dur||1,now:1}));
+  const run=(G.evAct||[]).filter(a=>a.end>=G.step&&EVT[a.id].k!=='t').map(a=>({e:EVT[a.id],left:a.end-G.step+1,now:0}));
+  const start=(G.evq||[]).filter(x=>x.step===G.step&&EVT[x.id].k!=='t').map(x=>({e:EVT[x.id],left:x.dur||1,now:1}));
   return run.concat(start).sort((a,b)=>(b.e.year?1:0)-(a.e.year?1:0)).map(x=>evBadge(x.e,x.left,x.now)).join('');
 }
 function encPending(){ if(!G||G.over) return null; const e=G.F[ME].enc; return (e&&!ui.orders.some(o=>o.t==='encounter'))?e:null; }
@@ -128,13 +119,6 @@ function drawTabAlerts(){
     const L=A.tabs[b.dataset.tab]||[]; m.hidden=!L.length; m.classList.toggle('warn',L.some(a=>a.k==='warn')); m.title=L.map(a=>a.t).join('\n');
   });
   const w=A.s.filter(x=>x.k==='warn').map(x=>x.t).join('|'); if(w&&w!==ui.lastWarn){ ui.lastWarn=w; sfxLater('warn',2600,1500); } else if(!w) ui.lastWarn='';
-}
-function sugBarHTML(){ return ''; }
-function sugBarHTML_old(){
-  const s=suggestions(); if(!s.length) return '';
-  const w=s.filter(x=>x.k==='warn').map(x=>x.t).join('|'); if(w&&w!==ui.lastWarn){ ui.lastWarn=w; sfxLater('warn',2600,1500); } else if(!w) ui.lastWarn='';
-  const i=Math.min(ui.sugI||0,s.length-1); const it=s[i];
-  return `<div class="sug ${it.k}"><button class="sugt" data-act="sug" data-i="${i}">${it.k==='warn'?'⚠':'💡'} ${esc(it.t)}</button>${s.length>1?`<button class="sugn" data-act="sugnext" aria-label="Siguiente sugerencia" title="Siguiente">${i+1}/${s.length} ›</button>`:''}</div>`;
 }
 function goSuggestion(i){
   const s=suggestions()[i]; if(!s) return; const g=s.go;

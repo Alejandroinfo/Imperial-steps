@@ -535,11 +535,73 @@ prueba('Tribus: atacarlas es entrar en guerra: sus civiles se vuelven guerreros 
   const guerra=G.wars.some(w=>w.tribe===tz.id&&w.f===0)&&tz.rel[0]===0; const berserkers=(tz.units[4]||[]).every(u=>u.t==='ber');
   paso(); const ataca=G.hist.some(h=>h.lines.some(l=>l.includes('ataca '))); for(let i=0;i<6;i++) paso(); return guerra&&berserkers&&ataca&&G.wars.length===0;`);
 
+prueba('Tribus: al empezar cada año (desde el 2.º) cada una gana 1 civil y 2 bárbaros; no antes, y ya no hay Inquietud ni Furia', base + `
+  const ts=G.zones.filter(z=>z.owner===TRIBE); const n0=ts.map(z=>lst(z,TRIBE).length), b0=ts.map(z=>lst(z,TRIBE).filter(u=>u.t==='ber').length);
+  G.step=12; paso(); const igual=ts.every((z,i)=>lst(z,TRIBE).length===n0[i]);   // el paso 12 aún es del año 1
+  paso(); const gana=ts.every((z,i)=>lst(z,TRIBE).length===n0[i]+3&&lst(z,TRIBE).filter(u=>u.t==='ber').length===b0[i]+2);   // el paso 13 empieza el año 2
+  const log=G.log.some(l=>l.includes('cada tribu gana 1 civil y 2 bárbaros'));
+  return ts.length>0&&igual&&gana&&log&&!EVT.inquietud&&!EVT.furia&&EVENTS.filter(e=>e.k==='t').length===2;`);
+
+prueba('Inundación: las reservas se parten a la mitad y el resto del año el almacén guarda la mitad', base + `
+  const z=G.zones.find(z=>z.owner===0); z.terrain='rio'; z.food=40; z.prod=40; const cap0=capStore(G,z,'food'); G.step=15;
+  G.evq=[{step:15,id:'inunda',dur:6}]; G.evAct=[]; paso(); const a=G.zones[z.id];
+  const c0=cap0/z.size, mitad=capStore(G,a,'food')===Math.floor(c0*a.size/2)&&G.evAct.some(x=>x.id==='inunda'&&x.end===20);
+  const f1=a.food; for(let i=0;i<3;i++) paso(); const sigue=capStore(G,a,'food')===Math.floor(c0*a.size/2)&&a.food<=capStore(G,a,'food');
+  for(let i=0;i<4;i++) paso(); return mitad&&f1<=22&&sigue&&capStore(G,a,'food')===c0*a.size;`);
+
+// ---- Registro descargable ----
+prueba('El registro de la partida trae mapa, jugadores, historial y condiciones, en datos y en texto', base + `
+  for(let i=0;i<8;i++) paso();
+  const d=gameLogData(G,{ready:[3000,5000],orders:[2,4]}), tx=gameLogText(G,{ready:[3000,5000],orders:[2,4]});
+  const ok=d.pasosJugados===G.step-1&&d.jugadores.length===G.N&&d.historial.length===G.hist.length&&d.condicionesFinales.length===G.N&&d.condicionesFinales[0].length===7;
+  const json=JSON.parse(JSON.stringify(d));
+  return ok&&json.semilla===G.seed&&tx.includes('Condiciones de victoria')&&tx.includes('Historial:')&&tx.includes('4 s en promedio')&&tx.includes('3.0 órdenes por paso');`);
+
 // ---- Subasta (13.3) ----
 const SUB = `G.fx=[]; const logs=[]; const L=m=>logs.push(m); const item=(cat,tier,det)=>({cat,tier,det:det||{}});`;
-prueba('La subasta se anuncia 2 pasos antes del paso 20, con tantos objetos como jugadores', base + `
-  let antes=true; for(let i=1;i<17;i++){ paso(); if(G.auction) antes=false; } paso();
-  const a=G.auction; return antes&&!!a&&a.step===20&&a.items.length===2&&['gold','tech','food','prod'].includes(a.cur)&&a.items.every(it=>AUCTION_CATS[it.cat]&&it.tier>=0&&it.tier<=2);`);
+prueba('La subasta se anuncia 10 pasos antes del paso 20, con tantos objetos como jugadores', base + `
+  let antes=true; for(let i=1;i<8;i++){ paso(); if(G.auction) antes=false; } paso(); paso();
+  const a=G.auction; return AUCTION_NOTICE===10&&antes&&!!a&&a.step===20&&G.step===10&&a.items.length===2&&['gold','tech','food','prod'].includes(a.cur)&&a.items.every(it=>AUCTION_CATS[it.cat]&&it.tier>=0&&it.tier<=2);`);
+
+prueba('Subasta: el valor esperado de un objeto sube con el nivel y se expresa en la moneda de la subasta', base + SUB + `
+  const v=c=>[0,1,2].map(t=>auctionValue(item(c,t,{res:'prod'}),'gold'));
+  const sube=['pel','pob','sab','car','rec'].every(c=>{ const x=v(c); return x[0]>0&&x[0]<x[1]&&x[1]<x[2]; });
+  const car=item('car',0,{res:'food',n:20}), car2=item('car',0,{res:'prod',n:40});   // el valor esperado no mira lo oculto: 30 de media × 0,7 = 21 de oro equivalente
+  return sube&&Math.abs(auctionValue(car,'gold')-21)<1e-9&&auctionValue(car,'gold')===auctionValue(car2,'gold')&&Math.abs(auctionValue(car,'food')-35)<1e-9;`);
+
+prueba('Subasta: los bots pujan cerca del valor esperado y sin pasar de lo que pueden gastar', base + SUB + `
+  G.F[1].gold=1000; G.auction={step:20,cur:'gold',items:[item('car',1,{res:'food'}),item('pob',0)],bids:{}}; G.step=19;
+  const o=botOrders(G,1).filter(x=>x.t==='bid'); const por={}; o.forEach(x=>por[x.item]=x.amount);
+  const e0=auctionValue(G.auction.items[0],'gold'), e1=auctionValue(G.auction.items[1],'gold');
+  const cerca=Math.abs(por[0]-e0)<=16&&Math.abs(por[1]-e1)<=16;   // varianza 10 (desviación 3,2): 16 son 5 desviaciones
+  G.F[1].gold=20; G.auction.bids={}; const pobre=botOrders(G,1).filter(x=>x.t==='bid').reduce((a,x)=>a+x.amount,0);
+  return o.length===2&&cerca&&pobre<=20*AUCTION_BOT_SPEND;`);
+
+prueba('Subasta: el cargamento es variable (entre su rango), se sortea al anunciarla y se entrega tal cual', base + SUB + `
+  const salen=new Set(); for(let k=0;k<40;k++){ G.auction=null; const a=auctionNew(G,20); a.items.forEach(it=>{ if(it.cat==='car'){ const r=AUCTION_CAR_RANGE[it.tier]; if(it.det.n<r[0]||it.det.n>r[1]) throw new Error('fuera de rango'); salen.add(it.det.n); } }); }
+  G.auction={step:20,cur:'gold',items:[item('car',0,{res:'food',n:37})],bids:{0:{0:10}}}; G.F[0].gold=100; const p0=cap.prog; auctionResolve(G,L);
+  return salen.size>5&&cap.prog===p0+37;`);
+
+prueba('Subasta: los bots acumulan la moneda desde el anuncio (la reservan) y la comida va a Guardar', base + SUB + `
+  G.auction={step:20,cur:'food',items:[item('car',1,{res:'food',n:50}),item('pob',0)],bids:{}}; G.step=12;
+  const o=botOrders(G,1); const gm=o.filter(x=>x.t==='growmode'&&x.mode==='guardar');
+  const z1=G.zones.find(z=>z.owner===1); z1.food=30; const f0=z1.food;
+  G.auction={step:20,cur:'gold',items:[item('pel',2)],bids:{}}; G.F[1].gold=60; const h=botAuctionHold(G,1); botOrders(G,1);
+  const reserva=h.cur==='gold'&&h.amt===Math.min(60,Math.ceil(auctionValue(G.auction.items[0],'gold')*AUCTION_BOT_SPEND));
+  const intacto=G.F[1].gold===60&&z1.food===f0;   // lo reservado solo se «oculta» mientras decide: después se devuelve
+  G.auction=null; G.F[1].botHeld={}; G.F[1].botHeld[z1.id]='growmode'; const o3=botOrders(G,1);
+  return gm.length>=1&&reserva&&intacto&&o3.some(x=>x.t==='growmode'&&x.mode==='crecer');`);
+
+prueba('Tratos de bots: reciben al menos el mismo valor que dan, no usan la moneda de la próxima subasta y respetan paso, ritmo y tope', base + `
+  G.step=24; G.rng=()=>0; const f=1; G.step=24-f+8*0; while((G.step+f)%OFFER_BOT_EVERY!==0) G.step++; if(G.step<OFFER_BOT_FROM) G.step=OFFER_BOT_FROM+((OFFER_BOT_EVERY-(OFFER_BOT_FROM+f)%OFFER_BOT_EVERY)%OFFER_BOT_EVERY);
+  G.F[f].gold=200; G.F[f].tech=5; G.zones.filter(z=>z.owner===f).forEach(z=>{ z.food=2; z.prod=2; });
+  const t=botTradeOffer(G,f); const V=OFFER_VAL;
+  const valido=!!t&&t.t==='offer'&&t.give.res==='gold'&&t.ask.res!=='gold'&&t.give.n>=OFFER_BOT_MIN&&t.give.n<=OFFER_BOT_MAX&&t.ask.n*V[t.ask.res]>=t.give.n*V[t.give.res]-1e-9;
+  G.auction={step:G.step+8,cur:'gold',items:[],bids:{}}; const t2=botTradeOffer(G,f); const sinSubasta=!t2||(t2.give.res!=='gold'&&t2.ask.res!=='gold');
+  G.auction=null; G.offers=[{id:1,from:f,to:0,give:{res:'gold',n:5},ask:{res:'food',n:9},step:G.step}]; const tope=botTradeOffer(G,f)===null;
+  G.offers=[]; const s0=G.step; G.step=OFFER_BOT_FROM-1; const antes=botTradeOffer(G,f)===null; G.step=s0+1; const ritmo=botTradeOffer(G,f)===null; G.step=s0;
+  G.rng=()=>0.99; const azar=botTradeOffer(G,f)===null;
+  return valido&&sinSubasta&&tope&&antes&&ritmo&&azar;`);
 
 prueba('Subasta: gana la oferta más alta y solo el ganador paga', base + SUB + `
   G.auction={step:20,cur:'gold',items:[item('car',0,{res:'food'})],bids:{0:{0:30},1:{0:20}}}; G.F[0].gold=100; G.F[1].gold=100; const p0=cap.prog; auctionResolve(G,L);

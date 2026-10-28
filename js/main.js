@@ -80,7 +80,7 @@ $('rngMus').addEventListener('input',e=>{ sfxInit(); musicSetVolume(Number(e.tar
 $('dlgBattle').addEventListener('close',()=>{ if(G&&!G.over&&MUS.scene==='combate') musicPlay('plan'); });
 $('chkAnim').addEventListener('change',e=>{ FXS.on=e.target.checked; document.body.classList.toggle('noanim',!e.target.checked); });
 if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches){ FXS.on=false; document.body.classList.add('noanim'); $('chkAnim').checked=false; }
-initTerrInput(); planInput();
+initTerrInput(); planInput(); initIconos();
 DATA.maps.forEach((m,i)=>{ const o=document.createElement('option'); o.value=i; o.textContent=m.id+'. '+m.name; $('selMap').appendChild(o); });
 $('selMap').value='0'; $('selN').value='3';
 openSetup();

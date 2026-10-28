@@ -35,7 +35,7 @@
 | ~~`docs/TRASPASO_sesion_2026-10-26.md` y `..._2026-10-27.md`~~ | ✅ 🆕 Borrados el 28/10/2026 (historial de sesiones ya integrado en este documento y en las Reglas; siguen en el historial de git). | — |
 | **`docs/CONTEXTO_PROYECTO/`** | 🆕 Copias listas para subir al Proyecto de Claude (3 archivos) y una guía de qué borrar. Se regenera con `python herramientas/generar_contexto.py`; **no se edita a mano**. | Generado |
 | **`docs/Como_manejar_el_proyecto.md`** | Cómo trabajamos. | Estable |
-| **`Tecnologias_v0.2.xlsx`** | Catálogo de 209 tecnologías. ✅ 🆕 Al día con el juego (28/10/2026). | Vivo |
+| **`Tecnologias_v0.2.xlsx`** | Catálogo de 192 tecnologías. ✅ 🆕 Al día con el juego (28/10/2026; se quitaron las 17 sin efecto). | Vivo |
 | **`index.html`, `css/`, `js/`** | El juego. `js/datos` (mapas y tecnologías), `js/config` (números de balance), `js/motor` (reglas, sin pantalla) y `js/interfaz` (lo que se ve). | Vivo |
 | **`pruebas/`** | `revisar_capas.js`, `probar_reglas.js` (37 casos), 🆕 `probar_red.js` (estado en red, 18 casos) y `simular_partidas.js` (72 partidas entre bots). Se corren con `npm test`. 🆕 `probar_en_linea.py`: partida con dos navegadores y un Firebase falso. | Vivo |
 | **`docs/multijugador.md`** | 🆕 Cómo funciona el juego en línea, cómo configurar Firebase y cómo publicarlo. | Vivo |
@@ -87,7 +87,7 @@
 - **Defensor** = quien controla la zona; si nadie controla, **ambos son atacantes**.
 
 ### Tecnologías
-- **209 tecnologías en 12 ramas.** Cada rama tiene **columna vertebral** (6 o 7, una por nivel) y opcionales.
+- **192 tecnologías en 12 ramas.** Cada rama tiene **columna vertebral** (6 o 7, una por nivel) y opcionales.
 - Para el **nivel 5** de una rama hay que **acabar su columna** hasta el nivel 4. Además, mínimos de tecnologías del nivel anterior: **3 / 5 / 6 / 6**. Hasta 2 prerrequisitos directos por tecnología.
 - **Costo:** nivel × 20. Los **9 edificios básicos vienen ya desarrollados** al inicio.
 - 🆕 **Los científicos investigan solos** si hay algo en cola: investigan los que alcance la ciencia guardada (2 cada uno) y el resto genera ciencia. Ya no se asignan. Cola de hasta 4.
@@ -135,8 +135,8 @@
 
 - **Reglas en papel:** casi todo el juego, con 23 secciones y los puntos marcados como decididos o pendientes.
 - **12 mapas** generados y validados por código, con atlas visual.
-- **Catálogo de 209 tecnologías** en 12 ramas con columna vertebral.
-- **Prototipo jugable v0.13** con los 12 mapas, de 2 a 4 jugadores, economía local y global, 6 oficios, 10 edificios con niveles y especializaciones, las 209 tecnologías, 8 tipos de unidad, combate completo, tribus, eventos, fantasmas, alianzas y las 7 condiciones de victoria.
+- **Catálogo de 192 tecnologías** en 12 ramas con columna vertebral.
+- **Prototipo jugable v0.13** con los 12 mapas, de 2 a 4 jugadores, economía local y global, 6 oficios, 10 edificios con niveles y especializaciones, las 192 tecnologías, 8 tipos de unidad, combate completo, tribus, eventos, fantasmas, alianzas y las 7 condiciones de victoria.
 - 🆕 **Interfaz (26/10/2026):** mapa como valle continuo (cercas donde hay camino, barrancos donde no), resumen de zona con quién trabaja y dónde, placas con reservas y pasos hasta el próximo poblador, edificios en tarjetas, tecnologías en subpestañas, con **«⭐ Te ayudan ahora»**, colores por rama y el **impacto que tendrían hoy** (ej.: «🌾 +3 por paso»), sugerencias del paso, tributos visibles, **visor de batallas golpe por golpe**, **sonido y efectos** (generados por código, con controles en el Menú), postura con cada jugador y turno en la barra superior.
 - 🆕 **Proyecto en GitHub** (github.com/Alejandroinfo/Imperial-steps) organizado por capas, con README, guía de colaboración y pruebas automáticas.
 - 🆕 **Sesión del 27/10/2026 (noche):** pueblo vivo en el mapa; rasgos y recursos con insignias y fichas; recursos de plata y oro; crecer cuesta n²; 2 puestos de trabajo por nivel de edificio; ofertas de recursos entre jugadores; encuentros en ventana emergente; avance de vecinos en Victoria; escenas de fin de paso; moverse y enviar sin listas desplegables. Detalle en las Reglas (sección 24) y en la sección 11 de este documento.
@@ -155,7 +155,7 @@
 3b. 🆕 **Pasar al juego** las reglas decididas (Reglas 23.5), en este orden: ✅ ingenieros automáticos (v0.14, 27/10/2026) → ✅ maravillas únicas (15.3, v0.16) → lo de 13.3 y 12 (zonas peligrosas, elegir entre dos, pedidos de tribus, subasta, historias). Falta simular el ritmo con la capital a +2.
 3d. 🆕 ✅ (villas, elegir entre dos, tribus: v0.17; faltan subasta e historias) **Diseño nuevo de tensión (27/10/2026, decidido por Alejandro; Reglas 13.3 y 12):** zonas peligrosas (antes fronteras; solo cuentan las tropas), subasta a sobre cerrado cada 20 pasos, encuentros de elegir entre dos, tribus que piden cosas y se anexan solo con la relación al máximo, guerra si atacas a una tribu, e historias de 4 capítulos. Falta pasarlo al juego (pendientes 41 a 44).
 3c. 🆕 **Multijugador con Firebase (decidido por Alejandro):** hecho sobre la v0.13 y ya en `main` (guía en `docs/multijugador.md`), probado con dos navegadores y un Firebase falso. Falta: configurar Firebase (unos 10 minutos), publicar el juego y jugar la primera partida real.
-4. **17 de 209 tecnologías no tienen efecto simulado** (🆕 27/10/2026, noche: se implementaron *Mercenarios* y *Ejército permanente*; las 6 nuevas sí tienen efecto) (lista en la sección 23.2 de las reglas).
+4. ✅ 🆕 **Las 17 tecnologías sin efecto se quitaron** (28/10/2026, decidido por Alejandro); el catálogo queda en **192**. Diplomacia e imperio quedó con solo 6 (ver Reglas 23.2).
 5. **Pasar el motor a Python** con pytest y tablas de configuración; después, el simulador de balance. 🆕 La separación por capas ya lo deja preparado.
 6. ✅ 🆕 ~~Multijugador real~~ hecho con Firebase (salas con código y reconexión), ver 3c.
 7. 🆕 ✅ El código v0.13 ya está en GitHub (27/10/2026). ✅ GitHub Pages ya está activado (lo confirma Alejandro; no pude comprobarlo desde aquí). Para jugar en línea, esa dirección hay que autorizarla en Firebase (`docs/multijugador.md`, paso 7).
@@ -182,7 +182,7 @@
 
 | Problema | Detalle |
 |---|---|
-| **Complejidad frente al objetivo** | El objetivo era sencillez, y hoy hay 7 condiciones de victoria, 6 terrenos, 10 edificios con niveles, 8 unidades, 209 tecnologías, eventos, tribus y fantasmas. Cada pieza tiene sentido; juntas pueden volver pesado cada paso. **Medir órdenes por paso y tiempo de decisión.** |
+| **Complejidad frente al objetivo** | El objetivo era sencillez, y hoy hay 7 condiciones de victoria, 6 terrenos, 10 edificios con niveles, 8 unidades, 192 tecnologías, eventos, tribus y fantasmas. Cada pieza tiene sentido; juntas pueden volver pesado cada paso. **Medir órdenes por paso y tiempo de decisión.** |
 | **Las partidas de bots no terminan** | 🆕 Con los cambios de hoy, en 72 partidas casi ninguna llega a una victoria antes del paso 60, ni en modo prueba. Los bots atacan poco. |
 | **27 tecnologías con riesgo de balance alto** | Marcadas en el Excel (por ejemplo Hospital imperial, Gran manufactura, Imperio conquistador). |
 | **Zonas de nivel 3 muy difíciles** | Piden 12 especialistas. 🆕 El almacén más grande y la comida automática ayudan; hay que jugarlo. |
@@ -321,12 +321,14 @@ Reglas en `docs/Reglas_v0.1.md`, sección 25.
 | Subasta anunciada 10 pasos antes y cargamento variable (rango, recurso oculto) | `AUCTION_NOTICE`, `AUCTION_CAR_RANGE` en `reglas.js`; `auctionNew` y `auctionAward` en `subasta.js`; rango visible en `auctionHTML` (`paneles/imperio.js`) |
 | Inundación todo el año | evento `inunda` (`flood:1`) en `reglas.js`; `scheduleEvents` y `applyEventMods` en `motor/eventos.js`; `capStore` en `motor/estado.js` |
 | Registro descargable (.txt y .json) | `js/motor/registro.js` (`gameLogData`, `gameLogText`); `downloadLog`, `logButtonsHTML` en `js/interfaz/flujo.js`; acción `dllog` en `acciones.js`; botones en Historial (`paneles/ordenes.js`) y en `showEnd` |
-| Excel de tecnologías | `Tecnologias_v0.2.xlsx` (209; hojas Ramas y Resumen con rangos hasta la fila 210) |
+| Excel de tecnologías | `Tecnologias_v0.2.xlsx` (192; hojas Ramas y Resumen con rangos hasta la fila 210) |
 | Raíz limpia y CI | 33 archivos borrados de la raíz; `.github/workflows/pruebas.yml`. También borrados: `docs/TRASPASO_sesion_2026-10-26.md` y `..._27.md`, `docs/balance_economia.md` (de la v0.11), y 8 funciones/constantes sin uso (`TRAIT_LV`, `TERMS`, `cntT`, `netOffAll`, `panKey`, `sugBarHTML`, `sugBarHTML_old`, `encGainText`) |
 | Tribus: sin Inquietud ni Furia; crecen solas cada año | `tribesGrow` en `js/motor/eventos.js` (se llama en `resolver_paso.js`); `TRIBE_YEAR_CIV`, `TRIBE_YEAR_BAR` en `reglas.js` |
 | Interfaz: pestaña Recursos, cofres, maravillas con imagen, Tab entre zonas | `js/interfaz/paneles/recursos.js` (`auctionHTML`, `wondersHTML`, `mapResourcesHTML`); `js/interfaz/dibujo/ilustraciones.js` (`wonderArt`, `chestArt`); `cycleZone` en `acciones.js` y tecla Tab en `main.js`; estilos al final de `css/estilos.css` |
 | Mapa sin barra, plan de red con zoom, pestañas con ícono | `js/interfaz/mapa/plan.js` (`PV`, `planFly`, `planFit`); íconos `.vmode` en `index.html`; `goZone` y `fitAll` sirven a las dos vistas en `territorio.js`; atajos C, F, Tab y Ctrl+Z en `main.js` y `acciones.js` (`cycleZone`, `undoOrder`) |
 | Pedidos de tribu en Imperio, Victoria en un gráfico, resumen y envío compactos | `requestsHTML` en `paneles/imperio.js`; `panelVictoria` en `paneles/ordenes.js`; `zoneOverview` y `sendCardHTML` en `paneles/zona.js`; estilos al final de `css/estilos.css` |
+| Íconos propios y papel | `js/interfaz/dibujo/iconos.js` (`ICONS`, `EMOJI_ICON`, `iconify`, `iconifySVG`, `initIconos`; 67 íconos); estilos `.ic` y «Sistema visual» al final de `css/estilos.css` |
+| Quitar 17 tecnologías sin efecto | `js/datos/tecnologias.js` (192); `Tecnologias_v0.2.xlsx`; Reglas 23.2; `docs/balance_tecnologias.md` regenerado |
 | Quién trabaja en los edificios | `BLD_WORKER` en `config/reglas.js`; asignación en `produceZone` (`motor/economia.js`) |
 | Pruebas | 7 casos nuevos en `pruebas/probar_reglas.js` (valor esperado, puja de bots, acumulación, cargamento variable, aviso a 10 pasos, inundación, registro) y 7 comprobaciones nuevas en `pruebas/probar_interfaz.py` (+ 1 caso de tratos de bots) |
 

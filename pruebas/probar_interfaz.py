@@ -45,7 +45,7 @@ with sync_playwright() as p:
     ok(pg.evaluate("Math.abs(VIEW.x+VIEW.w/2-sx(window.__f))<60"), 'la cámara visita la batalla del paso')
     pg.evaluate("G.evq=[{step:G.step,id:'prosper',dur:4}]; render()"); ok(pg.evaluate("!!document.querySelector('#evChips .eb[data-ev=prosper]')"), 'un evento que empieza aparece arriba como insignia')
     ok('año' in pg.evaluate("document.getElementById('calNote').innerText"), 'el paso muestra año y mes')
-    pg.evaluate("""()=>{ const tz=G.zones.find(z=>z.owner===4); G.tributes.push({zone:tz.id,amount:8,due:G.step+4,paid:{},targets:[0],res:'food'}); ui.tab='imperio'; renderPanel(); }"""); ok('⏳' in pg.evaluate("(document.querySelector('.reqs')||{innerText:''}).innerText"), 'el pedido de una tribu muestra cuántos pasos quedan')
+    pg.evaluate("""()=>{ const tz=G.zones.find(z=>z.owner===4); G.tributes.push({zone:tz.id,amount:8,due:G.step+4,paid:{},targets:[0],res:'food'}); ui.tab='imperio'; renderPanel(); }"""); ok(pg.evaluate("document.querySelectorAll('.reqs .ic[data-e=\"⏳\"]').length")>=1, 'el pedido de una tribu muestra cuántos pasos quedan')
     # --- ronda 3: avisos en pestañas, entrenar eligiendo, eventos como insignias, mapa de batalla ---
     pg.evaluate("ui.orders=[]; ui.trainIds=[]; renderPanel()"); ok(pg.evaluate("document.querySelectorAll('.tabal:not([hidden])').length")>0 and pg.evaluate("document.getElementById('sugBar').innerText===''"), 'las sugerencias salen como ❗ en las pestañas, no en una barra arriba')
     pg.evaluate(f"onZone({cap}); ui.form.tr_mode='civ'; ui.zsub='militar'; renderPanel()"); pg.locator('.trbest .chip').nth(1).click(); pg.click('[data-act=train]')
@@ -114,6 +114,13 @@ with sync_playwright() as p:
     n0=pg.evaluate("ui.orders.length"); pg.evaluate("addOrder({t:'stance',target:1,stance:'alerta'}); render()")
     pg.keyboard.press('Control+z'); pg.wait_for_timeout(100)
     ok(pg.evaluate("ui.orders.length")==n0, 'Ctrl+Z deshace la última orden')
+    # --- sistema de íconos propio (28/10/2026) ---
+    bad=pg.evaluate("""async()=>{ const out=[]; for(const n of Object.keys(ICONS)){ const img=new Image(); const ok=await new Promise(r=>{ img.onload=()=>r(1); img.onerror=()=>r(0); img.src=iconURI(n).slice(5,-2); }); if(!ok) out.push(n); } return out; }""")
+    ok(bad==[], 'los '+str(pg.evaluate("Object.keys(ICONS).length"))+' íconos propios son SVG válidos y cargan'+(' (fallan: '+', '.join(bad)+')' if bad else ''))
+    ok(pg.evaluate("Object.values(EMOJI_ICON).every(n=>ICONS[n])"), 'cada emoji traducido tiene su ícono')
+    pg.evaluate("ui.sel=myCapital(); ui.tab='zona'; ui.zsub='resumen'; render()"); pg.wait_for_timeout(150)
+    ok(pg.evaluate("document.querySelectorAll('.tabs .ic').length")==7 and pg.evaluate("document.querySelectorAll('.vmode .ic').length")==2, 'las pestañas y los botones de vista usan los íconos propios')
+    ok(pg.evaluate("document.querySelectorAll('#tabBody .ic').length")>=4 and pg.evaluate("!/🌾|⚒|🪙|🔬/.test(document.getElementById('tabBody').innerText)"), 'el panel muestra íconos propios en lugar de emoji del sistema')
     ok(len(errs) == 0, 'sin errores de JavaScript: ' + '; '.join(errs[:3]))
     b.close()
 srv.shutdown()

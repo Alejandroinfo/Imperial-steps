@@ -3,6 +3,8 @@
 All notable changes, newest first. The game and the design documents are in Spanish; this log is in English.
 
 ## Unreleased
+- **Art, option 1 (unified visual system), first delivery**: a custom set of 67 flat-colour SVG icons (`js/interfaz/dibujo/iconos.js`) replaces system emoji across the UI through a translator that swaps each emoji for its icon as it appears; paper grain, ink-bordered panel with hard shadow, pressable buttons and serif headings. Text inside the SVG map (zone plates, resource badges, labels) is translated too, by measuring where each emoji falls and placing the icon over it. Only typographic arrows and symbols remain as text.
+- **Removed the 17 technologies that did nothing** (catalogue 209 → 192) and repaired the spine of three branches: Knowledge level 3 is now *Observatories*; Diplomacy starts at *Offerings* (now level 1) and ends at *Imperial court* (6 techs left); War starts at *Military roads*. Tree validated: no cycles, ≤ 2 prerequisites, one level-5 spine tech per branch.
 - **Who works in buildings**: Mill → farmers, Workshop → engineers, Market → traders, Library → scientists; Storehouse, Road and Hospital accept any civilian (`BLD_WORKER`). Specialist buildings are staffed first. Over 24 bot games at step 60: population 18.5 → 16.1, gold 248 → 199.
 - **Map header removed**: the *My capital / Chosen zone / Whole map* buttons and the help text are gone; the two view modes are small icons in the map corner; **C** and **F** center on your capital / fit the whole map.
 - **Network plan is now usable**: zoom (wheel, ＋/－), drag, arrows/WASD and centering on zones (new `js/interfaz/mapa/plan.js`).

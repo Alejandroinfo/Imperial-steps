@@ -578,7 +578,7 @@ Detalles:
 
 ### 14.1 Árbol de tecnologías: 12 ramas con columna vertebral (💡 propuesta, para corregir)
 
-El catálogo completo está en **Tecnologias_v0.2.xlsx** (hojas *Reglas*, *Tecnologías*, *Ramas* y *Resumen*): 209 tecnologías con nivel, costo, tipo, rama, si son vertebrales u opcionales, efecto, prerrequisitos, origen, valoración de 1 a 5 y comentario.
+El catálogo completo está en **Tecnologias_v0.2.xlsx** (hojas *Reglas*, *Tecnologías*, *Ramas* y *Resumen*): 192 tecnologías con nivel, costo, tipo, rama, si son vertebrales u opcionales, efecto, prerrequisitos, origen, valoración de 1 a 5 y comentario.
 
 **Reglas del árbol:**
 
@@ -592,21 +592,21 @@ El catálogo completo está en **Tecnologias_v0.2.xlsx** (hojas *Reglas*, *Tecno
 |---|---|---|---|---|---|
 | Agricultura | Civil | 17 | 6 | 11 | 240 / 340 |
 | Producción | Civil | 14 | 6 | 8 | 240 / 340 |
-| Comercio | Civil | 20 | 6 | 14 | 240 / 340 |
-| Saber | Civil | 21 | 7 | 14 | 320 / 420 |
-| Diplomacia e imperio | Civil | 12 | 7 | 5 | 260 / 360 |
+| Comercio | Civil | 18 | 6 | 12 | 240 / 340 |
+| Saber | Civil | 18 | 7 | 11 | 320 / 420 |
+| Diplomacia e imperio | Civil | 6 | 5 | 1 | 200 / 300 |
 | Logística (Almacén y Camino) | Construcción | 19 | 6 | 13 | 220 / 320 |
 | Urbanismo (obras, zonas industriales, Maravillas) | Construcción | 13 | 6 | 7 | 280 / 380 |
-| Sanidad y población | Construcción | 18 | 7 | 11 | 260 / 360 |
-| Armas y unidades (incluye máquinas de asedio) | Militar | 23 | 7 | 16 | 340 / 440 |
-| Cuartel y entrenamiento | Militar | 14 | 6 | 8 | 240 / 340 |
+| Sanidad y población | Construcción | 20 | 7 | 13 | 260 / 360 |
+| Armas y unidades (incluye máquinas de asedio) | Militar | 22 | 7 | 15 | 340 / 440 |
+| Cuartel y entrenamiento | Militar | 18 | 6 | 12 | 240 / 340 |
 | Defensa | Militar | 12 | 6 | 6 | 280 / 380 |
-| Guerra y conquista | Militar | 20 | 7 | 13 | 340 / 440 |
-| **Total** | | **203** | **77** | **126** | |
+| Guerra y conquista | Militar | 15 | 6 | 9 | 280 / 380 |
+| **Total** | | **192** | **74** | **118** | |
 
-- Los **niveles**: 20 de nivel 1, 48 de nivel 2, 51 de nivel 3, 49 de nivel 4 y 35 de nivel 5. Por tipo, 79 son civiles, 54 de construcción y 70 militares.
+- Los **niveles**: 18 de nivel 1, 48 de nivel 2, 46 de nivel 3, 48 de nivel 4 y 32 de nivel 5. Por tipo, 70 son civiles, 54 de construcción y 68 militares.
 - Las **36 tecnologías de tu lista** están incluidas con tus efectos. Se eliminó *Pacificación* (contradecía las capturas) y se reemplazaron *Asedio* y *Catapultas* por 6 tecnologías de máquinas de asedio (sección 9.1).
-- **Victoria tecnológica:** con la columna vertebral, el camino más barato a 5 tecnologías de nivel 5 **de ramas distintas** cuesta entre **1700 y 2040** puntos, según qué 5 ramas elijas.
+- **Victoria tecnológica:** con la columna vertebral, el camino más barato a 5 tecnologías de nivel 5 **de ramas distintas** cuesta entre **1640 y 2000** puntos, según qué 5 ramas elijas.
 - ⚠️ Si bastara con **cualquier** 5 tecnologías de nivel 5, se lograría con solo 2 ramas por unos 1500 puntos (Logística y Armas), porque varias ramas tienen más de una de nivel 5. Por eso propongo que sean **de ramas distintas** (💡, falta confirmar).
 - Hay 27 tecnologías con **riesgo de balance alto** para revisar con el simulador.
 - ❓ ¿Los mínimos del nivel anterior deben ser de cualquier rama o del mismo tipo? Se asume de cualquier rama.
@@ -981,8 +981,8 @@ Es la misma idea que los científicos automáticos (sección 14.0), aplicada a l
 
 **Errores corregidos:** los botones «Ir» aparecían en todas las zonas; *Reservistas* figuraba como simulada pero no hacía nada; al repartir trabajadores entre varios edificios se podía saltar a una persona o dejar a otra en dos lugares.
 
-### 23.2 Qué todavía NO tiene efecto simulado
-19 de las 209 tecnologías aparecen como «aún sin efecto»: Embajadas comerciales, Exportaciones, Intercambio académico, Espionaje científico, Atajo del sabio, Enciclopedia, Embajadores, Aliados de ultratumba, Tratados de paz, Cultura tribal, Maestros de la paz, Censo, Mercenarios, Jinetes veloces, Exploradores, Contraespionaje, Caballos de carga, Guerra relámpago e Intimidación. Se pueden investigar (cuentan para la columna vertebral y los mínimos), pero no hacen nada.
+### 23.2 Tecnologías sin efecto
+✅ 🆕 **Quitadas (28/10/2026, decidido por Alejandro):** las 17 tecnologías que se podían investigar pero no hacían nada (*Embajadas comerciales*, *Exportaciones*, *Intercambio académico*, *Espionaje científico*, *Atajo del sabio*, *Embajadores*, *Aliados de ultratumba*, *Tratados de paz*, *Cultura tribal*, *Maestros de la paz*, *Censo*, *Jinetes veloces*, *Exploradores*, *Contraespionaje*, *Caballos de carga*, *Guerra relámpago* e *Intimidación*). El catálogo queda en **192** y todas tienen efecto. Para no romper las columnas vertebrales: en **Saber**, el nivel 3 pasa a *Observatorios*; en **Diplomacia e imperio** la columna empieza en *Ofrendas* (ahora nivel 1) y sigue *Capital próspera*, *Diplomacia tribal*, *Anexión a distancia* y *Corte imperial* (la rama queda con 6 tecnologías); en **Guerra y conquista** empieza en *Caminos militares*, sigue *Saqueo*, *Administradores*, *Emboscadas* y *Reconstrucción*, y termina en *Contraataque*. 💡 Diplomacia quedó delgada: conviene agregarle tecnologías con efecto real más adelante.
 
 ### 23.3 Simplificaciones
 - Los oponentes son bots sencillos: investigan, especializan, construyen, entrenan, anexan, se ponen en Alerta con quien tiene tropas cerca y a veces atacan.
@@ -1103,7 +1103,7 @@ Todo se aplicó a pedido de Alejandro. Los **valores** marcados 💡 son estimac
 - ✅ 🆕 **Eventos de tribu (decidido por Alejandro el 28/10/2026):** se **quitan Inquietud y Furia**. Quedan dos eventos de tribu al año (uno, en un mes al azar, sobre una tribu al azar): **Pedido de tribu** y **Éxodo tribal** (si tiene 4 o más personas y una zona libre a su lado, la mitad de su gente funda una tribu nueva ahí). En su lugar, **cada tribu crece sola al empezar cada año (desde el 2.º): +1 civil de su oficio y +2 bárbaros** (💡 `TRIBE_YEAR_CIV = 1`, `TRIBE_YEAR_BAR = 2` en `reglas.js`; «bárbaros» = berserkers).
   - **Medido** (24 partidas de bots de 85 pasos, sin crecimiento → con crecimiento): gente por tribu al paso 40, 3,4 → 11,8; al paso 80, 2,7 → 18,3; tribus aún sin anexar ni conquistar al paso 80, 3,6 → 5,0; zonas por jugador, 4,2 → 3,8; combates por partida, 6,3 → 8,7. Cada año la tribu cuesta unos **+13 de anexión** (3 por civil + 5 por cada bárbaro) y pelea más: ahora anexar tarde sale mucho más caro y conviene hacerlo pronto o ganarse la relación temprano. 💡 Si resulta demasiado, se puede poner un tope de bárbaros por tribu.
 - ✅ 🆕 **Registro descargable (19.2):** en **Historial** y en la pantalla de fin hay dos botones: **⬇ Registro (.txt)** (legible: mapa, jugadores, modo, semilla, condiciones de victoria al final e historial paso a paso) y **⬇ Datos (.json)** (lo mismo en datos, más el tiempo hasta ¡Listo! y las órdenes por paso de quien juega). Sirve para repasar una partida, compartirla y analizar el ritmo. Sale de `gameLogData` y `gameLogText` (`js/motor/registro.js`, sin tocar la pantalla). No guarda las batallas golpe a golpe: solo lo que dice el historial.
-- ✅ 🆕 **Excel de tecnologías al día:** 209 tecnologías (se agregaron *Levas*, *Intendencia militar*, *Campeones*, *Mando*, *Memoria del pueblo* y *Raíces profundas*; 26 textos y 4 valoraciones puestos al día). Las hojas Ramas y Resumen suman 209 (81 civiles, 54 de construcción, 74 militares).
+- ✅ 🆕 **Excel de tecnologías al día:** 209 tecnologías (se agregaron *Levas*, *Intendencia militar*, *Campeones*, *Mando*, *Memoria del pueblo* y *Raíces profundas*; 26 textos y 4 valoraciones puestos al día). Las hojas Ramas y Resumen sumaban 209; el 28/10/2026 se quitaron 17 sin efecto (quedan 192).
 - ✅ 🆕 **Repositorio:** se borraron 33 copias viejas de código, documentos y audio de la raíz; el flujo de pruebas automáticas (`pruebas.yml`) estaba en la raíz y GitHub no lo leía: ahora está en `.github/workflows/`.
 - ✅ 🆕 **Quién trabaja en los edificios (28/10/2026, decidido por Alejandro; cambia 15, «Puestos de trabajo por nivel»):** los edificios que producen los trabajan **los especialistas de su oficio**: el **Molino**, los agricultores; el **Taller**, los ingenieros; el **Mercado**, los comerciantes; la **Biblioteca**, los científicos (ya era así). El **Almacén** y el **Camino**, **cualquier civil**. 💡 El **Hospital** también admite a cualquiera (no tiene oficio asociado; dime si debe tener uno). Los pobladores sin oficio ya no pueden trabajar en el Molino, el Taller ni el Mercado. Primero se asignan los edificios con oficio, para que el Almacén o el Camino no les quiten a sus especialistas. Cuartel y Fortificación siguen usando militares. **Medido** (24 partidas de bots, 60 pasos, antes → después): población 18,5 → 16,1 (−13 %), oro 248 → 199 (−20 %), puestos ocupados 0,9 → 0,7 (los bots tienen pocos edificios de producción). ❓ Ver jugando si arrancar sin edificios productivos resulta lento: ahora cada edificio exige antes especializar a alguien (1 de producción).
 - ✅ 🆕 **Interfaz, segunda tanda (28/10/2026, pedido por Alejandro):**
@@ -1120,4 +1120,8 @@ Todo se aplicó a pedido de Alejandro. Los **valores** marcados 💡 son estimac
   - **Tu historia, compacta:** una tarjeta de una línea (nombre, capítulo y paso estimado, cuatro puntos); la explicación quedó en la ayuda.
   - **Maravillas:** una tarjeta por maravilla, en dos columnas, **con su propia ilustración** (12 distintas) y el efecto en una línea. «Libre» se cambió por un **ícono verde ✓** (relleno si ya tienes la tecnología para empezarla); en obra se ve una barra por jugador con su porcentaje, y construida lleva la estrella con el color de su dueño y la zona.
   - **Tab** pasa a la **siguiente zona tuya** (Mayús+Tab, a la anterior) y conserva la subpestaña en la que estés, para comparar zonas; Enter sigue pasando el paso. No actúa si escribes en un campo o hay una ventana abierta.
+- ✅ 🆕 **Arte, opción 1 «Sistema visual unificado» (28/10/2026, elegida por Alejandro): cerrada.**
+  - **Íconos propios:** 67 íconos dibujados en SVG (colores planos y contorno de tinta) reemplazan a los emoji del sistema en toda la interfaz: recursos (🌾 ⚒ 🪙 🔬), pestañas, modos de mapa, avisos, medallas, estrella, espadas, tratos, reloj de arena, etc. Un traductor (`js/interfaz/dibujo/iconos.js`) cambia cada emoji por su ícono al aparecer en pantalla, así que no hay que tocar cada panel; los textos de ayuda (al pasar el mouse) conservan el emoji original. También se traducen los textos **dentro del mapa** (placas de zona, distintivos de recursos, etiquetas): se mide dónde cae cada emoji y se coloca el ícono encima. Solo quedan como texto las flechas y símbolos tipográficos (✓ ✕ ◀ ▶ ▲ ▼ ☰ ➜ →).
+  - **Papel y tinta:** grano de papel muy suave en el fondo y el panel, panel con borde de tinta y sombra dura, botones que se hunden al presionarlos, y títulos con tipografía con serif.
+  - ✅ Revisado en las pestañas, la Guía, el Menú, el mapa y el plan de red. ❓ Siguiente: decidir si se hace un prototipo de la opción 2 (mesa de juego ilustrada), mejor en paralelo a las pruebas con personas.
 

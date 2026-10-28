@@ -16,7 +16,7 @@ function startGame(cfg){
   const mc=myCapital(); ui.sel=mc; ui.zsub='resumen';
   beginStep(); render(); musicPlay('plan');
   fitAll(0);
-  setTimeout(()=>{ flyTo(sx(mc),sy(mc)+30,840,FXS.on?1500:0); },FXS.on?350:0);
+  setTimeout(()=>{ flyTo(sx(mc),sy(mc)+30,(typeof isMovil==='function'&&isMovil())?560:840,FXS.on?1500:0); },FXS.on?350:0);
   const sm=$('startMsg'); sm.innerHTML=`<b>Aquí empiezas</b><div>Tu capital es <b>${esc(zname(G.zones[mc]))}</b>.</div>`; sm.className='startmsg show'; clearTimeout(sm._t); sm._t=setTimeout(()=>{ sm.className='startmsg'; },7000);
 }
 function setViewMode(v,quiet){

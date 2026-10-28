@@ -655,3 +655,70 @@ header.top h1{letter-spacing:.015em}
 .viewport[data-estilo="mesa"]{background:#6B4A2E}
 
 .viewport[data-estilo="mesa"] .mini{background:#6B4A2E;border-color:#2A1B16}
+
+/* Recursos: subpestañas y tarjetas más pequeñas (28/10/2026) */
+.wgrid{grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:6px}
+.wcard{padding-bottom:4px}.wcard .wimg{height:58px}.wcard b{font-size:12px;padding:3px 6px 0}.wcard small{font-size:10px;padding:0 6px;-webkit-line-clamp:2}
+.wcard .wok,.wcard .wst{top:3px;left:3px;width:17px;height:17px;min-width:17px;font-size:10px;line-height:13px}.wcard .wst{line-height:17px}
+.wcard .wfoot{margin:2px 6px 0;font-size:10px}
+.mz{gap:4px}.mzr{padding:3px 6px;gap:6px}.mzt small{font-size:11px;line-height:1.2}
+.chests{grid-template-columns:repeat(auto-fit,minmax(104px,1fr))}
+
+.mzr.c{padding:2px 6px;gap:7px}.mzr.c .mzn{flex:1;display:grid;line-height:1.15;min-width:0}.mzr.c .mzn b{font-size:13px}.mzr.c .mzn small{font-size:10.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mzr.c .mzy{font-weight:700;font-size:12.5px;white-space:nowrap}.mzr.c .db{transform:scale(.82);margin:-3px -2px}
+
+/* ===== Teléfono (pantalla de menos de 760 px): mapa a pantalla completa y hoja inferior (28/10/2026) ===== */
+#sheetGrip{display:none}
+body.movil{--navh:56px;--hdrh:46px;overflow:hidden;overscroll-behavior:none;font-size:15px;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+body.movil.sheet-0{--sheetH:0px}body.movil.sheet-1{--sheetH:40dvh}body.movil.sheet-2{--sheetH:72dvh}
+body.movil .app{padding:0;max-width:none;height:100dvh;position:relative;overflow:hidden}
+body.movil header.top{position:fixed;left:0;right:0;top:0;height:var(--hdrh);z-index:25;display:flex;flex-wrap:nowrap;align-items:center;gap:6px;padding:0 8px;background:var(--panel);border-bottom:2px solid var(--ink);box-sizing:border-box;margin:0}
+body.movil header.top h1{display:none}
+body.movil .turnbar{flex:1;min-width:0;flex-wrap:nowrap;gap:8px;justify-content:flex-start;overflow:hidden}
+body.movil .turnbar .chips,body.movil .turnbar .evchips,body.movil #calNote,body.movil #clock{display:none}
+body.movil .turnbar .tstep b{font-size:17px}body.movil .resline{gap:8px;font-size:13px;flex-wrap:nowrap}
+body.movil .hbar{display:flex;gap:4px}body.movil .hbar .btn{padding:4px 8px;min-height:36px;font-size:12.5px}
+body.movil #readyBtn{position:fixed;right:10px;bottom:calc(var(--navh) + 22px + var(--sheetH,0px) + 10px + env(safe-area-inset-bottom));z-index:40;width:auto;min-width:128px;height:54px;min-height:54px;padding:0 22px;font-size:19px;border-radius:27px;box-shadow:0 4px 0 var(--ink),0 8px 16px rgba(0,0,0,.35)}
+body.movil main{display:block}
+body.movil .stage{position:fixed;left:0;right:0;top:var(--hdrh);bottom:0}
+body.movil .viewport,body.movil .viewport.frame{height:100%;min-height:0;border-radius:0;border:0;box-shadow:none}
+body.movil .dpad{display:grid;grid-template-columns:40px;right:8px;top:8px;gap:6px}body.movil .dpad span,body.movil .dpad button[data-dir]{display:none}body.movil .dpad button{width:40px;height:40px;font-size:18px}
+body.movil .mini{display:none}body.movil .vmode{top:8px;left:8px}body.movil .vmode button{width:40px;height:40px}
+body.movil .startmsg{top:56px}
+/* la hoja: barra para arrastrar, contenido y, abajo, las pestañas como barra de navegación */
+body.movil .panel{position:fixed;left:0;right:0;bottom:0;top:auto;max-height:none;height:auto;border-radius:16px 16px 0 0;border-width:2px 0 0;padding:0 0 env(safe-area-inset-bottom);z-index:30;box-shadow:0 -6px 18px rgba(0,0,0,.35);display:flex;flex-direction:column;gap:0;overflow:hidden;container-type:normal}
+body.movil #sheetGrip{display:block;order:0;height:22px;position:relative;touch-action:none;cursor:pointer;flex:none}
+body.movil #sheetGrip::after{content:'';position:absolute;left:50%;top:9px;width:46px;height:5px;margin-left:-23px;border-radius:3px;background:rgba(42,27,22,.38)}
+body.movil #encBar{order:1}body.movil #sugBar{order:2}
+body.movil #tabBody{order:3;overflow:auto;padding:0 10px 10px;height:var(--sheetH,0px);max-height:var(--sheetH,0px);overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+body.movil.sheet-0 #tabBody,body.movil.sheet-0 #encBar{display:none}
+body.movil .tabs{order:4;display:flex;flex-wrap:nowrap;height:var(--navh);border-top:1px solid var(--rule);border-bottom:0;overflow:visible}
+body.movil .tabs button{flex:1 1 0;min-width:0;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:4px 1px;border-bottom:0;border-top:3px solid transparent;font-size:10px}
+body.movil .tabs button[aria-selected="true"]{border-top-color:var(--accent);flex:1 1 0}
+body.movil .tabs button .ti{font-size:20px}body.movil .tabs button .tl,body.movil .tabs button[aria-selected="true"] .tl{display:block;font-size:9.5px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+body.movil .tabs button .tabal{top:2px;right:6px}
+/* controles cómodos para el dedo */
+body.movil button,body.movil .btn{min-height:40px}body.movil .tabs button{min-height:0}
+body.movil .subtabs button{padding:9px 8px;font-size:13px;min-height:40px}
+body.movil .sdq .qs,body.movil .qs{width:44px;height:40px}body.movil .bidr button{width:38px;height:38px}body.movil .bidr input{width:58px;height:38px}
+body.movil input,body.movil select,body.movil textarea{font-size:16px}
+body.movil .chip,body.movil .sdchips .chip{padding:7px 12px}
+body.movil .sddest{grid-template-columns:repeat(2,1fr)}body.movil .sdgo{flex-wrap:wrap}
+body.movil .zres3,body.movil .zline{gap:4px}
+body.movil .req{font-size:13px}body.movil .req .btn.sm,body.movil .btn.sm{min-height:36px;padding:6px 12px}
+body.movil .chests{grid-template-columns:repeat(3,1fr)}body.movil .wgrid{grid-template-columns:repeat(3,1fr)}
+body.movil #toasts{top:calc(var(--hdrh) + 6px)}
+/* ventanas: hojas desde abajo; la Guía y las batallas, a pantalla completa */
+body.movil dialog{position:fixed;left:0;right:0;bottom:0;top:auto;margin:0;width:100vw;max-width:100vw;max-height:90dvh;border-radius:16px 16px 0 0;overflow:auto;padding:14px}
+body.movil dialog.big,body.movil dialog.battle{top:0;height:100dvh;max-height:100dvh;border-radius:0}
+body.movil .wikiwrap{grid-template-columns:1fr}body.movil .wikinav{max-height:30dvh;overflow:auto}
+body.movil .mgrid{grid-template-columns:1fr}
+body.movil .tabs button,body.movil .tabs button[aria-selected="true"]{flex:1 1 0!important;min-width:0!important;padding:4px 1px!important;font-size:10px!important}
+body.movil .tabs button .cnt,body.movil .tabs button .tabal{position:absolute!important;top:3px!important;right:calc(50% - 22px)!important;left:auto!important;margin:0!important;font-size:10px!important}
+body.movil .tabs button .cnt{padding:0 5px;min-width:16px;height:16px;line-height:16px;border-radius:8px;background:var(--accent);color:#fff}
+body.movil .tabs button .tabal{width:16px;height:16px;line-height:16px;text-align:center;border-radius:50%}
+body.movil .resline span,body.movil .resline>span{display:inline-flex;align-items:center;gap:3px;white-space:nowrap}
+body.movil .subtabs{overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}body.movil .subtabs::-webkit-scrollbar{display:none}body.movil .subtabs button{flex:0 0 auto}
+body.movil.sheet-2 .dpad{display:none}body.movil .cnt:empty{display:none!important}
+body.movil #toasts{position:fixed;top:calc(var(--hdrh) + 8px);bottom:auto;left:8px;right:8px;width:auto;z-index:60}
+body.movil .toast{font-size:13px;line-height:1.3}

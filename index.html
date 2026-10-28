@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Los Pasos del Imperio — prototipo v0.13</title>
 <link rel="stylesheet" href="css/estilos.css">
 </head>
@@ -40,6 +40,7 @@
       </div>
     </section>
     <aside class="panel" aria-label="Panel de control">
+      <div id="sheetGrip" role="button" tabindex="0" aria-label="Abrir o cerrar el panel" aria-expanded="false"></div>
       <div id="encBar" aria-live="polite"></div>
       <div id="sugBar" aria-live="polite"></div>
       <div class="tabs" role="tablist">
@@ -113,6 +114,7 @@
   <label class="mopt">Volumen de la música <input type="range" id="rngMus" min="0" max="100" value="30" aria-label="Volumen de la música"></label>
   <p class="hint">Música generada con Suno (plan gratis, uso no comercial). Detalles en <code>docs/audio.md</code>.</p>
   <label class="mopt"><input type="checkbox" id="chkAnim" checked> Animaciones</label>
+  <label class="mopt">Estilo del mapa <span class="seg"><button id="stValle" aria-pressed="true" title="El valle ilustrado de siempre">Valle</button><button id="stMesa" aria-pressed="false" title="Un tablero de mesa: tapete, fichas de cartón y mesa de madera">Mesa de juego</button></span></label>
   <label class="mopt"><input type="checkbox" id="chkEdge"> Mover el mapa al acercar el mouse a los bordes</label>
   <p class="hint" id="menuInfo"></p>
   <form method="dialog" class="dclose"><button class="btn primary">Cerrar</button></form>
@@ -182,6 +184,7 @@
 <script src="js/interfaz/tutorial.js"></script>
 <script src="js/interfaz/render.js"></script>
 <script src="js/interfaz/acciones.js"></script>
+<script src="js/interfaz/movil.js"></script>
 <script src="js/interfaz/flujo.js"></script>
 <script src="js/red/config_firebase.js"></script>
 <script src="js/red/multijugador.js"></script>

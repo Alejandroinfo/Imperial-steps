@@ -24,17 +24,31 @@ function wondersHTML(){
     h+=`<div class="wcard ${cls}" title="${esc(W.n+' · '+W.r+': '+W.d+(b?'':'. Se desbloquea con '+W.tech))}"><div class="wimg">${wonderArt(w)}${badge}</div><b>${esc(W.n)}</b><small>${esc(W.d)}</small>${foot}</div>`; });
   return h+'</div>';
 }
-// Recursos estratégicos del mapa
+// Recursos estratégicos del mapa, agrupados (tuyos, libres, de otros) y en una línea cada uno; el detalle sale al pasar el mouse.
 function mapResourcesHTML(){
-  let h='';
-  // recursos estratégicos del mapa
-  const all=G.zones.filter(z=>zoneDeps(z).length);
-  h+=`<h4>Recursos estratégicos del mapa <a href="#" data-wiki="estrategicos" class="wlink" title="${(`Cada uno da su efecto mientras lo controles, y además <b>rinde más mientras más tiempo lo tengas</b>: la plata 🥈 rinde +1 y sube hasta +${RES_TIER.plata.max}; el oro 🥇 (efecto doble) rinde +2 y sube hasta +${RES_TIER.oro.max}, un punto más cada ${RES_GROW_EVERY} pasos. Si te lo quitan, el contador vuelve a cero.`).replace(/<[^>]+>/g,'')}">ⓘ</a></h4><div class="mz">`;
-  all.sort((a,b)=>(b.owner===ME)-(a.owner===ME)).forEach(z=>{ const own=z.owner===ME;
-    const who=z.owner===null?'<span class="tag" style="background:#6B8E5A">libre</span>':z.owner===TRIBE?'<span class="tag" style="background:#8A5A3A">tribu</span>':`<span class="tag" style="background:${PLN[z.owner].col}">${esc(PLN[z.owner].name)}</span>`;
-    zoneDeps(z).forEach(d=>{ const r=RES[d.k], k=RES_YIELD[d.k];
-      h+=`<div class="mzr">${depBadge(d)}<div class="mzt"><span><b>${esc(r.n)}</b> ${RES_TIER[d.tier].ic} ${who}</span><small>${esc(zname(z))} · ${r.sc==='global'?'global':'local'}: ${esc(d.mul===2?r.d2:r.d)}</small><small>${isPl(z.owner)?`Rinde ${IMP_ICON[k]} +${resBonus(z,d.tier)} por paso · ${z.resHeld||0} pasos en manos de ${own?'ti':esc(PLN[z.owner].name)}`:`Rendiría ${depYieldText(d)} al tomarlo`}</small></div><button class="btn" data-act="gozone" data-id="${z.id}">Ver</button></div>`; }); });
-  h+='</div>';
+  const all=G.zones.filter(z=>zoneDeps(z).length); if(!all.length) return '<div class="hint">No hay recursos estratégicos en el mapa.</div>';
+  const tip=`Cada uno da su efecto mientras lo controles, y además rinde más mientras más tiempo lo tengas: la plata rinde +1 y sube hasta +${RES_TIER.plata.max}; el oro (efecto doble) rinde +2 y sube hasta +${RES_TIER.oro.max}, un punto más cada ${RES_GROW_EVERY} pasos. Si te lo quitan, el contador vuelve a cero.`;
+  const groups=[['mine','Tuyos',z=>z.owner===ME],['free','Libres',z=>z.owner===null||z.owner===TRIBE],['other','De otros jugadores',z=>isPl(z.owner)&&z.owner!==ME]];
+  const hasMine=all.some(groups[0][2]); ui.det=ui.det||{};
+  let h=`<div class="hint">Efecto mientras los controles, y rinden más con el tiempo <a href="#" data-wiki="estrategicos" class="wlink" title="${esc(tip)}">ⓘ</a></div>`;
+  groups.forEach(([k,t,fn])=>{ const zs=all.filter(fn).sort((a,b)=>a.id-b.id); if(!zs.length) return;
+    const key='rm_'+k; if(!(key in ui.det)) ui.det[key]=(k==='mine')||(!hasMine&&k==='free');
+    const n=zs.reduce((a,z)=>a+zoneDeps(z).length,0);
+    h+=fold(key,t,String(n));
+    if(ui.det[key]){ h+='<div class="mz">';
+      zs.forEach(z=>{ const own=z.owner===ME; const who=isPl(z.owner)&&!own?`<span class="tag" style="background:${PLN[z.owner].col}">${esc(PLN[z.owner].name)}</span>`:z.owner===TRIBE?'<span class="tag" style="background:#8A5A3A">tribu</span>':'';
+        zoneDeps(z).forEach(d=>{ const r=RES[d.k], kk=RES_YIELD[d.k], T=RES_TIER[d.tier];
+          const yv=isPl(z.owner)?`${IMP_ICON[kk]} +${resBonus(z,d.tier)}`:`${IMP_ICON[kk]} +${T.start}`;
+          const det=`${r.n} (${T.n.toLowerCase()}) en ${zname(z)} · ${r.sc==='global'?'global':'local'}: ${d.mul===2?r.d2:r.d}. `+(isPl(z.owner)?`Rinde ${yv} por paso · ${z.resHeld||0} pasos en manos de ${own?'ti':PLN[z.owner].name}`:`Rendiría ${depYieldText(d)} al tomarlo`);
+          h+=`<div class="mzr c" title="${esc(det)}">${depBadge(d)}<span class="mzn"><b>${esc(r.n)}</b> ${who}<small>${esc(zname(z))} · ${r.sc==='global'?'global':'local'}</small></span><span class="mzy">${yv}</span><button class="btn sm" data-act="gozone" data-id="${z.id}">Ver</button></div>`; }); });
+      h+='</div>'; } });
   return h;
 }
-function panelRecursos(){ return auctionHTML()+wondersHTML()+mapResourcesHTML(); }
+// La pestaña tiene tres subpestañas para que ninguna se haga larga: recursos del mapa, subasta y maravillas.
+const RSUBS=[['mapa','Del mapa'],['subasta','Subasta'],['mar','Maravillas']];
+function panelRecursos(){
+  const cur=RSUBS.some(s=>s[0]===ui.rsub)?ui.rsub:'mapa';
+  const sa=G.auction&&G.step<=G.auction.step&&!(G.auction.bids[ME]&&Object.keys(G.auction.bids[ME]).length);
+  let h='<div class="subtabs" role="tablist">'+RSUBS.map(([k,l])=>`<button data-act="rsub" data-s="${k}" aria-selected="${k===cur}" role="tab">${l}${k==='subasta'&&sa?'<i class="al">!</i>':''}</button>`).join('')+'</div>';
+  return h+(cur==='subasta'?auctionHTML():cur==='mar'?wondersHTML():mapResourcesHTML());
+}

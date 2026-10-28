@@ -13,8 +13,9 @@ function planFly(cx,cy,w,ms){
   PV.anim=requestAnimationFrame(st);
 }
 function planFit(ms){ const r=vpRect(); const ratio=r.width?r.height/r.width:0.7; planFly(550,550,Math.max(1100,1010/ratio)*1.02,ms); }
+let PLANCANCEL=null;
 function planInput(){
-  const vp=$('vp'); let d=null;
+  const vp=$('vp'); let d=null; PLANCANCEL=()=>{ d=null; vp.classList.remove('dragging'); };
   vp.addEventListener('pointerdown',e=>{ if(!ui||ui.view!=='plan'||e.button!==0||e.target.closest('.vmode,.dpad,.mini')) return; d={x:e.clientX,y:e.clientY,vx:PV.x,vy:PV.y,moved:false}; if(PV.anim){ cancelAnimationFrame(PV.anim); PV.anim=null; } });
   window.addEventListener('pointermove',e=>{ if(!d||!ui||ui.view!=='plan') return; const dx=e.clientX-d.x, dy=e.clientY-d.y; if(!d.moved&&Math.hypot(dx,dy)>5){ d.moved=true; vp.classList.add('dragging'); }
     if(d.moved){ const r=vpRect(), s=PV.w/r.width; PV.x=d.vx-dx*s; PV.y=d.vy-dy*s; planClamp(); planApply(); } });

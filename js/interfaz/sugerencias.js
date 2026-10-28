@@ -17,7 +17,7 @@ function suggestions(){
   const out=[], F=G.F[ME], mz=zonesOf(G,ME);
   if(F.out&&!F.ghost) return [];
   // Subasta próxima
-  if(G.auction&&G.step<=G.auction.step&&!(G.auction.bids[ME]&&Object.keys(G.auction.bids[ME]).length)&&!queued('bid')) out.push({k:'tip',t:`Subasta en ${G.auction.step-G.step||'0'} paso(s): se paga con ${RN[G.auction.cur]}. Mira los cofres y haz tus ofertas en Recursos.`,go:{tab:'recursos'}});
+  if(G.auction&&G.step<=G.auction.step&&!(G.auction.bids[ME]&&Object.keys(G.auction.bids[ME]).length)&&!queued('bid')) out.push({k:'tip',t:`Subasta en ${G.auction.step-G.step||'0'} paso(s): se paga con ${RN[G.auction.cur]}. Mira los cofres y haz tus ofertas en Recursos.`,go:{tab:'recursos',rsub:'subasta'}});
   // Avisos
   { const short=hungerRisk(); if(short){ const cap=mz.find(z=>z.capital)||mz[0]; out.push({k:'warn',t:`Tu gente podría pasar hambre: entre todas tus zonas faltan unos ${short} de comida. Haz agricultores o reduce tropas.`,go:{zone:cap?cap.id:mz[0].id,sub:'poblacion'}}); } }
   (G.tributes||[]).forEach(tr=>{ if(tr.targets.includes(ME)&&!tr.paid[ME]&&!queued('tribute',o=>o.tribe===tr.zone)) { const rl=((G.zones[tr.zone].rel||{})[ME])||0; out.push({k:rl<=-1?'warn':'idea',t:`La tribu de ${zname(G.zones[tr.zone])} pide ${tr.amount} de ${TSPEC_N[tr.res]} (quedan ${tr.due-G.step+1} paso${tr.due-G.step+1===1?'':'s'}). Si lo ignoras, la relación baja a ${Math.max(TRIBE_REL_MIN,rl-1)}${rl-1<=TRIBE_REL_MIN?' y te ataca':''}.`,go:{tab:'imperio'},req:1}); } });
@@ -123,6 +123,6 @@ function drawTabAlerts(){
 function goSuggestion(i){
   const s=suggestions()[i]; if(!s) return; const g=s.go;
   if(g.move){ openMove(g.move[0],g.move[1]); goZone(g.move[0],VIEW.w,500); return; }
-  if(g.tab){ ui.tab=g.tab; return; }
+  if(g.tab){ ui.tab=g.tab; if(g.rsub) ui.rsub=g.rsub; return; }
   ui.mv=null; ui.sel=g.zone; ui.tab='zona'; ui.zsub=g.sub||'resumen'; goZone(g.zone,VIEW.w>1500?900:VIEW.w,500);
 }

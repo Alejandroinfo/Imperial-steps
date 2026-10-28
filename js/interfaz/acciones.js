@@ -51,6 +51,7 @@ function act(a,d){
     case 'growmode': ui.orders=ui.orders.filter(o=>!(o.t==='growmode'&&o.zone===z.id)); if(d.v!==(z.growMode||GROW_MODE_DEFAULT)) addOrder({t:'growmode',zone:z.id,mode:d.v}); break;
     case 'pausebuild': { const zz=G.zones[Number(d.zone)]; if(!zz||zz.owner!==ME) break; const pd=ui.orders.filter(o=>o.t==='pausebuild'&&o.zone===zz.id).pop(); const cur=pd?pd.on:!!zz.pauseBuild; ui.orders=ui.orders.filter(o=>!(o.t==='pausebuild'&&o.zone===zz.id)); if(!cur!==!!zz.pauseBuild) addOrder({t:'pausebuild',zone:zz.id,on:!cur}); break; }
     case 'undo': undoOrder(); return;
+    case 'rsub': ui.rsub=d.s; break;
     case 'vall': ui.vall=!ui.vall; break;
     case 'bidadj': { const i=Number(d.i); const el=document.querySelector('[data-f="bid_'+i+'"]'); const amt=Math.max(0,Math.floor((Number(el?el.value:0)||0)+Number(d.d))); ui.orders=ui.orders.filter(o=>!(o.t==='bid'&&o.item===i)); addOrder({t:'bid',item:i,amount:amt}); break; }
     case 'bid': { const i=Number(d.i); const el=document.querySelector('[data-f="bid_'+i+'"]'); const amt=Math.max(0,Math.floor(Number(el?el.value:0)||0)); ui.orders=ui.orders.filter(o=>!(o.t==='bid'&&o.item===i)); addOrder({t:'bid',item:i,amount:amt}); break; }

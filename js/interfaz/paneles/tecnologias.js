@@ -116,14 +116,13 @@ function branchView(b){
     h+=`<div class="lvh">Nivel ${l} <small>${20*l} de ciencia</small></div>`+list.map(techLine).join('');
   }
   if(!shown) h+=`<div class="hint">Ahora no puedes investigar nada en esta rama${S.own.length===S.all.length?': ¡ya la completaste!':'. Toca «Ver todas» para saber qué te falta en cada una (casi siempre, más tecnologías del nivel anterior o su requisito directo).'}</div>`;
-  else if(only&&S.own.length) h+=`<div class="hint">Ya tienes ${S.own.length} de esta rama. «Ver todas» las muestra.</div>`;
   return h;
 }
 function panelTech(){
   const F=G.F[ME], tf=ui.tf;
   if(tf.view!=='own') tf.view='ramas';
   const own=TECHS.filter(t=>F.techs[t.n]);
-  let h=researchBox()+`<div class="subtabs" role="tablist"><button data-act="tview" data-v="ramas" aria-selected="${tf.view==='ramas'}" role="tab">Ramas</button><button data-act="tview" data-v="own" aria-selected="${tf.view==='own'}" role="tab">Mías (${own.length})</button><button data-act="openmap" role="tab" title="El mapa completo de tecnologías">Mapa</button><a href="#" data-wiki="ramas" class="wlink" title="¿Cómo funcionan las ramas?">ⓘ</a></div>`;
+  let h=researchBox()+`<div class="subtabs" role="tablist"><button data-act="tview" data-v="ramas" aria-selected="${tf.view==='ramas'}" role="tab">Ramas</button><button data-act="tview" data-v="own" aria-selected="${tf.view==='own'}" role="tab">Mías (${own.length})</button><button data-act="openmap" role="tab" title="El mapa completo de tecnologías">Mapa</button><a href="#" data-wiki="ramas" class="wlink" title="${esc('Elige una rama para ver qué puedes investigar en ella. Para el nivel 2 en adelante necesitas '+MINC[2]+'/'+MINC[3]+'/'+MINC[4]+'/'+MINC[5]+' tecnologías del nivel anterior; la columna vertebral (★) abre el nivel 5.')}">ⓘ</a></div>`;
   if(tf.view==='own'){
     return h+(own.length?BRANCHES.map(b=>{ const l=own.filter(t=>t.r===b); return l.length?`<div class="brh" style="--bc:${bCol(b)}"><span>${bIco(b)}</span>${esc(b)}</div><div class="owng">`+l.map(t=>`<span title="${esc(t.ef)}">${t.v?'★ ':''}${esc(t.n)}</span>`).join('')+'</div>':''; }).join(''):'<div class="hint">Todavía no tienes tecnologías propias (los 9 edificios básicos ya vienen desarrollados).</div>');
   }
@@ -134,7 +133,6 @@ function panelTech(){
   if(rec.length) h+=`<div class="trecs"><div class="trecsh">⭐ Te ayudan ahora</div>${rec.map(t=>techRow(t,'rec')).join('')}</div>`;
   else if(!avail.length) h+='<div class="hint">Ahora no hay tecnologías disponibles: completa las que tienes en curso o desarrolla más del nivel anterior.</div>';
   // las ramas, en tres grupos
-  h+=`<div class="hint" style="margin-top:6px">Elige una rama para ver qué puedes investigar en ella (${avail.length} en total ahora). Para el nivel 2 en adelante necesitas ${MINC[2]}/${MINC[3]}/${MINC[4]}/${MINC[5]} tecnologías del nivel anterior; la columna vertebral (★) abre el nivel 5.</div>`;
   TGROUPS.forEach(([k,t])=>{ const bs=BRANCHES.filter(b=>branchType(b)===k); if(!bs.length) return; h+=`<div class="tgh">${t}</div><div class="bgrid">${bs.map(branchCardHTML).join('')}</div>`; });
   return h;
 }

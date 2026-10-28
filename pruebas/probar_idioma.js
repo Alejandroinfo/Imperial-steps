@@ -1,0 +1,32 @@
+// Prueba del traductor de interfaz (español → inglés): plantillas con números y nombres, listas y coherencia del diccionario.
+'use strict';
+const fs = require('fs'), path = require('path'), vm = require('vm');
+const raiz = path.join(__dirname, '..');
+const ctx = vm.createContext({ console, document: { documentElement: {}, body: {} }, localStorage: { getItem() { return null; }, setItem() {} } });
+const cargar = f => vm.runInContext(fs.readFileSync(path.join(raiz, f), 'utf8'), ctx, { filename: f });
+cargar('js/interfaz/idioma.js');
+fs.readdirSync(path.join(raiz, 'js/idiomas')).filter(f => /^en_.*\.js$/.test(f)).sort().forEach(f => cargar('js/idiomas/' + f));
+const ev = s => vm.runInContext(s, ctx);
+ev("LANG.cur='en'");
+let fallas = 0;
+const igual = (a, b, msg) => { if (a !== b) { fallas++; console.log(`✗ ${msg}: «${a}» ≠ «${b}»`); } else console.log('✓ ' + msg); };
+const t = s => ev(`i18n(${JSON.stringify(s)})`);
+igual(t('Tecnologías'), 'Technologies', 'una palabra');
+igual(t('  Paso 12 '), '  Step 12 ', 'plantilla con número y espacios conservados');
+igual(t('★ Almacenes'), '★ Storehouses', 'adorno al principio (★) se conserva');
+igual(t('Adrianópolis, Capital, Montañas, dueño: Tú'), 'Adrianópolis, Capital, Mountains, owner: You', 'plantilla con nombres: se traducen las partes conocidas y el nombre propio queda');
+igual(t('¡Subasta en 8 pasos (paso 20)! Se paga con ciencia. Objetos: Cargamento, Saber'), 'Auction in 8 steps (step 20)! Pay with science. Items: Cargo, Knowledge', 'lista separada por comas dentro de una plantilla');
+igual(t('· año 3, noviembre'), '· year 3, November', 'plantilla con mes');
+igual(t('Texto que no existe en el diccionario'), 'Texto que no existe en el diccionario', 'lo que falta se queda en español');
+igual(ev("LANG.missing.has('Texto que no existe en el diccionario')"), true, 'y se anota para completarlo');
+igual(t('12'), '12', 'los números solos no se tocan');
+ev("LANG.cur='es'"); igual(t('Tecnologías'), 'Tecnologías', 'en español no cambia nada');
+// coherencia: cada plantilla debe llevar los mismos {n} en español y en inglés
+const src = fs.readdirSync(path.join(raiz, 'js/idiomas')).filter(f => /^en_.*\.js$/.test(f)).map(f => fs.readFileSync(path.join(raiz, 'js/idiomas', f), 'utf8')).join('\n');
+const pares = [...src.matchAll(/^\s*("(?:[^"\\]|\\.)*"):\s*("(?:[^"\\]|\\.)*"),?\s*$/gm)].map(m => [JSON.parse(m[1]), JSON.parse(m[2])]);
+const marcas = s => (s.match(/\{\d+\}/g) || []).sort().join(',');
+const malos = pares.filter(([es, en]) => marcas(es) !== marcas(en));
+igual(malos.length, 0, `las ${pares.length} entradas del diccionario conservan sus {0}, {1}… (${malos.slice(0, 3).map(x => x[0]).join(' | ')})`);
+const vacios = pares.filter(([es, en]) => !en.trim());
+igual(vacios.length, 0, 'ninguna traducción está vacía');
+process.exit(fallas ? 1 : 0);

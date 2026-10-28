@@ -76,6 +76,9 @@ $('chkSound').addEventListener('change',e=>{ sfxInit(); sfxSetOn(e.target.checke
 $('rngVol').addEventListener('input',e=>{ sfxInit(); sfxSetVolume(Number(e.target.value)/100); sfx('coin',0); });
 $('chkAmb').addEventListener('change',e=>{ sfxInit(); sfxSetAmbient(e.target.checked); });
 $('chkMus').checked=MUS.on; $('rngMus').value=Math.round(MUS.vol*100);
+$('lgEs').addEventListener('click',()=>{ setLang('es'); $('lgNote').hidden=true; });
+$('lgEn').addEventListener('click',()=>{ setLang('en'); $('lgNote').hidden=false; });
+$('lgDl').addEventListener('click',e=>{ e.preventDefault(); downloadMissing(); });
 $('stValle').addEventListener('click',()=>setMapStyle('valle'));
 $('stMesa').addEventListener('click',()=>setMapStyle('mesa'));
 $('chkMus').addEventListener('change',e=>{ sfxInit(); musicSetOn(e.target.checked); musicSave(); });
@@ -83,7 +86,7 @@ $('rngMus').addEventListener('input',e=>{ sfxInit(); musicSetVolume(Number(e.tar
 $('dlgBattle').addEventListener('close',()=>{ if(G&&!G.over&&MUS.scene==='combate') musicPlay('plan'); });
 $('chkAnim').addEventListener('change',e=>{ FXS.on=e.target.checked; document.body.classList.toggle('noanim',!e.target.checked); });
 if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches){ FXS.on=false; document.body.classList.add('noanim'); $('chkAnim').checked=false; }
-initTerrInput(); planInput(); initIconos(); initMovil();
+initTerrInput(); planInput(); initIdioma(); initIconos(); initMovil();
 DATA.maps.forEach((m,i)=>{ const o=document.createElement('option'); o.value=i; o.textContent=m.id+'. '+m.name; $('selMap').appendChild(o); });
 $('selMap').value='0'; $('selN').value='3'; initMapPicker();
 openSetup();

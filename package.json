@@ -4,7 +4,7 @@
   "description": "Simultaneous-turn strategy game to play online with family (interface in Spanish).",
   "private": true,
   "scripts": {
-    "test": "node pruebas/revisar_capas.js && node pruebas/probar_reglas.js && node pruebas/probar_red.js && node pruebas/simular_partidas.js",
+    "test": "node pruebas/revisar_capas.js && node pruebas/probar_reglas.js && node pruebas/probar_red.js && node pruebas/probar_idioma.js && node pruebas/simular_partidas.js",
     "check": "npx -y -p typescript@5 tsc -p tsconfig.json",
     "balance": "node herramientas/escenarios_balance.js && node herramientas/balance_tecnologias.js"
   }

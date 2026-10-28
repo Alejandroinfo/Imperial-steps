@@ -3,6 +3,7 @@
 All notable changes, newest first. The game and the design documents are in Spanish; this log is in English.
 
 ## Unreleased
+- **English (optional) from the Menu**: a UI translator (`js/interfaz/idioma.js`) with a Spanish → English dictionary (`js/idiomas/en_1.js`, about 1,300 entries with `{0}`-style templates) translates visible text, tooltips and the SVG map; untranslated text stays in Spanish and can be downloaded from the Menu as a JSON to finish the dictionary. Returning to Spanish restores everything. Not yet translated: the Guide articles, the guided start, encounters, stories and most history lines. New `pruebas/probar_idioma.js` (part of `npm test`) and 6 browser checks.
 - **Light theme only**: removed the dark-mode palette (dark text on a dark background made menus and the panel unreadable on phones in dark mode).
 - **Technologies redesigned**: research queue and recommendations on top, the 12 branches as cards in 3 groups, and a branch view listing what you can research (with "show all" to see owned and locked ones and what is missing).
 - **Map picker at game start**: 12 thumbnails (they change with the number of players) and a detail panel with what makes each map different (steps between capitals, entrances to your capital, borders between empires, tribes on the way, pace).

@@ -199,7 +199,7 @@
 4. **Validar por código lo que se pueda** (conectividad de mapas, ciclos del árbol de tecnologías, costos de victoria) antes de dar algo por bueno.
 5. **Distinguir lo decidido de lo propuesto.** Si una cifra es una estimación, decirlo.
 6. **Probar en el navegador** cada cambio de interfaz antes de darlo por hecho, y correr `npm test` antes de subir.
-7. **Idioma:** todo en español, incluidos los nombres de reglas y de tecnologías.
+7. **Idioma:** todo en español, incluidos los nombres de reglas y de tecnologías. 🆕 Desde el 28/10/2026 hay **inglés opcional** en el Menú (el español sigue siendo el idioma por defecto y el de las reglas).
 8. **Estilo visual:** colores planos, formas duras, vista desde arriba, humor pequeño; la claridad por encima del detalle, porque el juego se decide en segundos.
 9. **Sin reloj por ahora:** el paso avanza cuando todos están listos; primero se mide cuánto tarda la gente.
 10. 🆕 **Se trabaja directo en `main`, sin ramas (27/10/2026, decidido por Alejandro):** commits pequeños que digan qué cambia, y `npm test` antes de subir (ver `CONTRIBUTING.md`); el motor nunca toca la pantalla.
@@ -332,6 +332,7 @@ Reglas en `docs/Reglas_v0.1.md`, sección 25.
 | Tecnologías por ramas | `branchCardHTML`, `branchView`, `techLine`, `researchBox` en `js/interfaz/paneles/tecnologias.js`; acciones `tbranch` y `tonly` |
 | Selector visual de mapas | `js/interfaz/mapas_inicio.js` (`mapStats`, `mapPace`, `mapThumb`, `renderMapPicker`); `#mapPicker` y `#mapInfo` en `index.html` |
 | Tipos de conexión del mapa | `connInfo`, `noPassInfo`, `connMarker`, `CONN_RK` en `js/interfaz/mapa/territorio.js`; íconos `bridge`, `pass`, `trail`, `hills`, `cliff` en `iconos.js` |
+| Inglés opcional | `js/interfaz/idioma.js` (`i18n`, `i18nAdd`, `setLang`, `downloadMissing`); diccionario `js/idiomas/en_1.js`; selector en el Menú (`#lgEs`, `#lgEn`); prueba `pruebas/probar_idioma.js` |
 | Íconos propios y papel | `js/interfaz/dibujo/iconos.js` (`ICONS`, `EMOJI_ICON`, `iconify`, `iconifySVG`, `initIconos`; 67 íconos); estilos `.ic` y «Sistema visual» al final de `css/estilos.css` |
 | Quitar 17 tecnologías sin efecto | `js/datos/tecnologias.js` (192); `Tecnologias_v0.2.xlsx`; Reglas 23.2; `docs/balance_tecnologias.md` regenerado |
 | Quién trabaja en los edificios | `BLD_WORKER` en `config/reglas.js`; asignación en `produceZone` (`motor/economia.js`) |

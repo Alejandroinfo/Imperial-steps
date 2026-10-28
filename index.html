@@ -111,6 +111,8 @@
     <button class="btn" id="btnGallery">Galería de estilo</button>
   </div>
   <h4>Ajustes</h4>
+  <label class="mopt" data-noi18n>Idioma / Language <span class="seg"><button id="lgEs" aria-pressed="true">Español</button><button id="lgEn" aria-pressed="false">English</button></span></label>
+  <p class="hint" id="lgNote" hidden>Traducción en curso: lo que aún no esté traducido se ve en español. <a href="#" id="lgDl">Descargar textos sin traducir</a></p>
   <label class="mopt"><input type="checkbox" id="chkSound" checked> Sonido</label>
   <label class="mopt">Volumen <input type="range" id="rngVol" min="0" max="100" value="55" aria-label="Volumen"></label>
   <label class="mopt"><input type="checkbox" id="chkAmb" checked> Ambiente (viento y pájaros)</label>
@@ -190,6 +192,8 @@
 <script src="js/interfaz/acciones.js"></script>
 <script src="js/interfaz/movil.js"></script>
 <script src="js/interfaz/mapas_inicio.js"></script>
+<script src="js/interfaz/idioma.js"></script>
+<script src="js/idiomas/en_1.js"></script>
 <script src="js/interfaz/flujo.js"></script>
 <script src="js/red/config_firebase.js"></script>
 <script src="js/red/multijugador.js"></script>

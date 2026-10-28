@@ -154,7 +154,7 @@ function neighborsHTML(z){
   z.adj.forEach(id=>{ const a=G.zones[id]; const pres=presentF(a).filter(f=>f!==TRIBE||tribeVisibleFor(a));
     const col=a.owner===null?'#B8A58C':PLN[a.owner].col;
     const chips=pres.map(f=>`<span class="npr" style="--c:${PLN[f].col}" title="${esc(PLN[f].name)}"><i></i>${a.units[f].length}</span>`).join('');
-    const inner=`<span class="nband" style="background:${TCOL[a.terrain]}"><span class="nown" style="background:${col}"></span></span><b>${esc(zname(a))}</b><small>${TERRN[a.terrain]} · ${zoneStatus(a)}</small><span class="nrow">${depBadges(a)}${chips||(zoneDeps(a).length?'':'<em>vacía</em>')}</span>${can?'<span class="ngo">➜</span>':''}`;
+    const inner=`<span class="nband" style="background:${TCOL[a.terrain]}"><span class="nown" style="background:${col}"></span></span><b>${esc(zname(a))}</b><small>${TERRN[a.terrain]} · ${zoneStatus(a)}</small>${(()=>{ const c=connInfo(z.id,id); return `<small class="ncon" title="${esc(c.why)}">${iconHTML(c.ic,c.n)} ${esc(c.n)}</small>`; })()}<span class="nrow">${depBadges(a)}${chips||(zoneDeps(a).length?'':'<em>vacía</em>')}</span>${can?'<span class="ngo">➜</span>':''}`;
     h+=can?`<button class="ntile" data-act="openmv" data-from="${z.id}" data-to="${a.id}" aria-label="Ir a ${esc(zname(a))}">${inner}</button>`:`<div class="ntile off">${inner}</div>`; });
   return h+'</div>';
 }

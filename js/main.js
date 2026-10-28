@@ -9,6 +9,7 @@ document.addEventListener('click',e=>{
   if(SUPPRESS) return;
   const mb=e.target.closest('.mvb'); if(mb&&ui&&ui.sel!==null){ const zg0=mb.closest('g.zone'); openMove(ui.sel,Number(zg0.dataset.id)); render(); return; }
   const zg=e.target.closest('g.zone'); if(zg&&document.querySelector('.viewport').contains(zg)){ onZone(Number(zg.dataset.id)); return; }
+  { const cn=e.target.closest&&e.target.closest('.conn'); if(cn&&typeof toast==='function'){ toast(cn.dataset.t,cn.dataset.x,'info'); return; } }
   const tb=e.target.closest('.tabs button'); if(tb&&ui){ ui.tab=tb.dataset.tab; renderPanel(); return; }
   const b=e.target.closest('[data-act]'); if(b&&G){ act(b.dataset.act,b.dataset); }
 });
@@ -56,7 +57,7 @@ function openSetup(){
   $('setupWarn').hidden=!G||G.over; $('setupCancel').hidden=!G||G.over;
   if($('dlgMenu').open) $('dlgMenu').close();
   if($('dlgEnd').open) $('dlgEnd').close();
-  showMapShort(); musicPlay('menu'); $('dlgSetup').showModal();
+  showMapShort(); renderMapPicker(); musicPlay('menu'); $('dlgSetup').showModal();
 }
 function showMapShort(){ const m=DATA.maps[Number($('selMap').value)]; $('mapShort').textContent=m?m.short+'.':''; }
 $('selMap').addEventListener('change',showMapShort);
@@ -84,7 +85,7 @@ $('chkAnim').addEventListener('change',e=>{ FXS.on=e.target.checked; document.bo
 if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches){ FXS.on=false; document.body.classList.add('noanim'); $('chkAnim').checked=false; }
 initTerrInput(); planInput(); initIconos(); initMovil();
 DATA.maps.forEach((m,i)=>{ const o=document.createElement('option'); o.value=i; o.textContent=m.id+'. '+m.name; $('selMap').appendChild(o); });
-$('selMap').value='0'; $('selN').value='3';
+$('selMap').value='0'; $('selN').value='3'; initMapPicker();
 openSetup();
 setInterval(tick,250);
 window.__ui={act,onZone,get G(){return G;},get ui(){return ui;},toggleReady,startGame};

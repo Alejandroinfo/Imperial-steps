@@ -5,7 +5,7 @@ const $ = id => document.getElementById(id);
 let G=null, ui=null, tele=null;
 const VB={w:1100,h:1060,cx:550,cy:560,sc:430};
 function newUI(){
-  return {sel:null,mv:null,tab:'zona',orders:[],ready:[],stepStart:Date.now(),botAt:[],auto:0,form:{},tf:{br:'Agricultura',avail:false,spine:false,impl:false,view:'avail',kind:'all'},zoom:100,view:'terr',zsub:'resumen',justTech:null,justCond:{},ordSig:'',miniSig:null};
+  return {sel:null,mv:null,tab:'zona',orders:[],ready:[],stepStart:Date.now(),botAt:[],auto:0,form:{},tf:{br:'Agricultura',avail:false,spine:false,impl:false,view:'ramas',branch:null,only:true,kind:'all'},zoom:100,view:'terr',zsub:'resumen',justTech:null,justCond:{},ordSig:'',miniSig:null};
 }
 function layoutBoard(){
   let dmin=9; const Z=G.zones;

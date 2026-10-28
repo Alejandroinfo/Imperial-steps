@@ -3,6 +3,10 @@
 All notable changes, newest first. The game and the design documents are in Spanish; this log is in English.
 
 ## Unreleased
+- **Light theme only**: removed the dark-mode palette (dark text on a dark background made menus and the panel unreadable on phones in dark mode).
+- **Technologies redesigned**: research queue and recommendations on top, the 12 branches as cards in 3 groups, and a branch view listing what you can research (with "show all" to see owned and locked ones and what is missing).
+- **Map picker at game start**: 12 thumbnails (they change with the number of players) and a detail panel with what makes each map different (steps between capitals, entrances to your capital, borders between empires, tribes on the way, pace).
+- **Clearer map connections**: road type from terrain (bridge, mountain pass, forest trail, hill road, plain road, border road), a marker on every connection that explains why it exists, and markers on blocked borders saying what blocks them.
 - **Phone layout (first version)**: below 760 px the map is full-screen, the panel becomes a bottom sheet (closed / half / tall) with the tabs as a bottom navigation bar, *Ready!* is a large floating button, one finger pans and two fingers pinch-zoom (map and network plan), tap shows what used to be hover tooltips, and controls are at least 40 px. New `js/interfaz/movil.js`; 11 browser checks on a simulated 390×844 touch device. Not yet tested on a real phone.
 - **Resources tab split into sub-tabs** (Map / Auction / Wonders) so none of them needs endless scrolling; map resources are grouped (yours / free / others) with one line each, and wonder cards are smaller.
 - **Game-table style, second batch**: paper nameplates with tape and a wax seal in the owner's colour (a star on capitals), a coloured base under every figure, and the minimap and network plan on the same wooden table.

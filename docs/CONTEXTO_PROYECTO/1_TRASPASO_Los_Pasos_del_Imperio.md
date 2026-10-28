@@ -329,6 +329,9 @@ Reglas en `docs/Reglas_v0.1.md`, sección 25.
 | Pedidos de tribu en Imperio, Victoria en un gráfico, resumen y envío compactos | `requestsHTML` en `paneles/imperio.js`; `panelVictoria` en `paneles/ordenes.js`; `zoneOverview` y `sendCardHTML` en `paneles/zona.js`; estilos al final de `css/estilos.css` |
 | Estilo del mapa «Mesa de juego» (prototipo) | `MAPSTYLE`, `setMapStyle`, `MESA_DEFS`, `tileBase` y las ramas `mesa` de `buildTerritoryDOM` en `js/interfaz/mapa/territorio.js`; selector en el Menú (`index.html`, `main.js`) |
 | Teléfono (hoja inferior, pellizco, avisos al tocar) | `js/interfaz/movil.js` (`isMovil`, `setSheet`, `initPinch`, `initTouchTips`); estilos «Teléfono» al final de `css/estilos.css` (`body.movil`, `sheet-0/1/2`); `#sheetGrip` en `index.html`; `PLANCANCEL` en `plan.js` |
+| Tecnologías por ramas | `branchCardHTML`, `branchView`, `techLine`, `researchBox` en `js/interfaz/paneles/tecnologias.js`; acciones `tbranch` y `tonly` |
+| Selector visual de mapas | `js/interfaz/mapas_inicio.js` (`mapStats`, `mapPace`, `mapThumb`, `renderMapPicker`); `#mapPicker` y `#mapInfo` en `index.html` |
+| Tipos de conexión del mapa | `connInfo`, `noPassInfo`, `connMarker`, `CONN_RK` en `js/interfaz/mapa/territorio.js`; íconos `bridge`, `pass`, `trail`, `hills`, `cliff` en `iconos.js` |
 | Íconos propios y papel | `js/interfaz/dibujo/iconos.js` (`ICONS`, `EMOJI_ICON`, `iconify`, `iconifySVG`, `initIconos`; 67 íconos); estilos `.ic` y «Sistema visual» al final de `css/estilos.css` |
 | Quitar 17 tecnologías sin efecto | `js/datos/tecnologias.js` (192); `Tecnologias_v0.2.xlsx`; Reglas 23.2; `docs/balance_tecnologias.md` regenerado |
 | Quién trabaja en los edificios | `BLD_WORKER` en `config/reglas.js`; asignación en `produceZone` (`motor/economia.js`) |

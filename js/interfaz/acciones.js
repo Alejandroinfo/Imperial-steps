@@ -103,7 +103,9 @@ function act(a,d){
       if(!ui.pickIds.length) ui.pick=null; break; }
     case 'dropst': if(ui.pick&&ui.sel!==null){ dropOnStation(ui.sel,ui.pick,d.st,ui.pickIds); return; } break;
     case 'tfbranch': ui.tf.br=d.b; break;
-    case 'tview': ui.tf.view=d.v; break;
+    case 'tview': ui.tf.view=d.v; ui.tf.branch=null; break;
+    case 'tbranch': ui.tf.branch=d.b||null; break;
+    case 'tonly': ui.tf.only=d.v==='1'; break;
     case 'sug': goSuggestion(Number(d.i)); break;
     case 'sugnext': ui.sugI=((ui.sugI||0)+1)%Math.max(1,suggestions().length); break;
     case 'tkind': ui.tf.kind=d.v; break;

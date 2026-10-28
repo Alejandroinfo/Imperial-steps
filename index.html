@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
+<meta name="color-scheme" content="light">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Los Pasos del Imperio — prototipo v0.13</title>
 <link rel="stylesheet" href="css/estilos.css">
@@ -60,11 +61,14 @@
 <dialog id="dlgSetup" class="setup" aria-labelledby="setupTitle">
   <h2 id="setupTitle">Partida nueva</h2>
   <div class="sform">
-    <label>Mapa<select id="selMap"></select></label>
-    <label>Jugadores<select id="selN"><option>2</option><option>3</option><option>4</option></select></label>
+    <div class="nrow"><span>Jugadores</span><span class="seg" id="nSeg"><button data-n="2" aria-pressed="false">2</button><button data-n="3" aria-pressed="true">3</button><button data-n="4" aria-pressed="false">4</button></span></div>
+    <select id="selMap" hidden aria-hidden="true"></select><select id="selN" hidden aria-hidden="true"><option>2</option><option>3</option><option>4</option></select>
     <label>Victoria<select id="selThr"><option value="prueba">Prueba (umbrales bajos, para ver el final)</option><option value="normal">Normal (1000 oro, 75 población…)</option></select></label>
   </div>
-  <p class="hint" id="mapShort"></p>
+  <h3 class="mphead">Elige el mapa <small>toca uno para ver cómo es</small></h3>
+  <div class="msplit"><div id="mapPicker" class="mapgrid"></div>
+  <div id="mapInfo" class="mapinfo"></div></div>
+  <p class="hint" id="mapShort" hidden></p>
   <p class="warn" id="setupWarn" hidden>Se termina la partida actual.</p>
   <div class="dactions"><button class="btn" id="setupCancel">Volver a la partida</button><button class="btn" id="btnTut" title="Los primeros 20 pasos guiados en el mapa Anillo, contra un bot; después sigues jugando normal">🎓 Comienzo guiado</button><button class="btn" id="btnOnline2">🌐 Jugar en línea…</button><button class="btn primary" id="btnStart">Empezar</button></div>
   <p class="hint">¿Primera vez? El <b>comienzo guiado</b> te acompaña los primeros 20 pasos y después sigues jugando esa misma partida.</p>
@@ -185,6 +189,7 @@
 <script src="js/interfaz/render.js"></script>
 <script src="js/interfaz/acciones.js"></script>
 <script src="js/interfaz/movil.js"></script>
+<script src="js/interfaz/mapas_inicio.js"></script>
 <script src="js/interfaz/flujo.js"></script>
 <script src="js/red/config_firebase.js"></script>
 <script src="js/red/multijugador.js"></script>

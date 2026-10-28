@@ -1,11 +1,7 @@
 :root{
   --bg:#EDE6DA; --panel:#FBF8F2; --ink:#2A1F1A; --muted:#6B5B50; --rule:#D8CBB8; --accent:#C8452F; --focus:#1F5FD6;
   --btn:#2A1F1A; --btn-ink:#FBF8F2; --ok:#2F7F4F; --warn:#B3541E; --soft:rgba(127,127,127,.12);
-  color-scheme: light dark;
-}
-@media (prefers-color-scheme: dark){
-  :root{ --bg:#1B1613; --panel:#2A211C; --ink:#F2E9DD; --muted:#B7A794; --rule:#4A3C32; --accent:#E8765F; --focus:#8FB2FF;
-         --btn:#F2E9DD; --btn-ink:#1B1613; --ok:#6CC28B; --warn:#F0A06B; }
+  color-scheme: light;   /* el arte es de papel claro: el modo oscuro del teléfono dejaba texto oscuro sobre fondo oscuro */
 }
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.4;font-size:14px}
@@ -722,3 +718,57 @@ body.movil .subtabs{overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}body.m
 body.movil.sheet-2 .dpad{display:none}body.movil .cnt:empty{display:none!important}
 body.movil #toasts{position:fixed;top:calc(var(--hdrh) + 8px);bottom:auto;left:8px;right:8px;width:auto;z-index:60}
 body.movil .toast{font-size:13px;line-height:1.3}
+
+/* ===== Tecnologías rediseñadas: cola, recomendadas, ramas en grupos y vista de rama (28/10/2026) ===== */
+.qrow{display:grid;grid-template-columns:1fr auto;gap:2px 8px;align-items:center;margin:5px 0}.qrow .qn{display:flex;justify-content:space-between;gap:8px;align-items:baseline;font-size:13px}.qrow .qn span{color:var(--muted);font-size:12px;white-space:nowrap}
+.qrow .bar{grid-column:1;height:7px}.qrow .xbtn{grid-column:2;grid-row:1/3;width:30px;height:30px;min-height:0;padding:0;border:1px solid var(--rule);border-radius:8px;background:#fff;color:var(--muted)}
+.qrow.q .xbtn{grid-row:1}
+.tgh{font-family:Georgia,serif;font-weight:700;font-size:14px;margin:12px 0 5px;padding-top:6px;border-top:1px solid var(--rule)}
+.bgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}
+.bcard{display:grid;gap:5px;text-align:left;padding:8px 9px;border:2px solid var(--ink);border-radius:12px;background:#FBF6EA;border-left:7px solid var(--bc);box-shadow:0 2px 0 var(--ink);cursor:pointer}
+.bcard:active{transform:translateY(2px);box-shadow:none}.bcard.has{background:#FFF7DC}
+.bch{display:flex;align-items:center;gap:6px;line-height:1.15}.bch b{font-size:13px}.bci{font-size:18px}
+.bcbar{height:6px;border-radius:3px;background:var(--soft);overflow:hidden}.bcbar i{display:block;height:100%;background:var(--bc)}
+.bcm{display:flex;justify-content:space-between;align-items:center;font-size:11.5px;color:var(--muted)}
+.spd{display:inline-flex;gap:3px}.spd i{width:10px;height:10px;border-radius:50%;border:1.5px solid var(--ink);background:transparent}.spd i.on{background:var(--bc)}.spd i.can{background:#fff;box-shadow:0 0 0 2px var(--bc)}
+.bcn{font-size:12px;font-weight:700;color:#2F7F4F}.bcn.off{color:var(--muted);font-weight:400}
+.brhead{display:flex;align-items:center;gap:10px;margin:8px 0 4px;padding:6px 8px;border-left:7px solid var(--bc);background:var(--soft);border-radius:8px}
+.brhead .brt{display:grid;line-height:1.2}.brhead .brt small{color:var(--muted);font-size:12px}
+.lvh{font-family:Georgia,serif;font-weight:700;font-size:13px;margin:12px 0 3px;padding-bottom:2px;border-bottom:1px solid var(--rule)}.lvh small{font-family:system-ui;font-weight:400;color:var(--muted)}
+.tl{display:grid;grid-template-columns:26px 1fr auto;gap:2px 8px;align-items:start;padding:7px 0;border-bottom:1px solid var(--rule)}
+.tl .tls{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:12px;background:var(--soft);margin-top:1px}.tl .tls.own{background:#2F7F4F;color:#fff}.tl .tls.can{background:var(--bc);color:#fff}.tl .tls.doing{background:#3B7DDD}
+.tl .tlt{display:flex;flex-wrap:wrap;gap:4px;align-items:baseline;font-size:14px}.tl .tlt small{color:var(--muted)}.tl .tstar{color:#C99A1B}
+.tl .tle{font-size:12.5px;color:var(--ink);opacity:.82;line-height:1.3}.tl .tli{margin-top:3px}.tl .tlb{margin-top:3px;font-size:12px;color:var(--warn)}
+.tl.lock .tlm{opacity:.62}.tl.own .tlm{opacity:.75}.tl .tla{align-self:center}
+body.movil .bgrid{grid-template-columns:repeat(2,1fr)}body.movil .tl{grid-template-columns:26px 1fr}body.movil .tl .tla{grid-column:2}
+
+/* ===== Inicio de partida: elegir el mapa viéndolo (28/10/2026) ===== */
+#dlgSetup{width:min(760px,96vw);max-height:94dvh;overflow:auto}
+#dlgSetup .nrow{display:flex;align-items:center;gap:10px;margin-bottom:6px}#dlgSetup .nrow>span:first-child{font-weight:700}
+.mphead{margin:10px 0 6px;font-size:15px}.mphead small{font-family:system-ui;font-weight:400;color:var(--muted);font-size:12px;margin-left:6px}
+.mapgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.mcard{display:grid;gap:3px;justify-items:center;text-align:center;padding:6px;border:2px solid var(--rule);border-radius:12px;background:#FBF6EA;cursor:pointer}
+.mcard:hover{border-color:var(--ink)}.mcard.on{border-color:var(--ink);background:#FFF1BF;box-shadow:0 3px 0 var(--ink)}
+.mcard .mthumb{width:100%;height:auto;display:block}.mcard b{font-size:12.5px;line-height:1.15}
+.mpace{font-size:11px;font-weight:700;color:#fff;background:var(--pc);border-radius:999px;padding:1px 8px}
+.mapinfo{display:grid;grid-template-columns:240px 1fr;gap:14px;margin-top:10px;padding:10px;border:2px solid var(--ink);border-radius:12px;background:#FBF6EA}
+.mibig .mthumb{width:240px;max-width:100%;height:auto}.mileg{display:grid;gap:3px;font-size:11.5px;margin-top:6px;color:var(--muted)}.mileg i{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:5px;vertical-align:-1px;border:1px solid #2A1B16}.mileg i.sq{background:#8A5A3A;border-radius:2px;transform:rotate(45deg)}.mileg i.ln{width:16px;height:3px;border-radius:2px;background:#E2C79B;border:0;vertical-align:2px}
+.mitx h3{margin:0 0 2px}.mitx p{margin:2px 0 6px}
+.mfacts{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:8px 0}.mfacts div{background:var(--soft);border-radius:9px;padding:6px 4px;text-align:center;line-height:1.15}.mfacts b{font-size:20px;display:block}.mfacts small{font-size:10.5px;color:var(--muted)}
+.mpace2{border-left:6px solid var(--pc);padding-left:8px}
+body.movil #dlgSetup{max-height:100dvh;height:100dvh;border-radius:0;top:0}body.movil .mapgrid{grid-template-columns:repeat(3,1fr);gap:6px}body.movil .mapinfo{grid-template-columns:1fr}body.movil .mfacts{grid-template-columns:repeat(2,1fr)}body.movil .mibig .mthumb{width:100%}
+
+#dlgSetup{width:min(1040px,98vw)}
+.msplit{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:12px;align-items:start}
+.msplit .mapinfo{grid-template-columns:1fr;margin-top:0;position:sticky;top:0}.msplit .mibig .mthumb{width:100%}
+.msplit .mfacts{grid-template-columns:repeat(2,1fr)}
+@media (max-width:1060px){.msplit{grid-template-columns:1fr}.msplit .mapinfo{order:-1;position:static;grid-template-columns:200px 1fr}.msplit .mfacts{grid-template-columns:repeat(4,1fr)}.mapgrid{grid-template-columns:repeat(4,1fr)}}
+body.movil .msplit .mapinfo{grid-template-columns:1fr}body.movil .msplit .mfacts{grid-template-columns:repeat(2,1fr)}
+#dlgSetup .dactions{position:sticky;bottom:-14px;background:#FBF6EA;padding:10px 0 6px;margin-top:8px;border-top:1px solid var(--rule);z-index:2}.mpace{white-space:nowrap}
+.mapgrid{grid-template-columns:repeat(4,minmax(0,1fr))}
+body.movil .mapgrid{grid-template-columns:repeat(2,minmax(0,1fr))}body.movil .mcard b{font-size:13px}body.movil .mpace{font-size:11px}
+body.movil #dlgSetup{overflow-x:hidden}
+
+/* Conexiones del mapa: marcadores de camino (28/10/2026) */
+svg#terr.far .conn{display:none}.conn.no circle{stroke-dasharray:4 3}.conn:hover circle{fill:#fff}
+.ncon{display:flex;align-items:center;gap:3px;color:var(--muted);font-size:11px}.ncon .ic{width:1.2em;height:1.2em}

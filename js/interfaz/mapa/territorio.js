@@ -123,6 +123,29 @@ function ptsStr(poly,k){ return poly.map(p=>f1(p[0]*(k||1))+','+f1(p[1]*(k||1)))
 function rock(x,y,s=1){return `<g transform="translate(${f1(x)},${f1(y)}) scale(${f1(s)})"><path d="M-7,1 L-5,-5 L1,-8 L7,-4 L8,1 Z" fill="#9A9285" stroke="${INK}" stroke-width=".8"/><path d="M1,-8 L7,-4 L8,1 L3,1 Z" fill="#7C756B"/></g>`;}
 function bush(x,y,s=1){return `<g transform="translate(${f1(x)},${f1(y)}) scale(${f1(s)})"><ellipse cy="-5" rx="10" ry="7" fill="#4F7F43" stroke="${INK}" stroke-width=".8"/><ellipse cx="-3" cy="-8" rx="4" ry="3" fill="#6FA064"/></g>`;}
 // Borde entre dos zonas: cerca baja si hay camino, barranco con rocas si no se puede pasar.
+// Por qué están conectadas dos zonas: el tipo de camino sale del terreno de las dos (río → puente, montaña → paso, bosque → sendero…).
+const CONN_RK={puente:{o:21,i:13,ic:'#D9D2C4',oc:'#5A5A60'},paso:{o:15,i:8.5,ic:'#CBB28A',oc:'#6B4528',dash:'15 8'},sendero:{o:12,i:6.5,ic:'#B58E5A',oc:'#5B3F26',dash:'9 8'},colinas:{o:19,i:12,ic:'#E2C79B',oc:'#6B4528'},llano:{o:25,i:17,ic:'#EBD7AD',oc:'#6B4528'},frontera:{o:19,i:12,ic:'#F0D98A',oc:'#8A6A12',dash:'3 10'}};
+function connInfo(a,b){
+  const A=G.zones[a], B=G.zones[b], ta=A.terrain, tb=B.terrain, has=t=>ta===t||tb===t, na=zname(A), nb=zname(B);
+  if(A.role==='frontera'||B.role==='frontera') return {k:'frontera',ic:'flag',n:'Camino de frontera',why:`El camino entre ${na} y ${nb} entra en una zona peligrosa: tierra de nadie que todos pueden pisar.`};
+  if(has('rio')){ const r=ta==='rio'?na:nb; return {k:'puente',ic:'bridge',n:'Puente',why:`Puente: ${na} y ${nb} se unen cruzando el río de ${r}. Sin el puente no se podría pasar.`}; }
+  if(has('mon')) return {k:'paso',ic:'pass',n:'Paso de montaña',why:`Paso de montaña: el camino sube por la sierra de ${ta==='mon'?na:nb} para unir ${na} y ${nb}.`};
+  if(has('bos')) return {k:'sendero',ic:'trail',n:'Sendero del bosque',why:`Sendero del bosque: un camino estrecho entre los árboles de ${ta==='bos'?na:nb} une ${na} y ${nb}.`};
+  if(has('col')) return {k:'colinas',ic:'hills',n:'Camino de colinas',why:`Camino de colinas: ${na} y ${nb} se unen por las lomas, con subidas suaves.`};
+  return {k:'llano',ic:'road',n:'Camino llano',why:`Camino llano: ${na} y ${nb} son tierras abiertas y el paso es fácil.`};
+}
+// Lo que separa dos zonas vecinas que NO están conectadas.
+function noPassInfo(a,b){
+  const A=G.zones[a], B=G.zones[b], ta=A.terrain, tb=B.terrain, has=t=>ta===t||tb===t, na=zname(A), nb=zname(B);
+  if(has('rio')) return {ic:'wave',n:'Sin puente',why:`Sin puente: el río separa ${na} y ${nb}, y aquí no hay dónde cruzarlo.`};
+  if(has('mon')) return {ic:'cliff',n:'Sin paso',why:`Sin paso: la montaña cierra el camino entre ${na} y ${nb}.`};
+  if(has('bos')) return {ic:'cliff',n:'Sin sendero',why:`Sin sendero: el bosque espeso separa ${na} y ${nb}.`};
+  return {ic:'cliff',n:'Sin paso',why:`Sin paso: un barranco separa ${na} y ${nb}.`};
+}
+// Marcador pequeño sobre una conexión (se agranda con el zoom como las placas; al tocarlo explica por qué).
+function connMarker(x,y,info,ok){
+  return `<g class="conn lbl${ok?'':' no'}" data-t="${esc(info.n)}" data-x="${esc(info.why)}" style="transform:translate(${f1(x)}px,${f1(y)}px) scale(calc(var(--inv,1)*.9));cursor:pointer"><title>${esc(info.why)}</title><circle r="17" fill="${ok?'#FBF6EA':'#E9D8CF'}" stroke="${INK}" stroke-width="3"/><image href="${iconDataURI(info.ic)}" x="-12" y="-12" width="24" height="24" pointer-events="none"/></g>`;
+}
 function edgeSVG(e){
   const [a,b]=e.p, L=Math.hypot(b[0]-a[0],b[1]-a[1]); const d=`M${f1(a[0])},${f1(a[1])} L${f1(b[0])},${f1(b[1])}`;
   if(e.road) return `<path d="${d}" stroke="rgba(42,27,22,.32)" stroke-width="5" stroke-linecap="round"/><path d="${d}" stroke="#F3E7C9" stroke-width="3.2" stroke-dasharray="2 11" stroke-linecap="round"/>`;
@@ -174,8 +197,17 @@ function buildTerritoryDOM(){
   });
   // bordes: cercas donde hay paso, barrancos donde no
   if(!mesa){ WORLD.edges.filter(e=>!e.road).forEach(e=>{ h+=edgeSVG(e); }); WORLD.edges.filter(e=>e.road).forEach(e=>{ h+=edgeSVG(e); }); }
-  WORLD.roads.forEach(r=>{ h+=`<path d="${r.d}" stroke="#6B4528" stroke-width="20" fill="none" stroke-linecap="round"/>`; });
-  WORLD.roads.forEach(r=>{ h+=`<path d="${r.d}" stroke="#E2C79B" stroke-width="13" fill="none" stroke-linecap="round"/><path d="${r.d}" stroke="#C9A878" stroke-width="2" fill="none" stroke-dasharray="10 12"/>`; });
+  const RINFO=WORLD.roads.map(r=>connInfo(r.a,r.b));
+  WORLD.roads.forEach((r,k)=>{ const st=CONN_RK[RINFO[k].k]; h+=`<path d="${r.d}" stroke="${st.oc}" stroke-width="${st.o}" fill="none" stroke-linecap="round"/>`; });
+  WORLD.roads.forEach((r,k)=>{ const st=CONN_RK[RINFO[k].k]; h+=`<path d="${r.d}" stroke="${st.ic}" stroke-width="${st.i}" fill="none" stroke-linecap="${st.dash?'butt':'round'}"${st.dash?` stroke-dasharray="${st.dash}"`:''}/>`+(st.dash?'':`<path d="${r.d}" stroke="rgba(120,90,50,.45)" stroke-width="2" fill="none" stroke-dasharray="10 12"/>`); });
+  // el puente: tablero de piedra con barandas sobre el río
+  WORLD.roads.forEach((r,k)=>{ if(RINFO[k].k!=='puente') return; const A=WORLD.site[r.a],B=WORLD.site[r.b]; const m=qpt(A,r.c,B,0.5); let dx=B[0]-A[0],dy=B[1]-A[1]; const L=Math.hypot(dx,dy)||1; dx/=L; dy/=L; const hl=40, px=-dy, py=dx;
+    const p1=[m[0]-dx*hl,m[1]-dy*hl], p2=[m[0]+dx*hl,m[1]+dy*hl];
+    h+=`<path d="M${f1(p1[0])},${f1(p1[1])} L${f1(p2[0])},${f1(p2[1])}" stroke="${INK}" stroke-width="30" stroke-linecap="butt"/><path d="M${f1(p1[0])},${f1(p1[1])} L${f1(p2[0])},${f1(p2[1])}" stroke="#C9C2B4" stroke-width="24" stroke-linecap="butt"/>`
+      +[-1,1].map(sg=>`<path d="M${f1(p1[0]+px*13*sg)},${f1(p1[1]+py*13*sg)} L${f1(p2[0]+px*13*sg)},${f1(p2[1]+py*13*sg)}" stroke="${INK}" stroke-width="4" stroke-linecap="round"/>`).join(''); });
+  // marcadores: qué tipo de camino es y, donde no hay paso, qué lo impide
+  WORLD.roads.forEach((r,k)=>{ const m=qpt(WORLD.site[r.a],r.c,WORLD.site[r.b],0.5); h+=connMarker(m[0],m[1],RINFO[k],true); });
+  WORLD.edges.filter(e=>!e.road).forEach(e=>{ const m=[(e.p[0][0]+e.p[1][0])/2,(e.p[0][1]+e.p[1][1])/2]; h+=connMarker(m[0],m[1],noPassInfo(e.a,e.b),false); });
   if(!mesa) h+=`<rect x="${B.x0}" y="${B.y0}" width="${WORLD.W}" height="${WORLD.H}" fill="url(#fog)" pointer-events="none"/>`;
   if(!mesa) for(let k=0;k<6;k++){ const r=mulberry32(300+k); const cx=B.x0+r()*WORLD.W, cy=B.y0+r()*WORLD.H; h+=`<g class="cloud" style="animation-delay:${-k*9}s"><ellipse cx="${f1(cx)}" cy="${f1(cy)}" rx="${90+r()*60}" ry="26" fill="rgba(0,0,0,.07)"/><ellipse cx="${f1(cx+40)}" cy="${f1(cy-14)}" rx="60" ry="22" fill="rgba(0,0,0,.07)"/></g>`; }
   h+=`<g id="zonesT">`;

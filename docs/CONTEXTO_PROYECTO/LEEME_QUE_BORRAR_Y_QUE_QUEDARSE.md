@@ -11,10 +11,10 @@ Abre el Proyecto → «Instrucciones» → reemplaza el texto por el contenido d
 | Archivo | Tamaño |
 |---|---|
 | `1_TRASPASO_Los_Pasos_del_Imperio.md` | 43 KB |
-| `2_Reglas_v0.1.md` | 142 KB |
+| `2_Reglas_v0.1.md` | 144 KB |
 | `3_Como_manejar_el_proyecto.md` | 5 KB |
 
-Total: **unos 190 KB**. Si ya hay otras versiones de estos archivos en el Proyecto, **bórralas primero** y sube estas.
+Total: **unos 193 KB**. Si ya hay otras versiones de estos archivos en el Proyecto, **bórralas primero** y sube estas.
 
 ## 2. BORRA del Proyecto todo lo demás
 

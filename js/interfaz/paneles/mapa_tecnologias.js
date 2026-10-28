@@ -5,15 +5,6 @@ function techStatus(t){
   const F=G.F[ME]; if(F.techs[t.n]) return 'own'; if(F.rq.some(p=>p.name===t.n)) return 'doing';
   if(ui.orders.some(o=>o.t==='research'&&o.name===t.n)) return 'queued'; return canResearch(G,ME,t.n)?'avail':'lock';
 }
-function panoramaHTML(){
-  let h='<div class="pano">';
-  BRANCHES.forEach(b=>{
-    const sp=TECHS.filter(t=>t.r===b&&t.v).sort((a,c)=>a.l-c.l||a.n.localeCompare(c.n)); const own=sp.filter(t=>G.F[ME].techs[t.n]).length;
-    const tc=bCol(b);
-    h+=`<button class="prow ${ui.tf.br===b?'on':''}" data-act="tfbranch" data-b="${esc(b)}"><span class="ptag" style="background:${tc}"></span><span class="pnm">${bIco(b)} ${esc(b)}</span><span class="pdots">${sp.map(t=>`<i class="pd ${techStatus(t)}" title="${esc(t.n)} (N${t.l})"></i>`).join('')}</span><span class="pct">${own}/${sp.length}</span></button>`;
-  });
-  return h+'</div><div class="legend"><i class="pd own"></i> tuya <i class="pd doing"></i> investigando <i class="pd avail"></i> disponible <i class="pd lock"></i> bloqueada</div>';
-}
 function techMapHTML(){
   const F=G.F[ME]; const sel=ui.tmSel?TECH[ui.tmSel]:null;
   const preSet=new Set(sel?sel.pre:[]); const depSet=new Set(sel?TECHS.filter(t=>t.pre.includes(sel.n)).map(t=>t.n):[]);

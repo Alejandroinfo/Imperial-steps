@@ -81,6 +81,16 @@ Object.assign(ICONS,{
 });
 Object.assign(EMOJI_ICON,{'☆':'starO','🥀':'wilt','☀':'sun','🏞':'landscape','⚙':'gear','🛢':'barrel','🐎':'horseshoe','🩺':'medical','🕊':'dove','🏰':'castle','💠':'crystal','🌿':'herb','🌍':'globe','🍽':'plate','⏫':'up','🪵':'wood','🧂':'salt','🦠':'virus','🤒':'thermo','🛤':'road','⛏':'pick','⛈':'storm','🏕':'tent','🎪':'fair','🌊':'wave'});
 
+
+// ---- tercera tanda: tipos de conexión del mapa ----
+Object.assign(ICONS,{
+  bridge:`<path d="M1.6 17.4c2.6-1.6 4.6-1.6 6.4 0s3.8 1.6 6 0 4.2-1.6 6.4 0v4.6H1.6z" fill="#4A9FD0" ${IC_S}/><path d="M2 11.6h20v3.4H2z" fill="#C9C2B4" ${IC_S}/><path d="M5.2 15a6.8 6.8 0 0113.6 0" fill="#4A9FD0" ${IC_S}/><path d="M3 11.6V8M7 11.6V8.6M12 11.6V8M17 11.6V8.6M21 11.6V8M2.4 8h19.2" stroke="${IC_INK}" stroke-width="1.5" stroke-linecap="round" fill="none"/>`,
+  pass:`<path d="M1.6 21L9 6.8l4 6.4 3-3.8 6.4 11.6z" fill="#9C9486" ${IC_S}/><path d="M9 6.8l-2.2 4 2.4 1 1.6-1.8 1.6 2.4" fill="#fff" stroke="${IC_INK}" stroke-width="1" stroke-linejoin="round"/><path d="M9 6.8V2.6" ${IC_S} fill="none"/><path d="M9 2.6l5 1.6-5 1.6z" fill="#C0392B" ${IC_S}/>`,
+  trail:`<path d="M12 2.6L6.6 11h3.2L5 18.6h14L14.2 11h3.2z" fill="#4F7F3A" ${IC_S}/><rect x="10.8" y="18.6" width="2.4" height="3.4" fill="#8A5A3A" ${IC_S}/><g fill="${IC_INK}"><ellipse cx="4.4" cy="21" rx="1" ry="1.4"/><ellipse cx="19.6" cy="21.4" rx="1" ry="1.4"/></g>`,
+  hills:`<path d="M1.6 20.6c2-6 5.2-9 8-9s4.4 3 6 3 3.2-1.4 4.8-1.4V20.6z" fill="#D8AE72" ${IC_S}/><rect x="8.4" y="5.2" width="7.2" height="8.8" rx="2" fill="#9C9486" ${IC_S}/><path d="M10.4 8.8h3.2M10.4 11h2" stroke="${IC_INK}" stroke-width="1.2" stroke-linecap="round"/>`,
+  cliff:`<path d="M2 21l2.2-9 3.2 2.2L10 5l3.6 6 2.6-2.6L22 21z" fill="#6E675C" ${IC_S}/><path d="M10 5l.8 6M13.6 11l-.6 5M7.4 14.2l.6 3.6" stroke="#2A1B16" stroke-width="1" fill="none"/><path d="M3 12c4 1 14-1 18 0" stroke="#C0392B" stroke-width="2" stroke-dasharray="2 2.4" fill="none"/>`
+});
+
 const IC_RE = new RegExp('('+Object.keys(EMOJI_ICON).sort((a,b)=>b.length-a.length).map(k=>k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|')+')\uFE0F?','g');
 const IC_URI = {};
 function iconURI(n){ return IC_URI[n]||(IC_URI[n]='url("data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">'+ICONS[n]+'</svg>')+'")'); }

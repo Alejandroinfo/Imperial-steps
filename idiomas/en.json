@@ -2793,6 +2793,15 @@
    }
   },
   {
+   "nombre": "Menú: reiniciar",
+   "bloques": false,
+   "pares": {
+    "↻ Reiniciar partida": "↻ Restart game",
+    "¿Seguro? Se pierde esta partida: toca de nuevo": "Sure? This game will be lost: tap again",
+    "Empieza otra vez con el mismo mapa, número de jugadores y modo, con una semilla nueva": "Starts again with the same map, number of players and mode, with a new seed"
+   }
+  },
+  {
    "nombre": "cuerpo de los artículos",
    "bloques": true,
    "pares": {

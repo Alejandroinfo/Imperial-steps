@@ -535,6 +535,14 @@ prueba('Tribus: atacarlas es entrar en guerra: sus civiles se vuelven guerreros 
   const guerra=G.wars.some(w=>w.tribe===tz.id&&w.f===0)&&tz.rel[0]===0; const berserkers=(tz.units[4]||[]).every(u=>u.t==='ber');
   paso(); const ataca=G.hist.some(h=>h.lines.some(l=>l.includes('ataca '))); for(let i=0;i<6;i++) paso(); return guerra&&berserkers&&ataca&&G.wars.length===0;`);
 
+prueba('Tribus: atacar a una tribu solo te enemista con esa; las demás no cambian (relación, guerra ni tropas)', base + TRIBU + `
+  const otras=G.zones.filter(z=>z.owner===4&&z.id!==tz.id); otras.forEach(o=>{ o.rel={0:2}; }); const antes=otras.map(o=>JSON.stringify([o.rel,(o.units[4]||[]).map(u=>u.t)]));
+  for(let i=0;i<6;i++) tz.units[4].push(mkUnit(G,4,'sol')); tz.rel={0:2}; n.units[0]=[civ('sol'),civ('sol'),civ('sol')];
+  paso([{t:'move',from:n.id,to:tz.id,u:{sol:3},stance:'ataque'}]); for(let i=0;i<7;i++) paso();
+  const solo=G.wars.every(w=>w.tribe===tz.id); const intactas=otras.every((o,i)=>JSON.stringify([o.rel,(o.units[4]||[]).map(u=>u.t)])===antes[i]||(o.rel&&o.rel[0]>=2));
+  const sinGuerraOtras=!G.wars.some(w=>otras.some(o=>o.id===w.tribe));
+  return otras.length>=1&&solo&&sinGuerraOtras&&intactas;`);
+
 prueba('Tribus: al empezar cada año (desde el 2.º) cada una gana 1 civil y 2 bárbaros; no antes, y ya no hay Inquietud ni Furia', base + `
   const ts=G.zones.filter(z=>z.owner===TRIBE); const n0=ts.map(z=>lst(z,TRIBE).length), b0=ts.map(z=>lst(z,TRIBE).filter(u=>u.t==='ber').length);
   G.step=12; paso(); const igual=ts.every((z,i)=>lst(z,TRIBE).length===n0[i]);   // el paso 12 aún es del año 1

@@ -67,7 +67,15 @@ $('btnTut2').addEventListener('click',()=>{ $('dlgMenu').close(); tutStart(); })
 $('setupCancel').addEventListener('click',()=>$('dlgSetup').close());
 $('dlgSetup').addEventListener('cancel',e=>{ if(!G||G.over) e.preventDefault(); });
 $('btnNew').addEventListener('click',openSetup);
-$('btnMenu').addEventListener('click',()=>{ $('menuInfo').textContent=G?('Partida actual: '+DATA.maps[G.mapIdx!==undefined?G.mapIdx:0].name+', '+G.N+' jugadores, victoria '+(G.thr==='prueba'?'de prueba':'normal')+'. Paso '+G.step+'.'):''; $('dlgMenu').showModal(); });
+// Reiniciar: mismo mapa, jugadores y modo, con semilla nueva. Pide confirmar con un segundo toque (se pierde la partida en curso). No existe en una sala en línea.
+$('btnRestart').addEventListener('click',()=>{
+  const b=$('btnRestart'); if(!G||NET.on) return;
+  if(b.dataset.sure!=='1'){ b.dataset.sure='1'; b.textContent='¿Seguro? Se pierde esta partida: toca de nuevo'; b.classList.add('danger'); clearTimeout(b._t); b._t=setTimeout(()=>{ b.dataset.sure=''; b.textContent='↻ Reiniciar partida'; b.classList.remove('danger'); },4000); return; }
+  clearTimeout(b._t); b.dataset.sure=''; b.textContent='↻ Reiniciar partida'; b.classList.remove('danger'); $('dlgMenu').close(); sfxInit();
+  if(TUT.on){ tutStart(); return; }
+  startGame({mapIdx:G.mapIdx!==undefined?G.mapIdx:0,N:G.N,seed:Math.floor(Math.random()*1e9),thr:G.thr});
+});
+$('btnMenu').addEventListener('click',()=>{ $('btnRestart').hidden=!!NET.on; $('menuInfo').textContent=G?('Partida actual: '+DATA.maps[G.mapIdx!==undefined?G.mapIdx:0].name+', '+G.N+' jugadores, victoria '+(G.thr==='prueba'?'de prueba':'normal')+'. Paso '+G.step+'.'):''; $('dlgMenu').showModal(); });
 $('endNew').addEventListener('click',()=>setTimeout(openSetup,0));
 $('vTerr').addEventListener('click',()=>setViewMode('terr'));
 $('vPlan').addEventListener('click',()=>setViewMode('plan'));
@@ -97,3 +105,9 @@ window.__ui={act,onZone,get G(){return G;},get ui(){return ui;},toggleReady,star
 
 // App instalable (PWA): solo con http(s); al abrir index.html con doble clic (file://) no hace nada.
 if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)) navigator.serviceWorker.register('sw.js').catch(()=>{});
+
+// Banco de pruebas de dibujo del mapa (solo con ?bench=1): carga Pixi y el panel de medición; no afecta al juego normal.
+if(new URLSearchParams(location.search).has('bench')){
+  const cargar=src=>new Promise((ok,mal)=>{ const s=document.createElement('script'); s.src=src; s.onload=ok; s.onerror=()=>mal(new Error('no cargó '+src)); document.head.appendChild(s); });
+  cargar('vendor/pixi.min.js').then(()=>cargar('js/interfaz/bench.js')).then(()=>setTimeout(benchInit,300)).catch(e=>console.error(e));
+}

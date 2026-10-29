@@ -1164,3 +1164,9 @@ Todo se aplicó a pedido de Alejandro. Los **valores** marcados 💡 son estimac
 - 💡 Consecuencia buscada: ofertar es una decisión de verdad, porque ese recurso queda inmovilizado hasta el final; y con una subasta anunciada 10 pasos antes conviene decidir cuándo apartar (pujar pronto no da ventaja, la oferta es secreta, pero te quita flexibilidad).
 - ❓ Ver jugando si apartar al instante frena demasiado la economía con comida o producción, y si conviene permitir **retirar** una oferta con una pérdida (por ejemplo, devolver solo la mitad).
 
+## 28. 🆕 Menú, sonido de paso y tribus (29/10/2026, pedidos por Alejandro)
+
+- ✅ **Reiniciar partida (Menú):** vuelve al paso 1 con el **mismo mapa, número de jugadores y modo**, con una **semilla nueva**; pide confirmar con un segundo toque. En una sala en línea no aparece (la sala decide el mapa para todos); si estás en el comienzo guiado, lo reinicia.
+- ✅ **Sonido de pasar de turno más suave:** dos notas bajas y breves en lugar del golpe grave con ruido, y el remate musical de cada paso suena al 35 % de su volumen (los de victoria y derrota, igual que antes).
+- ✅ **Atacar a una tribu solo te enemista con esa tribu.** La guerra, la relación y sus guerreros son por tribu; las demás conservan su relación y sus tropas. Ya era así en el motor; ahora lo prueba un caso en `probar_reglas.js`.
+

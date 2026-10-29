@@ -826,3 +826,4 @@ dialog.premios::backdrop{background:rgba(42,27,22,.55)}
 @keyframes premIn{0%{opacity:0;transform:scale(.4) rotate(-6deg)}60%{opacity:1;transform:scale(1.08) rotate(1deg)}100%{opacity:1;transform:none}}
 body.noanim .premios .pcard,body.lite .premios .pcard{animation:none}
 @media (max-width:760px){.premios .pcart{flex-basis:56px}.premios .pcart svg{width:56px;height:46px}}
+.btn.danger{background:#C8452F;color:#fff;border-color:#2A1B16}

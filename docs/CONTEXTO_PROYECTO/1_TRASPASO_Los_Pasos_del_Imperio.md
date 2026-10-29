@@ -376,3 +376,14 @@ Reglas en `docs/Reglas_v0.1.md`, sección 27.
 
 **Pendiente:** ver jugando si apartar al instante frena demasiado (sección 27); ajustar a gusto el sonido y la duración del reveal.
 
+## 15. 🆕 Experimento de dibujo del mapa: ¿PixiJS? (29/10/2026)
+
+Decidido por Alejandro: hacer primero un prototipo y medir en aparatos reales antes de migrar. Instrucciones y criterio de decisión en `docs/prueba_rendimiento.md`.
+
+| Tema | Dónde |
+|---|---|
+| Banco de pruebas (`?bench=1&seed=7`) | `js/interfaz/bench.js` (4 variantes: SVG completo, SVG ligero, SVG en dos capas con cámara CSS, PixiJS); se carga desde el final de `js/main.js`; Pixi en `vendor/pixi.min.js` (v8.22, MIT) |
+| Hallazgo | la cámara del juego ya usa `translate3d/scale` en CSS (mover el mapa es barato); lo que repinta los ~7.000 elementos son las animaciones infinitas y el truco de re-rasterizar al terminar un zoom (`applyView`, `CAM.reT`) |
+
+**Pendiente:** correr el banco en la compu, el celular y el aparato más lento; con esas cifras decidir entre quedarse con SVG en capas o migrar a Pixi.
+

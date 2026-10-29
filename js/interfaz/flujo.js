@@ -62,7 +62,7 @@ function finishStep(){
   tele.orders.push(ui.orders.length);
   const before=[...Array(G.N).keys()].map(f=>victoryConds(G,f));
   const prev={gold:Math.floor(G.F[ME].gold),tech:Math.floor(G.F[ME].tech)};
-  resolveStep(G,orders); sfx('step'); if(!G.over) musicStinger('resolucion');
+  resolveStep(G,orders); sfx('step'); if(!G.over) musicStinger('resolucion',false,0.35);   // el remate musical de cada paso suena bajito; los de victoria y derrota, normales
   recomputeMods(G);
   if(ui.sel!==null&&!G.zones[ui.sel]) ui.sel=null;
   netSendState();   // en línea, el anfitrión manda el paso resuelto a todos

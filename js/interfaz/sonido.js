@@ -42,7 +42,8 @@ const SOUNDS={
   select:()=>{ tone(660,0.07,{type:'triangle',gain:0.09}); tone(990,0.06,{type:'triangle',gain:0.05,at:0.03}); },
   ready:()=>{ [76,83].forEach((n,i)=>tone(NOTE(n),0.5,{type:'sine',gain:0.16,at:i*0.08})); tone(NOTE(88),0.7,{type:'sine',gain:0.06,at:0.16}); },
   unready:()=>tone(NOTE(71),0.18,{type:'triangle',gain:0.1,to:NOTE(64)}),
-  step:()=>{ tone(110,0.35,{type:'sine',gain:0.35,to:55}); noise(0.18,{freq:180,q:0.7,gain:0.18}); tone(NOTE(57),0.6,{type:'triangle',gain:0.07,at:0.05}); },
+  // paso resuelto: dos notas suaves que bajan, casi un suspiro (antes era un golpe grave con ruido; se sentía estruendoso solo para pasar de turno)
+  step:()=>{ [[79,0],[74,0.09]].forEach(([n,t])=>tone(NOTE(n),0.22,{type:'sine',gain:0.045,at:t})); },
   move:()=>{ for(let i=0;i<4;i++) noise(0.06,{freq:500+Math.random()*200,q:2,gain:0.07,at:i*0.14}); },
   hammer:()=>{ for(let i=0;i<3;i++){ noise(0.08,{freq:2400,q:6,gain:0.16,at:i*0.16}); tone(320,0.09,{type:'square',gain:0.04,at:i*0.16}); } },
   built:()=>{ SOUNDS.hammer(); [72,76,79].forEach((n,i)=>tone(NOTE(n),0.45,{type:'triangle',gain:0.1,at:0.55+i*0.07})); },
@@ -135,9 +136,9 @@ function musicPlay(scene,force){
   musStart(scene==='plan'?list[MUS.pi++%list.length]:list[0],1500);
 }
 // Remate corto (resolución, victoria, derrota): baja un momento la música de fondo para que se oiga.
-function musicStinger(name,stopScene){
+function musicStinger(name,stopScene,factor){
   if(!MUS.on||MUS.missing[name]) return;
-  const a=new Audio(MUS_FILES[name]); a.volume=Math.min(1,MUS.vol); MUS.stg++; MUS.duckT=0.25;
+  const a=new Audio(MUS_FILES[name]); a.volume=Math.min(1,MUS.vol*(factor===undefined?1:factor)); MUS.stg++; MUS.duckT=0.25;
   const fin=()=>{ MUS.stg=Math.max(0,MUS.stg-1); if(!MUS.stg) MUS.duckT=1; };
   a.addEventListener('ended',fin); a.addEventListener('error',()=>{ MUS.missing[name]=1; fin(); });
   const p=a.play(); if(p&&p.catch) p.catch(fin);

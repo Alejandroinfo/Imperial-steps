@@ -387,3 +387,5 @@ Decidido por Alejandro: hacer primero un prototipo y medir en aparatos reales an
 
 **Pendiente:** correr el banco en la compu, el celular y el aparato más lento; con esas cifras decidir entre quedarse con SVG en capas o migrar a Pixi.
 
+**✅ Decisión (29/10/2026):** se adopta la variante 3 en el juego real y se deja PixiJS como opción futura. El mapa de territorio ahora son **dos SVG dentro de la cámara**: `svg#terrB` (fondo fijo: bosque, parcelas, ríos, caminos, niebla; ~5.000 elementos, sin animaciones ni clics) y `svg#terr` (capa viva: reflejo del río, marcadores de camino, nubes, zonas con figuras y placas, órdenes y efectos; `will-change: transform`). Se arma en `buildTerritoryDOM` (`js/interfaz/mapa/territorio.js`, variable `back`/`flowH`); `applyView` repinta las dos capas al terminar un zoom. Medido con la CPU limitada a 1/4 (teléfono simulado, antes → después): Valle completo ~10–15 → 26 cuadros/s; Valle ligero 24 → 36; Mesa completo 14 → 28; Mesa ligero 35 → 60. **Pendiente:** confirmar en el celular real (Menú → 🧪 Prueba de rendimiento).
+

@@ -185,13 +185,15 @@ function buildTerritoryDOM(){
   if(!mesa) WORLD.wild.forEach(c=>{ h+=`<circle cx="${f1(c.x)}" cy="${f1(c.y)}" r="${f1(c.r+10)}" fill="#3E5530"/>`; });
   if(!mesa) WORLD.wild.forEach(c=>{ h+=`<circle cx="${f1(c.x)}" cy="${f1(c.y)}" r="${f1(c.r)}" fill="#A3B26E"/>`; });
   if(!mesa) WORLD.wildDecor.forEach(it=>{ h+=it.t==='tree'?tree(f1(it.x),f1(it.y),it.s):it.t==='rock'?rock(it.x,it.y,it.s):bush(it.x,it.y,it.s*0.8); });
+  let flowH='';
   // parcelas de cada zona, a ras de suelo
   Z.forEach((z,i)=>{
     const T=TCOL[z.terrain];
     h+=`<g transform="translate(${f1(sx(i))},${f1(sy(i))})">`;
     h+=mesa?tileBase(i,T):`<polygon points="${ptsStr(WORLD.poly[i])}" fill="${T}" stroke="rgba(42,27,22,.28)" stroke-width="2" stroke-linejoin="round"/>`;
     h+=`<g class="decor" clip-path="url(#cp${i})">`;
-    if(z.terrain==='rio') h+=`<path class="water" d="M-290,-30 C-150,-110 -60,40 20,-10 S170,-100 290,10" stroke="#3C86A2" stroke-width="46" fill="none" stroke-linecap="round"/><path d="M-290,-30 C-150,-110 -60,40 20,-10 S170,-100 290,10" stroke="#5BA6C0" stroke-width="38" fill="none" stroke-linecap="round"/><path class="flow" d="M-270,-24 C-150,-96 -60,28 20,-8 S170,-86 270,6" stroke="#E9F4F7" stroke-width="2.4" fill="none" stroke-dasharray="8 16" stroke-linecap="round"/>`;
+    if(z.terrain==='rio') flowH+=`<g transform="translate(${f1(sx(i))},${f1(sy(i))})" pointer-events="none"><g class="decor" clip-path="url(#cp${i})"><path class="flow" d="M-270,-24 C-150,-96 -60,28 20,-8 S170,-86 270,6" stroke="#E9F4F7" stroke-width="2.4" fill="none" stroke-dasharray="8 16" stroke-linecap="round"/></g></g>`;   // el reflejo que corre sobre el agua es lo único animado del fondo: va en la capa viva
+    if(z.terrain==='rio') h+=`<path class="water" d="M-290,-30 C-150,-110 -60,40 20,-10 S170,-100 290,10" stroke="#3C86A2" stroke-width="46" fill="none" stroke-linecap="round"/><path d="M-290,-30 C-150,-110 -60,40 20,-10 S170,-100 290,10" stroke="#5BA6C0" stroke-width="38" fill="none" stroke-linecap="round"/>`;
     WORLD.decor[i].forEach(it=>{ h+=terrDecor(it); });
     h+=mesa?`</g><polygon points="${ptsStr(WORLD.poly[i],0.955)}" fill="#000" filter="url(#grainF)" pointer-events="none"/></g>`:`</g></g>`;
   });
@@ -205,10 +207,13 @@ function buildTerritoryDOM(){
     const p1=[m[0]-dx*hl,m[1]-dy*hl], p2=[m[0]+dx*hl,m[1]+dy*hl];
     h+=`<path d="M${f1(p1[0])},${f1(p1[1])} L${f1(p2[0])},${f1(p2[1])}" stroke="${INK}" stroke-width="30" stroke-linecap="butt"/><path d="M${f1(p1[0])},${f1(p1[1])} L${f1(p2[0])},${f1(p2[1])}" stroke="#C9C2B4" stroke-width="24" stroke-linecap="butt"/>`
       +[-1,1].map(sg=>`<path d="M${f1(p1[0]+px*13*sg)},${f1(p1[1]+py*13*sg)} L${f1(p2[0]+px*13*sg)},${f1(p2[1]+py*13*sg)}" stroke="${INK}" stroke-width="4" stroke-linecap="round"/>`).join(''); });
+  // — Dos capas (29/10/2026): el FONDO (bosque, parcelas, ríos, caminos y niebla) no cambia nunca y queda quieto; lo VIVO (marcadores de camino, nubes, zonas con sus figuras y placas)
+  //   va en otro SVG encima, en su propia capa de la tarjeta gráfica. Así las animaciones solo repintan lo vivo y no los ~5.000 elementos del fondo.
+  if(!mesa) h+=`<rect x="${B.x0}" y="${B.y0}" width="${WORLD.W}" height="${WORLD.H}" fill="url(#fog)" pointer-events="none"/>`;
+  const back=h; h=flowH;
   // marcadores: qué tipo de camino es y, donde no hay paso, qué lo impide
   WORLD.roads.forEach((r,k)=>{ const m=qpt(WORLD.site[r.a],r.c,WORLD.site[r.b],0.5); h+=connMarker(m[0],m[1],RINFO[k],true); });
   WORLD.edges.filter(e=>!e.road).forEach(e=>{ const m=[(e.p[0][0]+e.p[1][0])/2,(e.p[0][1]+e.p[1][1])/2]; h+=connMarker(m[0],m[1],noPassInfo(e.a,e.b),false); });
-  if(!mesa) h+=`<rect x="${B.x0}" y="${B.y0}" width="${WORLD.W}" height="${WORLD.H}" fill="url(#fog)" pointer-events="none"/>`;
   if(!mesa) for(let k=0;k<6;k++){ const r=mulberry32(300+k); const cx=B.x0+r()*WORLD.W, cy=B.y0+r()*WORLD.H; h+=`<g class="cloud" style="animation-delay:${-k*9}s"><ellipse cx="${f1(cx)}" cy="${f1(cy)}" rx="${90+r()*60}" ry="26" fill="rgba(0,0,0,.07)"/><ellipse cx="${f1(cx+40)}" cy="${f1(cy-14)}" rx="60" ry="22" fill="rgba(0,0,0,.07)"/></g>`; }
   h+=`<g id="zonesT">`;
   [...Z.keys()].sort((a,b)=>sy(a)-sy(b)).forEach(i=>{
@@ -218,8 +223,8 @@ function buildTerritoryDOM(){
      +`<polygon class="ov ov-sel selp" points="${ptsStr(WORLD.poly[i],0.985)}" fill="none" stroke="#FFE27A" stroke-width="7" stroke-linejoin="round"/></g>`;
   });
   h+=`</g>`;
-  const svg=$('terr'); $('worldT').innerHTML=h;
-  svg.setAttribute('viewBox',`${f1(B.x0)} ${f1(B.y0)} ${WORLD.W} ${WORLD.H}`); svg.setAttribute('width',WORLD.W); svg.setAttribute('height',WORLD.H);
+  $('worldB').innerHTML=back; $('worldT').innerHTML=h;
+  ['terrB','terr'].forEach(id=>{ const svg=$(id); svg.setAttribute('viewBox',`${f1(B.x0)} ${f1(B.y0)} ${WORLD.W} ${WORLD.H}`); svg.setAttribute('width',WORLD.W); svg.setAttribute('height',WORLD.H); });
   ZG=[]; document.querySelectorAll('#zonesT g.zone').forEach(g=>{ ZG[Number(g.dataset.id)]={g,own:g.querySelector('.own'),dyn:g.querySelector('.dyn'),sig:null}; });
   $('ordT').innerHTML=''; ui.ordSig='';
 }
@@ -422,8 +427,8 @@ function applyView(){
   const tx=-(VIEW.x-B.x0)*k, ty=-(VIEW.y-B.y0)*k;
   $('cam').style.transform=`translate3d(${tx.toFixed(1)}px,${ty.toFixed(1)}px,0) scale(${k.toFixed(4)})`;
   const inv=Math.max(0.45,Math.min(1.4,0.8/k));   // los rótulos (placas, flechas, recursos) no crecen tanto al alejar el mapa ni se agrandan al acercar if(Math.abs(inv-CAM.inv)>0.01){ CAM.inv=inv; $('terr').style.setProperty('--inv',inv.toFixed(3)); }
-  const far=k<0.5; if(far!==CAM.far){ CAM.far=far; $('terr').classList.toggle('far',far); }
-  clearTimeout(CAM.reT); CAM.reT=setTimeout(()=>{ const c=$('cam'); c.style.willChange='auto'; void c.offsetWidth; c.style.willChange='transform'; },160);
+  const far=k<0.5; if(far!==CAM.far){ CAM.far=far; $('terr').classList.toggle('far',far); $('terrB').classList.toggle('far',far); }
+  clearTimeout(CAM.reT); CAM.reT=setTimeout(()=>{ const c=$('cam'), v=$('terr'); c.style.willChange='auto'; v.style.willChange='auto'; void c.offsetWidth; c.style.willChange='transform'; v.style.willChange='transform'; },160);   // al terminar un zoom se vuelve a pintar a la escala nueva (fondo y capa viva)
   updateMiniRect();
 }
 function clampView(){

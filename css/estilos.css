@@ -209,11 +209,12 @@ g.zone{cursor:pointer}
 
 .viewport{position:relative;height:calc(100vh - 84px);min-height:430px;overflow:hidden;background:#4E6B3C}
 .cam{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform;touch-action:none;user-select:none}
-.cam svg#terr{display:block}
+.cam svg#terr{display:block;position:relative;will-change:transform}   /* capa viva: en su propia capa de la GPU */
+.cam svg#terrB{display:block;position:absolute;left:0;top:0;pointer-events:none}   /* fondo fijo, debajo */
 .viewport svg#plan{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;user-select:none}
 .viewport{cursor:grab}.viewport.dragging{cursor:grabbing}
 .zone .ov{display:none;pointer-events:none}.zone.tgt .ov-tgt,.zone.mvto .ov-mv,.zone.sel .ov-sel{display:inline}
-svg#terr.far .detail,svg#terr.far .decor{display:none}
+svg#terr.far .detail,svg#terr.far .decor,svg#terrB.far .detail,svg#terrB.far .decor{display:none}
 text.zt{paint-order:stroke}
 .viewport svg#plan{background:#C79F73}
 .hide{display:none!important}

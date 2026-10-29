@@ -1,5 +1,7 @@
 # Prueba de rendimiento del mapa (¿conviene migrar a PixiJS?)
 
+> **Decisión (29/10/2026, Alejandro):** en su compu las 4 variantes dieron ~60 cuadros/s (no distinguen), así que se adoptó la variante 3 (mapa en dos capas) en el juego real y **no** se migra a Pixi por ahora. Desde entonces las variantes 1 y 2 del banco ya incluyen las dos capas; la comparación útil es con los aparatos lentos.
+
 Experimento para decidir con datos, en los aparatos reales de la familia, si vale la pena rehacer el dibujo del mapa con PixiJS (GPU) en vez de seguir con SVG. **No cambia el juego normal**: solo existe con `?bench=1`.
 
 ## Cómo correrla

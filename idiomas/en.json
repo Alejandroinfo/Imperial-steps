@@ -2802,6 +2802,14 @@
    }
   },
   {
+   "nombre": "Menú: prueba de rendimiento",
+   "bloques": false,
+   "pares": {
+    "🧪 Prueba de rendimiento": "🧪 Performance test",
+    "Mide qué tan fluido corre el mapa en este aparato (unos 40 segundos)": "Measures how smoothly the map runs on this device (about 40 seconds)"
+   }
+  },
+  {
    "nombre": "cuerpo de los artículos",
    "bloques": true,
    "pares": {

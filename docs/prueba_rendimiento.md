@@ -4,8 +4,8 @@ Experimento para decidir con datos, en los aparatos reales de la familia, si val
 
 ## Cómo correrla
 
-1. Abre el juego con `?bench=1&seed=7` al final del enlace. Por ejemplo: `https://alejandroinfo.github.io/Imperial-steps/?bench=1&seed=7` (la semilla fija hace que todos midan el mismo mapa).
-2. Aparece un panel arriba a la izquierda. Elige la resolución del fondo de Pixi (1,5× por defecto; 2× se ve más nítido pero pesa más memoria) y toca **▶ Medir todo**.
+1. Dentro del juego, abre el **Menú → 🧪 Prueba de rendimiento**. (O abre el juego con `?bench=1&seed=7` al final del enlace.) Por ejemplo: `https://alejandroinfo.github.io/Imperial-steps/?bench=1&seed=7` (la semilla fija hace que todos midan el mismo mapa).
+2. Aparece un panel arriba a la izquierda (si en su lugar sale un aviso rojo, es que falta subir al sitio la carpeta `vendor/` o `js/interfaz/bench.js`). Elige la resolución del fondo de Pixi (1,5× por defecto; 2× se ve más nítido pero pesa más memoria) y toca **▶ Medir todo**.
 3. Tarda unos 40 segundos. **No toques nada** mientras corre; deja la pantalla encendida y cierra otras apps.
 4. Toca **📋 Copiar resultados** y pégalos en el chat (o saca una captura).
 5. Repite en cada aparato: tu compu, tu celular y, sobre todo, **el aparato más lento de la familia**.

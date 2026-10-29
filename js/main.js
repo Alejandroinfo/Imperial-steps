@@ -106,8 +106,13 @@ window.__ui={act,onZone,get G(){return G;},get ui(){return ui;},toggleReady,star
 // App instalable (PWA): solo con http(s); al abrir index.html con doble clic (file://) no hace nada.
 if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)) navigator.serviceWorker.register('sw.js').catch(()=>{});
 
-// Banco de pruebas de dibujo del mapa (solo con ?bench=1): carga Pixi y el panel de medición; no afecta al juego normal.
-if(new URLSearchParams(location.search).has('bench')){
-  const cargar=src=>new Promise((ok,mal)=>{ const s=document.createElement('script'); s.src=src; s.onload=ok; s.onerror=()=>mal(new Error('no cargó '+src)); document.head.appendChild(s); });
-  cargar('vendor/pixi.min.js').then(()=>cargar('js/interfaz/bench.js')).then(()=>setTimeout(benchInit,300)).catch(e=>console.error(e));
+// Banco de pruebas de dibujo del mapa: se abre desde el Menú («🧪 Prueba de rendimiento») o con ?bench=1 en el enlace; carga Pixi y el panel de medición solo entonces.
+function benchLoad(){
+  if(typeof benchInit==='function'&&typeof PIXI!=='undefined'){ benchInit(); return; }
+  const cargar=src=>new Promise((ok,mal)=>{ const s=document.createElement('script'); s.src=src; s.onload=ok; s.onerror=()=>mal(new Error('no se encontró '+src)); document.head.appendChild(s); });
+  cargar('vendor/pixi.min.js').then(()=>cargar('js/interfaz/bench.js')).then(()=>setTimeout(benchInit,100)).catch(e=>{
+    const d=document.createElement('div'); d.style.cssText='position:fixed;left:8px;top:8px;right:8px;z-index:9999;background:#FFE3DD;border:3px solid #A9382B;border-radius:12px;padding:10px 12px;font:14px/1.4 system-ui';
+    d.innerHTML='<b>No se pudo abrir la prueba de rendimiento.</b><br>'+String(e.message).replace(/</g,'&lt;')+'<br>Falta subir la carpeta <code>vendor/</code> y el archivo <code>js/interfaz/bench.js</code> al sitio. <button onclick="this.parentNode.remove()">Cerrar</button>'; document.body.appendChild(d); });
 }
+$('btnBench').addEventListener('click',()=>{ $('dlgMenu').close(); benchLoad(); });
+if(new URLSearchParams(location.search).has('bench')) benchLoad();

@@ -2728,6 +2728,11 @@ i18nAdd({ // Menú: reiniciar
   "Empieza otra vez con el mismo mapa, número de jugadores y modo, con una semilla nueva": "Starts again with the same map, number of players and mode, with a new seed",
 });
 
+i18nAdd({ // Menú: prueba de rendimiento
+  "🧪 Prueba de rendimiento": "🧪 Performance test",
+  "Mide qué tan fluido corre el mapa en este aparato (unos 40 segundos)": "Measures how smoothly the map runs on this device (about 40 seconds)",
+});
+
 i18nAddBlocks({ // cuerpo de los artículos
   "<b>Los Pasos del Imperio</b> es un juego de territorios por pasos. Todos los jugadores planean <b>a la vez</b>; cuando todos presionan ¡Listo!, el paso se resuelve y se ve qué pasó. Empiezas con una capital y 4 pobladores. Crece, especializa a tu gente, investiga, construye, negocia con las tribus y decide cuándo pelear.": "<b>The Steps of the Empire</b> is a territory game played in steps. All players plan <b>at the same time</b>; when everyone presses Ready!, the step resolves and you see what happened. You start with a capital and 4 settlers. Grow, specialize your people, research, build, negotiate with the tribes and decide when to fight.",
   "Se gana cumpliendo <b>2 de 7 condiciones</b> al mismo tiempo (<a href=\"#\" data-wiki=\"victoria\">ver condiciones</a>).": "You win by meeting <b>2 of 7 conditions</b> at the same time (<a href=\"#\" data-wiki=\"victoria\">see conditions</a>).",

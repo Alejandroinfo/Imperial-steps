@@ -91,7 +91,7 @@ interface Partida {
   tributes: { zone: ZonaId; amount: number; due: number; paid: { [f: number]: number }; targets: Jugador[]; res: Recurso }[];
   battles?: any[]; logiMult: number; fever?: number; growHalfEv?: number;
   wars: { tribe: ZonaId; f: Jugador; left: number }[];
-  auction: { step: number; cur: Recurso; items: { cat: string; tier: number; det: any }[]; bids: { [f: number]: { [i: number]: number } } } | null;
+  auction: { step: number; cur: Recurso; items: { cat: string; tier: number; det: any }[]; bids: { [f: number]: { [i: number]: number } }; src?: { [f: number]: { [i: number]: { z: number; n: number }[] } } } | null;
   tele: any; vic?: any; lay?: any;
 }
 

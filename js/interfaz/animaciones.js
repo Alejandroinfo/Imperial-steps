@@ -162,7 +162,9 @@ function playFx(list,condsBefore){
       case 'tech': if(e.f===ME){ sfxLater('tech',600,300); const mc=myCapital(); if(G.zones[mc]&&G.zones[mc].owner===ME) fxSparkle(mc,600,'#7FB2E5'); toast('Tecnología desarrollada',e.name,'tech','🔬'); ui.justTech=e.name; setTimeout(()=>{ ui.justTech=null; },3500); } break;
       case 'enc': if(e.f===ME){ if(e.ok){ sfxLater('coin',400,0); fxSparkle(e.zone,400,'#E9C46A'); } else sfxLater('badEvent',400,0); } break;
       case 'auctionnotice': banner('🔨 Subasta en '+AUCTION_NOTICE+' pasos (paso '+e.step+'): se paga con '+RN[e.cur],'tri'); sfxLater('encounter',300,0); break;
-      case 'auctionwin': if(e.f===ME){ toast('¡Ganaste en la subasta!',AUCTION_CATS[e.cat]+' ('+AUCTION_TIERS[e.tier]+')','pos','🔨'); sfxLater('fanfare',900,0); } break;
+      case 'auctionwin': if(e.f===ME) (ui.aucWins=ui.aucWins||[]).push(e); break;
+      case 'auctionlost': if(e.f===ME) (ui.aucLost=ui.aucLost||[]).push(e); break;
+      case 'auctionend': if((ui.aucWins||[]).length||(ui.aucLost||[]).length) setTimeout(openPremios,FXS.on?1100:200); break;
       case 'out': sfxLater('out',300,0); toast(PLN[e.f].name+' queda eliminado','Pasa a ser fantasma.','neg','☠'); break;
       case 'prod': if(e.f===ME){ if(e.gold>0) sfxLater('coin',2500,900); const items=[['food',e.food],['prod',e.prod],['gold',e.gold],['tech',e.tech]].filter(x=>x[1]>0); items.forEach((it,i)=>fxChip(e.zone,it[0],it[1],2400+i*140+(e.zone%5)*40,i%4)); } break;
     }

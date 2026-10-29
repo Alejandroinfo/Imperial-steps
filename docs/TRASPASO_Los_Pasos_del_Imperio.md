@@ -362,3 +362,17 @@ Reglas en `docs/Reglas_v0.1.md`, sección 26.
 
 **Pendientes:** ver en un teléfono real si «Ligero» alcanza (si no, usar «Apagado» o simplificar el dibujo del mapa); probar la PWA instalada en iPhone y Android; nombres de zona en inglés (decidir); comentarios de diseño de algunas tecnologías sin traducir.
 
+## 14. 🆕 Subasta con ofertas apartadas (29/10/2026)
+
+Reglas en `docs/Reglas_v0.1.md`, sección 27.
+
+| Tema | Dónde |
+|---|---|
+| Ofertas que se apartan, solo suben y se devuelven | `doBid`, `auctionPay` (devuelve de qué zona salió), `auctionRefund`, `auctionResolve` en `js/motor/subasta.js`; `a.src` guarda el origen; las órdenes `bid` se atienden primero en `js/motor/resolver_paso.js` |
+| Detalle de lo ganado | `auctionAward` devuelve `got`; los eventos `auctionwin` (con `got`, `paid`, `cur`) y `auctionlost` salen en `g.fx` |
+| Ventana de premios y sonido | `js/interfaz/premios.js` (`openPremios`, `premiosHTML`), `<dialog id="dlgPremios">` en `index.html`, estilos «Premios de la subasta» al final de `css/estilos.css`; sonidos `auctionwin` y `auctionitem` en `js/interfaz/sonido.js`; enganche en `animaciones.js` (`auctionwin`, `auctionlost`, `auctionend`) |
+| Panel de la subasta | `auctionHTML` en `paneles/recursos.js` (muestra «libres» y «apartado», botón − bloqueado, «Subir»); `bidadj` y `bid` en `acciones.js` |
+| Pruebas | 12 casos de subasta en `pruebas/probar_reglas.js` y 3 comprobaciones en `pruebas/probar_interfaz.py` |
+
+**Pendiente:** ver jugando si apartar al instante frena demasiado (sección 27); ajustar a gusto el sonido y la duración del reveal.
+

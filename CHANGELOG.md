@@ -3,6 +3,7 @@
 All notable changes, newest first. The game and the design documents are in Spanish; this log is in English.
 
 ## Unreleased
+- **Auction: bids are set aside and a prize window**: what you offer leaves your total immediately (so it cannot be spent elsewhere), can only be raised, and is returned to whoever does not win (food and production go back to the zones they came from). When the auction resolves, a window shows each item you won with its details (units, traits, technology, cargo, temporary resource), what you paid and what was returned, with a special sound. Bids are served before other orders in a step. Updated the Guide, English text and tests (12 auction rule tests, 3 browser checks).
 - **Zone names that read the same in Spanish and English**: all 70 names (48 by terrain, 4 capitals, 6 danger zones, 12 tribes) are now proper nouns with shared roots or invented, and are no longer translated. Saved online games keep their old names.
 - **English from a single JSON source**: `idiomas/en.json` (2,979 entries, 24 sections) is the one place to edit; `python herramientas/idiomas.py generar` writes `js/idiomas/en.js`, the only dictionary the game loads (it replaces `en_1.js` … `en_5.js`). `pruebas/probar_idioma.js` fails if `en.js` is out of date.
 - **Installable app (PWA)**: `manifest.json`, `sw.js` (network first, so everyone gets the latest version when online) and original icons in `icons/`. Works from `https` (GitHub Pages); opening `index.html` by double click is unchanged.

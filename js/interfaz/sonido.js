@@ -63,6 +63,9 @@ const SOUNDS={
   warn:()=>{ tone(NOTE(69),0.15,{type:'triangle',gain:0.08}); tone(NOTE(69),0.15,{type:'triangle',gain:0.08,at:0.2}); },
   out:()=>{ tone(NOTE(45),1.4,{type:'sine',gain:0.25,attack:0.02}); tone(NOTE(52),1.4,{type:'sine',gain:0.1,at:0.02}); },
   victory:()=>{ SOUNDS.fanfare(); [[72,0.9],[76,1.05],[79,1.2],[84,1.4],[88,1.6]].forEach(([n,t])=>tone(NOTE(n),0.9,{type:'triangle',gain:0.08,at:t})); },
+  // premios de la subasta: lluvia de monedas y un acorde brillante; cada objeto que se revela suena como un destello que sube
+  auctionwin:()=>{ for(let i=0;i<9;i++) tone(NOTE(88+((i*5)%9)),0.09,{type:'square',gain:0.03,at:i*0.055}); [[72,0.5],[76,0.5],[79,0.5],[84,0.5],[91,0.62]].forEach(([n,t])=>{ tone(NOTE(n),0.9,{type:'sawtooth',gain:0.045,at:t}); tone(NOTE(n-12),0.9,{type:'triangle',gain:0.05,at:t}); }); },
+  auctionitem:()=>{ [[84,0],[88,0.07],[91,0.14],[96,0.21]].forEach(([n,t])=>tone(NOTE(n),0.28,{type:'triangle',gain:0.07,at:t})); },
   encounter:()=>{ [67,71,74,79,83].forEach((n,i)=>tone(NOTE(n),0.6,{type:'triangle',gain:0.07,at:i*0.07})); },
   defeat:()=>{ [[67,0],[63,0.35],[60,0.7],[55,1.1]].forEach(([n,t])=>tone(NOTE(n),0.6,{type:'triangle',gain:0.09,at:t})); }
 };

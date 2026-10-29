@@ -64,6 +64,7 @@ function resolveStep(g,orders){
   });
   by('cancelres').forEach(o=>{ const F=g.F[o.f]; F.rq=F.rq.filter(p=>p.name!==o.name); });
   by('stance').forEach(o=>{ if(isPl(o.target)&&o.target!==o.f){ const F=g.F[o.f]; F.stance=F.stance||{}; F.stance[o.target]=o.stance==='alerta'?'alerta':'paz'; } });
+  by('bid').forEach(o=>{ doBid(g,o,L); });   // lo ofrecido en la subasta se aparta primero: ninguna obra ni entrenamiento de este paso se lo puede comer
   by('spec').forEach(o=>{ doSpec(g,o,L); });
   by('demob').forEach(o=>{ doDemob(g,o,L); });
   by('train').forEach(o=>{ doTrain(g,o,L); });
@@ -75,7 +76,6 @@ function resolveStep(g,orders){
     const refund=Math.floor(b.cost*0.5); z.b.splice(o.bi,1); z.proj=z.proj.filter(p=>!(p.k==='u'&&p.bi===o.bi)); z.proj.forEach(p=>{ if(p.k==='u'&&p.bi>o.bi) p.bi--; }); z.prod=Math.min(capStore(g,z,'prod'),z.prod+refund); L(zname(z)+': se destruye un '+BT[b.t].n+' y se recuperan '+refund+' de producción.'); });
   by('send').forEach(o=>{ doSend(g,o,L); });
   by('route').forEach(o=>{ const z=Z[o.from]; if(!z||z.owner!==o.f) return; z.routes=(z.routes||[]).filter(r=>!(r.to===o.to&&r.res===o.res)); if(o.q&&o.to!==o.from) z.routes.push({to:o.to,res:o.res==='prod'?'prod':'food',q:o.q==='sobrante'?'sobrante':Math.max(1,Math.floor(o.q))}); });
-  by('bid').forEach(o=>{ doBid(g,o,L); });
   by('growmode').forEach(o=>{ const z=Z[o.zone]; if(z&&z.owner===o.f) z.growMode=o.mode==='guardar'?'guardar':'crecer'; });
   by('pausebuild').forEach(o=>{ const z=Z[o.zone]; if(z&&z.owner===o.f) z.pauseBuild=!!o.on; });
   by('autospec').forEach(o=>{ const z=Z[o.zone]; if(z&&z.owner===o.f) z.autoSpec=CIV.includes(o.to)&&o.to!=='pob'?o.to:null; });

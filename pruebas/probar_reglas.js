@@ -612,24 +612,52 @@ prueba('Edificios: Molino, Taller, Mercado y Biblioteca solo los trabajan los es
   pob[1].t='agr'; pob[2].t='agr'; pob[3].t='agr'; const c=wk();   // todos agricultores: el Molino (2 puestos) los toma antes que el Almacén
   return a.mol===0&&a.alm===2&&b.mol===1&&b.alm===2&&c.mol===2&&c.alm===2;`);
 
-prueba('Subasta: gana la oferta más alta y solo el ganador paga', base + SUB + `
-  G.auction={step:20,cur:'gold',items:[item('car',0,{res:'food'})],bids:{0:{0:30},1:{0:20}}}; G.F[0].gold=100; G.F[1].gold=100; const p0=cap.prog; auctionResolve(G,L);
-  return G.F[0].gold===70&&G.F[1].gold===100&&cap.prog===p0+30&&G.auction===null;`);
+const OFRECER = (f, i, n) => `doBid(G,{t:'bid',f:${f},item:${i},amount:${n}},L);`;
 
-prueba('Subasta: si empatan arriba, todos los empatados se lo llevan y cada uno paga lo suyo', base + SUB + `
-  const c1=G.zones.find(z=>z.capital&&z.owner===1); G.auction={step:20,cur:'gold',items:[item('car',0,{res:'food'})],bids:{0:{0:25},1:{0:25}}}; G.F[0].gold=100; G.F[1].gold=100; const a0=cap.prog, a1=c1.prog; auctionResolve(G,L);
+prueba('Subasta: lo que ofreces se aparta al instante y quien gana ya no paga de nuevo', base + SUB + `
+  G.auction={step:20,cur:'gold',items:[item('car',0,{res:'food'})],bids:{}}; G.F[0].gold=100; G.F[1].gold=100; const p0=cap.prog;
+  ${OFRECER(0,0,30)} ${OFRECER(1,0,20)} const apartado=G.F[0].gold===70&&G.F[1].gold===80;
+  auctionResolve(G,L);
+  return apartado&&G.F[0].gold===70&&G.F[1].gold===100&&cap.prog===p0+30&&G.auction===null;`);
+
+prueba('Subasta: si empatan arriba, todos los empatados se lo llevan y cada uno ya había apartado lo suyo', base + SUB + `
+  const c1=G.zones.find(z=>z.capital&&z.owner===1); G.auction={step:20,cur:'gold',items:[item('car',0,{res:'food'})],bids:{}}; G.F[0].gold=100; G.F[1].gold=100; const a0=cap.prog, a1=c1.prog;
+  ${OFRECER(0,0,25)} ${OFRECER(1,0,25)} auctionResolve(G,L);
   return G.F[0].gold===75&&G.F[1].gold===75&&cap.prog===a0+30&&c1.prog===a1+30;`);
 
-prueba('Subasta: solo cuentan las ofertas que puedes pagar (se conservan las más altas)', base + SUB + `
-  G.auction={step:20,cur:'gold',items:[item('car',0,{res:'prod'}),item('car',0,{res:'prod'})],bids:{0:{0:60,1:50}}}; G.F[0].gold=80; auctionResolve(G,L);
-  return G.F[0].gold===20&&logs.some(l=>l.includes('nadie ofreció'));`);
+prueba('Subasta: la oferta solo puede subir (una oferta menor o igual no hace nada)', base + SUB + `
+  G.auction={step:20,cur:'gold',items:[item('car',0,{res:'food'})],bids:{}}; G.F[0].gold=100;
+  ${OFRECER(0,0,30)} ${OFRECER(0,0,10)} ${OFRECER(0,0,0)} const igual=G.auction.bids[0][0]===30&&G.F[0].gold===70;
+  ${OFRECER(0,0,45)} return igual&&G.auction.bids[0][0]===45&&G.F[0].gold===55;`);
 
-prueba('Subasta: la comida se paga de todo el imperio, en igual porcentaje de cada zona', base + SUB + `
-  const n=G.zones[cap.adj[0]]; n.owner=0; n.units[0]=[civ('pob')]; n.size=6; cap.size=9; cap.food=60; n.food=20; G.auction={step:20,cur:'food',items:[item('pel',0)],bids:{0:{0:40}}};
-  auctionResolve(G,L); return cap.food===30&&n.food===10&&cap.units[0].filter(u=>u.t==='sol').length===2;`);
+prueba('Subasta: si no te alcanza para subir, se aparta hasta donde alcance', base + SUB + `
+  G.auction={step:20,cur:'gold',items:[item('car',0,{res:'prod'}),item('car',0,{res:'prod'})],bids:{}}; G.F[0].gold=80;
+  ${OFRECER(0,0,60)} ${OFRECER(0,1,50)} return G.auction.bids[0][0]===60&&G.auction.bids[0][1]===20&&G.F[0].gold===0;`);
+
+prueba('Subasta: lo apartado no se puede gastar en otra cosa (las ofertas se atienden antes que las obras)', base + SUB + `
+  G.step=15; G.auction={step:20,cur:'prod',items:[item('car',0,{res:'food'})],bids:{}}; cap.prod=50;
+  paso([{t:'build',f:0,zone:cap.id,b:'alm'},{t:'bid',f:0,item:0,amount:40}]);
+  return G.auction&&G.auction.bids[0]&&G.auction.bids[0][0]===40;`);
+
+prueba('Subasta: quien no gana recupera la comida y la producción en las zonas de donde salieron', base + SUB + `
+  const n=G.zones[cap.adj[0]]; n.owner=0; n.units[0]=[civ('pob')]; n.size=6; cap.size=9; cap.food=60; n.food=20;
+  G.auction={step:20,cur:'food',items:[item('pel',0)],bids:{}}; G.F[1].gold=0; const c1=G.zones.find(z=>z.capital&&z.owner===1); c1.food=100;
+  ${OFRECER(0,0,40)} ${OFRECER(1,0,50)} const apartado=cap.food===30&&n.food===10&&c1.food===50;
+  auctionResolve(G,L); return apartado&&cap.food===60&&n.food===20&&c1.food===50&&c1.units[1].filter(u=>u.t==='sol').length===2;`);
+
+prueba('Subasta: la comida se aparta de todo el imperio, en igual porcentaje de cada zona', base + SUB + `
+  const n=G.zones[cap.adj[0]]; n.owner=0; n.units[0]=[civ('pob')]; n.size=6; cap.size=9; cap.food=60; n.food=20; G.auction={step:20,cur:'food',items:[item('pel',0)],bids:{}};
+  ${OFRECER(0,0,40)} const ok1=cap.food===30&&n.food===10;
+  auctionResolve(G,L); return ok1&&cap.food===30&&n.food===10&&cap.units[0].filter(u=>u.t==='sol').length===2;`);
+
+prueba('Subasta: el resultado trae el detalle de lo ganado y de lo devuelto (para la ventana de premios)', base + SUB + `
+  G.auction={step:20,cur:'gold',items:[item('pel',0),item('car',0,{res:'food',n:33})],bids:{}}; G.F[0].gold=100; G.F[1].gold=100;
+  ${OFRECER(0,0,10)} ${OFRECER(0,1,20)} ${OFRECER(1,1,25)} G.fx=[]; auctionResolve(G,L);
+  const gana=G.fx.filter(e=>e.k==='auctionwin'), pierde=G.fx.filter(e=>e.k==='auctionlost');
+  return gana.length===2&&gana.some(e=>e.f===0&&e.got&&e.got.kind==='pel'&&e.got.units[0].t==='sol'&&e.paid===10)&&gana.some(e=>e.f===1&&e.got.kind==='car'&&e.got.n===33&&e.got.res==='food')&&pierde.length===1&&pierde[0].f===0&&pierde[0].amt===20&&G.F[0].gold===90;`);
 
 prueba('Subasta: un saber regala una tecnología sin pagar su costo', base + SUB + `
-  const t0=Object.keys(G.F[0].techs).length, c0=G.F[0].tech; G.auction={step:20,cur:'gold',items:[item('sab',0)],bids:{0:{0:5}}}; G.F[0].gold=50; auctionResolve(G,L);
+  const t0=Object.keys(G.F[0].techs).length, c0=G.F[0].tech; G.auction={step:20,cur:'gold',items:[item('sab',0)],bids:{0:{0:5}}}; G.F[0].gold=45; auctionResolve(G,L);
   return Object.keys(G.F[0].techs).length===t0+1&&G.F[0].tech===c0;`);
 
 prueba('Subasta: un poblador extraordinario trae 2 rasgos de oficio distintos de nivel alto', base + `
@@ -643,9 +671,11 @@ prueba('Subasta: un recurso temporal funciona 40 pasos y luego se acaba', base +
   G.auction={step:20,cur:'gold',items:[item('rec',2,{key:'ruinas'})],bids:{0:{0:5}}}; G.F[0].gold=50; const antes=hasRes(G,0,'ruinas'); G.step=20; auctionResolve(G,L);
   const ahora=hasRes(G,0,'ruinas'); G.step=61; return !antes&&ahora&&!hasRes(G,0,'ruinas');`);
 
-prueba('Subasta: se puede ofertar con una orden y cambiarla hasta el paso de la subasta', base + `
-  G.step=19; G.auction={step:20,cur:'gold',items:[{cat:'car',tier:0,det:{res:'food'}}],bids:{}}; G.F[0].gold=100;
-  paso([{t:'bid',item:0,amount:10}]); const a=G.auction&&G.auction.bids[0]&&G.auction.bids[0][0]; paso([{t:'bid',item:0,amount:40}]); return a===10&&G.F[0].gold<=70+30&&G.F[0].gold>=50;`);
+prueba('Subasta: se puede ofertar con una orden, subirla hasta el paso de la subasta, y el resultado llega al final', base + `
+  G.step=17; G.auction={step:20,cur:'gold',items:[{cat:'car',tier:0,det:{res:'food'}}],bids:{}}; G.F[0].gold=100;
+  paso([{t:'bid',item:0,amount:10}]); const a=G.auction&&G.auction.bids[0]&&G.auction.bids[0][0]; const oro1=G.F[0].gold;
+  paso([{t:'bid',item:0,amount:40}]); const b=G.auction&&G.auction.bids[0]&&G.auction.bids[0][0];
+  return a===10&&b===40&&oro1<=90+3&&oro1>=80&&G.F[0].gold<=60+6;`);
 
 // ---- Historias de 4 capítulos (13.3) ----
 const HIST = `const F=G.F[0]; const nuevo=(id,ch,tags)=>{ F.story={id,ch,next:0,tags}; F.enc=null; F.encNext=999; F.enc=makeChapter(G,0); return F.enc; };`;

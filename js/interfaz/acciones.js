@@ -53,8 +53,8 @@ function act(a,d){
     case 'undo': undoOrder(); return;
     case 'rsub': ui.rsub=d.s; break;
     case 'vall': ui.vall=!ui.vall; break;
-    case 'bidadj': { const i=Number(d.i); const el=document.querySelector('[data-f="bid_'+i+'"]'); const amt=Math.max(0,Math.floor((Number(el?el.value:0)||0)+Number(d.d))); ui.orders=ui.orders.filter(o=>!(o.t==='bid'&&o.item===i)); addOrder({t:'bid',item:i,amount:amt}); break; }
-    case 'bid': { const i=Number(d.i); const el=document.querySelector('[data-f="bid_'+i+'"]'); const amt=Math.max(0,Math.floor(Number(el?el.value:0)||0)); ui.orders=ui.orders.filter(o=>!(o.t==='bid'&&o.item===i)); addOrder({t:'bid',item:i,amount:amt}); break; }
+    case 'bidadj': { const i=Number(d.i); const el=document.querySelector('[data-f="bid_'+i+'"]'); const done=((G.auction&&G.auction.bids[ME])||{})[i]||0; const amt=Math.max(done,Math.floor((Number(el?el.value:0)||0)+Number(d.d))); ui.orders=ui.orders.filter(o=>!(o.t==='bid'&&o.item===i)); addOrder({t:'bid',item:i,amount:amt}); break; }
+    case 'bid': { const i=Number(d.i); const el=document.querySelector('[data-f="bid_'+i+'"]'); const done=((G.auction&&G.auction.bids[ME])||{})[i]||0; const amt=Math.max(done,Math.floor(Number(el?el.value:0)||0)); ui.orders=ui.orders.filter(o=>!(o.t==='bid'&&o.item===i)); addOrder({t:'bid',item:i,amount:amt}); break; }
     case 'autospec': ui.orders=ui.orders.filter(o=>!(o.t==='autospec'&&o.zone===z.id)); if(d.v!==(z.autoSpec||'pob')) addOrder({t:'autospec',zone:z.id,to:d.v==='pob'?null:d.v}); break;
     case 'route': { const from=d.from!==undefined?Number(d.from):z.id;
       if(d.q==='0'){ addOrder({t:'route',from,to:Number(d.to),res:d.res,q:0}); break; }
@@ -80,6 +80,7 @@ function act(a,d){
     case 'mvquick': { CIV.concat(MIL).forEach(t=>{ const mx=availQ(ui.mv.from,t); const hostile=G.zones[ui.mv.to].owner!==null&&G.zones[ui.mv.to].owner!==ME&&!allied(G,ME,G.zones[ui.mv.to].owner);
         if(d.v==='one'||d.v==='half'){ const hostile2=G.zones[ui.mv.to].owner!==null&&G.zones[ui.mv.to].owner!==ME&&!allied(G,ME,G.zones[ui.mv.to].owner); const first=CIV.concat(MIL).find(x=>availQ(ui.mv.from,x)>0&&!(CIV.includes(x)&&hostile2)); ui.form['mv_'+t]=d.v==='one'?(t===first?1:0):((CIV.includes(t)&&hostile2)?0:Math.floor(mx/2)+(mx===1?1:0)); return; }
         ui.form['mv_'+t]=d.v==='none'?0:(d.v==='mil'?(MIL.includes(t)&&t!=='ari'&&t!=='lan'?mx:0):(CIV.includes(t)&&hostile?0:mx)); }); break; }
+    case 'premclose': closePremios(); return;
     case 'ficha': openFichaSheet(Number(d.id)); return;
     case 'fichaclose': closeFichaSheet(); return;
     case 'movep': { const u=personById(Number(d.id)), zf=personZone(Number(d.id)); if(u&&zf){ addOrder({t:'move',from:zf.id,to:Number(d.to),u:{[u.t]:1},ids:[u.id],stance:'paz',via:[]}); toast('➜ '+personName(u),'va a '+zname(G.zones[Number(d.to)])+' al presionar ¡Listo!','info'); } closeFichaSheet(); break; }

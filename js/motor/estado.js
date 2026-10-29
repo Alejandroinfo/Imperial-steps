@@ -176,17 +176,18 @@ function canResearch(g,f,name){ return researchBlock(g,f,name)===null; }
 
 
 // Nombres de zona: una sola palabra, para que las placas y el panel ocupen poco.
+// Son nombres propios que se leen igual en español y en inglés (no se traducen): raíces comunes (selva, sabana, estepa, cascada…) o inventados, sin ñ ni «ll».
 const NAMES = {
-  mon:['Peñascal','Riscal','Cumbrera','Picacho','Crestón','Pedregal','Nevada','Roquedal'],
-  pra:['Vegaverde','Pradoalto','Florida','Dehesa','Pastizal','Alborada','Herbazal','Valdeflor'],
-  bos:['Robledo','Pinares','Umbría','Espesura','Brumal','Cuervales','Hayedo','Fresneda'],
-  rio:['Saucedo','Vadillo','Garzal','Remanso','Ribera','Molinar','Juncal','Aguada'],
-  col:['Lomaseca','Otero','Altozano','Solana','Ventisca','Ovejera','Cerrillo','Collado'],
-  lla:['Trigal','Estepa','Pampa','Ocaso','Campiña','Sabana','Llanada','Mieses']
+  mon:['Altamira', 'Montara', 'Cumbre', 'Granito', 'Aguilar', 'Escarpa', 'Nevada', 'Basalto'],
+  pra:['Primavera', 'Pradera', 'Valverde', 'Rosales', 'Aurora', 'Margarita', 'Trebolar', 'Floreal'],
+  bos:['Selva', 'Arboleda', 'Sombra', 'Pinar', 'Cedral', 'Umbra', 'Robledo', 'Alameda'],
+  rio:['Rivera', 'Cascada', 'Laguna', 'Fontana', 'Ondina', 'Remanso', 'Caudal', 'Torrente'],
+  col:['Colina', 'Loma', 'Otero', 'Solana', 'Mirador', 'Cerro', 'Ventura', 'Belmonte'],
+  lla:['Pampa', 'Sabana', 'Estepa', 'Trigal', 'Meseta', 'Horizonte', 'Planicie', 'Cosecha']
 };
-const CAPN=['Adrianópolis','Zafiria','Ambaria','Esmeralda'];
-const FRONN=['Encrucijada','Lindero','Mojón','Confín','Raya','Vado Real'];
-const TRIBN=['Brasca','Cenizal','Morrena','Grajal','Hondal','Lobera','Humareda','Garral','Truenal','Cuervera','Lunaria','Solera'];
+const CAPN=['Adrianópolis', 'Zafiria', 'Ambaria', 'Esmeralda'];
+const FRONN=['Limes', 'Frontera', 'Umbral', 'Marca', 'Atalaya', 'Centinela'];
+const TRIBN=['Brasca', 'Lunaria', 'Solera', 'Karuma', 'Tolven', 'Ashari', 'Morvan', 'Ravena', 'Cenara', 'Lupara', 'Tormena', 'Corvina'];
 function assignNames(zones,rng){
   const used=new Set(); let ti=Math.floor(rng()*TRIBN.length);
   zones.forEach(z=>{

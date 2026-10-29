@@ -84,11 +84,16 @@ $('stMesa').addEventListener('click',()=>setMapStyle('mesa'));
 $('chkMus').addEventListener('change',e=>{ sfxInit(); musicSetOn(e.target.checked); musicSave(); });
 $('rngMus').addEventListener('input',e=>{ sfxInit(); musicSetVolume(Number(e.target.value)/100); musicKick(); musicSave(); });
 $('dlgBattle').addEventListener('close',()=>{ if(G&&!G.over&&MUS.scene==='combate') musicPlay('plan'); });
-$('chkAnim').addEventListener('change',e=>{ FXS.on=e.target.checked; document.body.classList.toggle('noanim',!e.target.checked); });
-if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches){ FXS.on=false; document.body.classList.add('noanim'); $('chkAnim').checked=false; }
+[['fxFull','full'],['fxLite','lite'],['fxOff','off']].forEach(([id,v])=>$(id).addEventListener('click',()=>setFxLevel(v,true)));
+{ let fx=null; try{ fx=localStorage.getItem('pasos_fx'); }catch(e){}
+  if(!fx) fx=(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)?'off':(window.matchMedia&&matchMedia('(max-width: 760px)').matches?'lite':'full');
+  setFxLevel(fx,false); }
 initTerrInput(); planInput(); initIdioma(); initIconos(); initMovil();
 DATA.maps.forEach((m,i)=>{ const o=document.createElement('option'); o.value=i; o.textContent=m.id+'. '+m.name; $('selMap').appendChild(o); });
 $('selMap').value='0'; $('selN').value='3'; initMapPicker();
 openSetup();
 setInterval(tick,250);
 window.__ui={act,onZone,get G(){return G;},get ui(){return ui;},toggleReady,startGame};
+
+// App instalable (PWA): solo con http(s); al abrir index.html con doble clic (file://) no hace nada.
+if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)) navigator.serviceWorker.register('sw.js').catch(()=>{});

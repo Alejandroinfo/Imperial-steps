@@ -104,7 +104,7 @@ function tutRender(){
   const stepsOfGame=TUT_STEPS.filter(x=>x.step===s.step), idx=stepsOfGame.indexOf(s)+1;
   box.hidden=false;
   box.innerHTML=`<div class="tuth"><span>🎓 Comienzo guiado · paso ${s.step} de ${TUT_LAST_STEP} <small>(${idx}/${stepsOfGame.length})</small></span><button class="xbtn" data-act="tutstop" title="Salir del tutorial" aria-label="Salir del tutorial">✕</button></div>
-    <div class="tutt">${s.t}${done?' <span class="tutok">✓</span>':''}</div><div class="tutx">${s.x}</div>
+    <div class="tutt">${i18nHTML(s.t)}${done?' <span class="tutok">✓</span>':''}</div><div class="tutx">${i18nHTML(s.x)}</div>
     <div class="tutf"><div class="tutbar"><i style="width:${Math.round(100*(TUT.i)/TUT_STEPS.length)}%"></i></div>${s.opt&&!done?'<button class="btn" data-act="tutnext">Saltar</button>':''}${s.done||s.wait?'':`<button class="btn primary" data-act="tutnext">${s.last?'Terminar':'Siguiente'}</button>`}</div>`;
   if(s.last) box.querySelector('.tutf').innerHTML=`<div class="tutbar"><i style="width:100%"></i></div><button class="btn primary" data-act="tutnext">Terminar</button>`;
   document.querySelectorAll('.tut-hl').forEach(e=>e.classList.remove('tut-hl'));

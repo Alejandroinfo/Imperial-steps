@@ -730,5 +730,16 @@ prueba('Historia: ganancias nuevas (relación, poblador extraordinario, saber, e
 prueba('Durante el comienzo guiado no llegan historias', base + `
   G.F[0].encNext=999; let hay=false; for(let i=0;i<20;i++){ paso(); if(G.F[0].enc) hay=true; } return !hay&&!G.F[0].story;`);
 
+prueba('Mover con ids: se va la persona elegida y no la primera de la lista', base + `
+  const v=G.zones[cap.adj.find(a=>G.zones[a].role!=='frontera'&&G.zones[a].owner===null)]; const a=civ('pob'), b=civ('pob'), c=civ('pob'); cap.units[0]=[a,b,c];
+  paso([{t:'move',from:cap.id,to:v.id,u:{pob:1},ids:[c.id],stance:'paz'}]);
+  const ven=(v.units[0]||[]).some(u=>u.id===c.id), sigue=cap.units[0].some(u=>u.id===a.id)&&cap.units[0].some(u=>u.id===b.id);
+  return ven&&sigue&&!cap.units[0].some(u=>u.id===c.id);`);
+
+prueba('Mover con ids que ya no existen: se va quien haya (no se pierde la orden)', base + `
+  const v=G.zones[cap.adj.find(a=>G.zones[a].role!=='frontera'&&G.zones[a].owner===null)]; cap.units[0]=[civ('pob'),civ('pob')];
+  paso([{t:'move',from:cap.id,to:v.id,u:{pob:1},ids:[999999],stance:'paz'}]);
+  return (v.units[0]||[]).length===1&&cap.units[0].length===1;`);
+
 console.log(fallos ? `\n${fallos} reglas fallan.` : '\nTodas las reglas probadas se cumplen.');
 process.exit(fallos ? 1 : 0);

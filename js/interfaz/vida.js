@@ -167,7 +167,7 @@ function lifeRun(zid,pp,s,now){
 }
 
 /* ---------- reloj ---------- */
-function lifeActive(){ return !!(LIFE.on&&G&&ui&&ui.view==='terr'&&!document.hidden&&(typeof FXS==='undefined'||FXS.on)&&!CAM.far&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
+function lifeActive(){ return !!(LIFE.on&&G&&ui&&ui.view==='terr'&&!document.hidden&&(typeof FXS==='undefined'||(FXS.on&&!FXS.lite))&&!CAM.far&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
 function lifeInView(i){ const x=sx(i), y=sy(i), m=320; return x>VIEW.x-m&&x<VIEW.x+VIEW.w+m&&y>VIEW.y-m&&y<VIEW.y+VIEW.h+m; }
 function lifeTick(){
   if(!lifeActive()) return; const now=performance.now(); let sort=now>LIFE.sortAt; if(sort) LIFE.sortAt=now+900;

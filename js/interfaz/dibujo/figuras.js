@@ -50,6 +50,8 @@ function uIcon(t,sz){ sz=sz||22; const big=(t==='ari'||t==='lan'); return `<svg 
    un globo con el resto). Si la zona tiene el edificio del oficio, la gente trabaja a su lado. */
 const JOB_BLD={agr:'molino',ing:'taller',com:'mercado',cie:'biblio',sol:'cuartel',cab:'cuartel',ber:'cuartel',arq:'fort',esc:'fort',ari:'cuartel',lan:'cuartel'};
 const FIG_MAX=6;
+// en un teléfono con efectos ligeros se dibujan menos figuras por oficio (cada persona son decenas de nodos SVG); el número real sale en la insignia «+N»
+const figMax=()=>(typeof FXS!=='undefined'&&FXS.lite&&document.body.classList.contains('movil'))?3:FIG_MAX;
 function figRows(z,f,col){
   const us=z.units[f]||[]; const by={}; us.forEach(u=>{ const k=by[u.t]||(by[u.t]={n:0,w:0}); k.n++; if(u.w>0) k.w++; });
   const types=CIV.concat(MIL).filter(t=>by[t]); const anchor={}, used={};
@@ -71,7 +73,7 @@ function figRows(z,f,col){
   stg.anchor=anchor;
   let s='<g class="pps">';
   types.forEach(t=>{
-    const k=by[t], [cx,cy]=anchor[t], big=(t==='ari'||t==='lan'); const n=Math.min(FIG_MAX,k.n);
+    const k=by[t], [cx,cy]=anchor[t], big=(t==='ari'||t==='lan'); const n=Math.min(figMax(),k.n);
     const per=big?2:3, sp=big?26:12;
     for(let j=0;j<n;j++){
       const r=Math.floor(j/per), c=j%per, inRow=Math.min(per,n-r*per); const hx=cx+(c-(inRow-1)/2)*sp, hy=cy+r*13; const u=ppl[t][j];
@@ -82,7 +84,7 @@ function figRows(z,f,col){
   s+='</g>';
   types.forEach(t=>{
     const k=by[t], [cx,cy]=anchor[t];
-    if(k.n>FIG_MAX) s+=`<g transform="translate(${f1(cx+26)},${f1(cy-6)})"><rect x="-13" y="-9" width="26" height="17" rx="8.5" fill="#2A1B16" stroke="${col}" stroke-width="2"/><text class="zt" text-anchor="middle" y="4" font-size="11" font-weight="700" fill="#FBF8F2">+${k.n-FIG_MAX}</text></g>`;
+    if(k.n>figMax()) s+=`<g transform="translate(${f1(cx+26)},${f1(cy-6)})"><rect x="-13" y="-9" width="26" height="17" rx="8.5" fill="#2A1B16" stroke="${col}" stroke-width="2"/><text class="zt" text-anchor="middle" y="4" font-size="11" font-weight="700" fill="#FBF8F2">+${k.n-FIG_MAX}</text></g>`;
     if(k.w) s+=`<g transform="translate(${f1(cx-26)},${f1(cy-6)})"><circle r="7" fill="#C8452F" stroke="#fff" stroke-width="1.6"/><path d="M-3,0 h6 M0,-3 v6" stroke="#fff" stroke-width="1.8"/><text class="zt" x="10" y="4" font-size="10" font-weight="700" fill="#fff" stroke="#2A1B16" stroke-width="2.5" paint-order="stroke">${k.w}</text></g>`;
   });
   return s;

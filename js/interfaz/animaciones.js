@@ -1,7 +1,15 @@
 'use strict';
 // Animaciones del paso: movimientos, combates, obras, nacimientos y avisos.
 
-const FXS = {on:true};
+const FXS = {on:true, lite:false};
+// Nivel de efectos: «full» (todo), «lite» (sin animaciones ambientales: pueblo vivo, humo, nubes, destellos; se conservan los efectos de cada paso) y «off».
+// En el teléfono se parte de «lite» (medido: con todo el mapa animado baja a 13–18 cuadros por segundo con la CPU limitada a 1/4; sin lo ambiental sube).
+function setFxLevel(l,save){
+  if(l!=='lite'&&l!=='off') l='full'; FXS.on=l!=='off'; FXS.lite=l==='lite'; FXS.level=l;
+  document.body.classList.toggle('noanim',l==='off'); document.body.classList.toggle('lite',l==='lite');
+  [['fxFull','full'],['fxLite','lite'],['fxOff','off']].forEach(([id,v])=>{ const b=document.getElementById(id); if(b) b.setAttribute('aria-pressed',String(v===l)); });
+  if(save){ try{ localStorage.setItem('pasos_fx',l); }catch(e){} if(typeof G!=='undefined'&&G&&typeof ui!=='undefined'&&ui&&typeof render==='function') render(); }
+}
 const SVGNS='http://www.w3.org/2000/svg';
 function mkEl(tag,attrs,html){ const e=document.createElementNS(SVGNS,tag); for(const k in attrs) e.setAttribute(k,attrs[k]); if(html!==undefined) e.innerHTML=html; return e; }
 function fxLayer(){ return ui.view==='terr'?$('fxT'):$('fxP'); }

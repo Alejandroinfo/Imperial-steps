@@ -105,7 +105,7 @@ function moveFormHTML(){
   h+=unitsTable(to);
   if(to.owner===TRIBE) h+=annexHTML(to);
   const types=CIV.concat(MIL).filter(t=>availQ(from.id,t)>0);
-  h+=`<div class="row mvq"><button class="btn" data-act="mvquick" data-v="all">Todos</button><button class="btn" data-act="mvquick" data-v="mil">Solo tropas</button><button class="btn" data-act="mvquick" data-v="none">Nadie</button></div>`;
+  h+=`<div class="row mvq"><button class="btn" data-act="mvquick" data-v="one">＋1</button><button class="btn" data-act="mvquick" data-v="half">Mitad</button><button class="btn" data-act="mvquick" data-v="all">Todos</button><button class="btn" data-act="mvquick" data-v="mil">Solo tropas</button><button class="btn" data-act="mvquick" data-v="none">Nadie</button></div>`;
   h+='<div class="stps">';
   types.forEach(t=>{ const mx=availQ(from.id,t), civ=CIV.includes(t), dis=civ&&hostile; h+=stepperHTML('mvstep','mv_'+t,t,dis?0:Math.min(mx,Number(fv('mv_'+t,0))||0),mx,dis); });
   h+='</div>';

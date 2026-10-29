@@ -104,6 +104,23 @@ document.addEventListener('mouseover',e=>{
 });
 document.addEventListener('mouseout',e=>{ const t=e.target.closest&&e.target.closest('.token[data-id],.db[data-dep],.eb[data-ev]'); if(t&&FICHA) FICHA.classList.remove('on'); });
 document.addEventListener('dragstart',()=>{ if(FICHA) FICHA.classList.remove('on'); });
+
+// ===== Ficha táctil (teléfono): hoja inferior con los rasgos de la persona y botones para mandarla a una zona vecina =====
+function personZone(id){ for(const z of G.zones){ if((z.units[ME]||[]).some(u=>u.id===id)) return z; } return null; }
+function fichaSheetHTML(id){
+  const u=personById(id); if(!u) return ''; const z=personZone(id);
+  let h=`<div class="fsh"><div class="fsbar"><b>${esc(personName(u))}</b><button class="xbtn" data-act="fichaclose" aria-label="Cerrar">✕</button></div>${fichaHTML(u)}`;
+  if(z&&CIV.includes(u.t)&&u.w===0&&!u.busy){
+    const dests=z.adj.map(a=>G.zones[a]).filter(d=>d.role!=='tribu'&&d.role!=='frontera'&&(d.owner===null||d.owner===ME||allied(G,ME,d.owner)));
+    if(dests.length) h+=`<div class="fsmv"><small>Mandarla a otra zona (gratis; ese paso no produce):</small><div class="fsch">${dests.map(d=>`<button class="chip" data-act="movep" data-id="${id}" data-to="${d.id}">➜ ${esc(zname(d))}</button>`).join('')}</div></div>`;
+  }
+  return h+'</div>';
+}
+function openFichaSheet(id){
+  let s=document.getElementById('fichaSheet'); if(!s){ s=document.createElement('div'); s.id='fichaSheet'; s.className='fsheet'; s.addEventListener('click',e=>{ if(e.target===s) closeFichaSheet(); }); document.body.appendChild(s); }
+  const html=fichaSheetHTML(id); if(!html) return; s.innerHTML=html; s.classList.add('on'); if(typeof i18nApply==='function') i18nApply(s);
+}
+function closeFichaSheet(){ const s=document.getElementById('fichaSheet'); if(s) s.classList.remove('on'); }
 // Personas libres de un oficio (menos las ya elegidas para una orden), las mejores primero.
 function availListQ(zid,t){
   const z=G.zones[zid]; const used=new Set(); let idq=0;

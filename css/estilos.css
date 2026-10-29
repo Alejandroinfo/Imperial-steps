@@ -772,3 +772,33 @@ body.movil #dlgSetup{overflow-x:hidden}
 /* Conexiones del mapa: marcadores de camino (28/10/2026) */
 svg#terr.far .conn{display:none}.conn.no circle{stroke-dasharray:4 3}.conn:hover circle{fill:#fff}
 .ncon{display:flex;align-items:center;gap:3px;color:var(--muted);font-size:11px}.ncon .ic{width:1.2em;height:1.2em}
+
+/* Efectos «ligero»: se apaga lo que se mueve solo en el mapa (más fluido en teléfonos); los efectos de cada paso (.pfx-*, números, anillos) se conservan */
+body.lite .blades,body.lite .smoke,body.lite .flag,body.lite .cloud,body.lite .march,body.lite .flow,body.lite .glow,body.lite .selp,body.lite .blink,body.lite .clash,body.lite .flame,body.lite .wk-agr,body.lite .wk-ing,body.lite .wk-com,body.lite .wk-cie .bub,body.lite .catap,body.lite .hunger,body.lite .pp .bob,body.lite .pp .act{animation:none!important}
+body.lite .mote,body.lite .spk{display:none}
+body.lite #vp *{animation:none!important}
+
+/* ===== Teléfono: rasgos legibles y mover personas (28/10/2026) ===== */
+.tinfo{display:none}
+body.movil .token.tk{position:relative;min-width:56px;padding:6px 6px 4px}
+body.movil .tkb{min-height:30px;padding:2px 4px}
+body.movil .tkb .tb i{width:24px;height:24px;font-size:14px;border-width:2px}
+body.movil .tkb .tb em{height:5px;gap:2px}body.movil .tkb .tb em b{width:5px;height:5px}
+body.movil .tinfo{display:grid;place-items:center;position:absolute;top:-8px;right:-8px;width:26px;height:26px;border-radius:50%;border:2px solid #2A1B16;background:#FFE27A;font-size:14px;font-weight:700;padding:0;cursor:pointer;box-shadow:0 2px 0 #2A1B16}
+.fsheet{display:none;position:fixed;inset:0;z-index:200;background:rgba(42,27,22,.45);align-items:flex-end;justify-content:center}
+.fsheet.on{display:flex}
+.fsheet .fsh{width:min(560px,100%);max-height:78vh;overflow:auto;background:#FBF6EA;border:3px solid #2A1B16;border-bottom:0;border-radius:16px 16px 0 0;padding:12px 14px calc(14px + env(safe-area-inset-bottom));box-shadow:0 -4px 0 #2A1B16}
+.fsheet .fsbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:18px}
+.fsheet .fsbar .xbtn{width:40px;height:40px;font-size:20px}
+.fsheet .fh{margin-bottom:6px}.fsheet .fr{font-size:15px;padding:6px 0}
+.fsheet .fsmv{margin-top:10px;padding-top:8px;border-top:2px dashed #C9B78F}
+.fsheet .fsch{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.fsheet .fsch .chip{min-height:44px;padding:8px 14px;font-size:15px}
+body.movil .mvq .btn{min-height:44px;flex:1}
+body.movil .mvbox .row:last-child{position:sticky;bottom:0;background:#FBF6EA;padding:8px 0;border-top:2px solid #2A1B16;z-index:2}
+body.movil .mvbox .row:last-child .btn{min-height:48px;font-size:16px}
+.fsheet .fh{display:flex;align-items:center;gap:10px;padding-bottom:6px;margin-bottom:6px;border-bottom:2px dotted rgba(42,27,22,.35)}
+.fsheet .fh b{font-family:Palatino Linotype,Palatino,Georgia,serif;font-size:17px}.fsheet .fh small{display:block;color:var(--muted);font-style:italic;font-size:14px}
+.fsheet .fr{display:flex;align-items:center;gap:10px}.fsheet .fr div{flex:1;line-height:1.2}.fsheet .fr small{display:block;color:var(--muted);font-size:13px}
+.fsheet .fe{font-weight:800;font-size:16px}.fsheet .fr.p .fe{color:#3C7A2A}.fsheet .fr.n .fe{color:#A9382B}
+.fsheet .tb i{width:30px;height:30px;font-size:17px}

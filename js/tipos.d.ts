@@ -117,7 +117,7 @@ type Orden = { f?: Jugador } & (
   | { t: 'ally'; target?: Jugador; off?: number }
   | { t: 'offer'; to: Jugador; give: { res: Recurso; n: number }; ask: { res: Recurso; n: number } }
   | { t: 'annex'; zone: ZonaId; from: ZonaId }
-  | { t: 'move'; from: ZonaId; to: ZonaId; u: { [t: string]: number }; stance: 'paz' | 'ataque'; via?: ZonaId[] }
+  | { t: 'move'; from: ZonaId; to: ZonaId; u: { [t: string]: number }; stance: 'paz' | 'ataque'; via?: ZonaId[]; ids?: number[] }
   | { t: 'encounter'; choice: 'si' | 'no' | 'a' | 'b' | 'c' }
   | { t: 'bid'; item: number; amount: number }
 );

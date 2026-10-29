@@ -6,7 +6,9 @@
 /** @param {Partida} g */
 function takeUnits(g,z,f,t,n,opts){
   const us=lst(z,f), out=[]; 
-  for(let i=0;i<us.length&&out.length<n;i++){ const u=us[i]; if(u.t===t&&u.w===0&&!u.busy&&(!opts||!opts.noMoved||!u.mv)){ out.push(u); } }
+  const ok=u=>u.t===t&&u.w===0&&!u.busy&&(!opts||!opts.noMoved||!u.mv);
+  if(opts&&opts.ids&&opts.ids.length){ for(let i=0;i<us.length&&out.length<n;i++){ const u=us[i]; if(ok(u)&&opts.ids.includes(u.id)) out.push(u); } }   // primero las personas elegidas (orden con ids)
+  for(let i=0;i<us.length&&out.length<n;i++){ const u=us[i]; if(ok(u)&&!out.includes(u)) out.push(u); }
   out.forEach(u=>{ us.splice(us.indexOf(u),1); });
   return out;
 }
@@ -330,7 +332,7 @@ function doMove(g,o,arrivals,L){
       const per=(M.milMoveHalf?0.5:1)*stops.length;
       const afford=per>0?Math.floor(F.gold/per):n; n=Math.min(n,afford); if(n<=0) return; F.gold-=Math.ceil(n*per);
     }
-    const got=takeUnits(g,fr,f,t,n); got.forEach(u=>{ taken.push(u); });
+    const got=takeUnits(g,fr,f,t,n,o.ids?{ids:o.ids}:undefined); got.forEach(u=>{ taken.push(u); });
   });
   if(!taken.length) return;
   if(M.migr&&taken.every(u=>UT[u.t].civ)&&dest.owner===f) taken.forEach(u=>{ u.half=1; });

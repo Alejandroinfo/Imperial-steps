@@ -12,8 +12,8 @@ function setSheet(n){
 function applyMovil(){
   const on=MOV.mq.matches; document.body.classList.toggle('movil',on);
   if(on){ setSheet(MOV.sheet);
-    // primera vez en un teléfono: sin animaciones (el mapa en SVG puede ir lento en equipos modestos)
-    try{ if(!localStorage.getItem('pasos_movil_init')){ localStorage.setItem('pasos_movil_init','1'); if(typeof FXS!=='undefined'){ FXS.on=false; document.body.classList.add('noanim'); const c=$('chkAnim'); if(c) c.checked=false; } } }catch(e){} }
+    // primera vez en un teléfono: efectos ligeros (el mapa en SVG puede ir lento en equipos modestos); se cambia en el Menú
+    try{ if(!localStorage.getItem('pasos_movil_init')){ localStorage.setItem('pasos_movil_init','1'); if(typeof setFxLevel==='function'&&!localStorage.getItem('pasos_fx')) setFxLevel('lite',true); } }catch(e){} }
   else { document.body.classList.remove('sheet-0','sheet-1','sheet-2'); }
   if(G&&ui){ if(typeof resizeView==='function') resizeView(); if(typeof planApply==='function') planApply(); }
 }

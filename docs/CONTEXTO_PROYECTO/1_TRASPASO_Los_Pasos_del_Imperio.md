@@ -346,3 +346,19 @@ Reglas en `docs/Reglas_v0.1.md`, sección 25.
 - ✅ La **inundación** dura el resto del año (decidido). ✅ **Eventos de tribu:** se quitaron Inquietud y Furia; las tribus ganan 1 civil y 2 bárbaros cada año (💡 pesan: unos +13 de precio de anexión por año; ver Reglas 25).
 - ❓ Confirmar que «varianza de 10» es en unidades de la moneda (desviación ≈ 3,2) y no un 10 %; y que el cargamento variable (rangos 💡) es lo que querías.
 - ❓ El flujo de pruebas automáticas solo corre `simular_partidas.js 2 40`; convendría que corra `npm test`.
+
+---
+
+## 13. 🆕 Sesión del 28/10/2026 (noche): inglés completo, teléfono y PWA
+
+Reglas en `docs/Reglas_v0.1.md`, sección 26.
+
+| Tema | Dónde |
+|---|---|
+| Inglés completo (interfaz, historial, comienzo guiado, encuentros, historias, Guía) | Fuente: `idiomas/en.json`; genera `js/idiomas/en.js` con `python herramientas/idiomas.py generar`; traductor en `js/interfaz/idioma.js` (`{0#}` = solo dígitos, `i18nHTML`, `i18nBlocks`/`i18nAddBlocks` para la Guía); prueba en `pruebas/probar_idioma.js` |
+| Efectos Completo/Ligero/Apagado | `setFxLevel` en `js/interfaz/animaciones.js`; estilos `body.lite` al final de `css/estilos.css`; `figMax` en `dibujo/figuras.js` |
+| Ficha táctil y mover una persona | `fichaSheetHTML`, `openFichaSheet` en `formularios.js`; acciones `ficha`, `fichaclose`, `movep` y atajos `mvquick` (`one`, `half`) en `acciones.js`; botón ⓘ en `paneles/especializar.js`; `takeUnits(…, {ids})` y `doMove` en `motor/resolver_paso.js` |
+| PWA | `manifest.json`, `sw.js`, `icons/`; registro al final de `js/main.js` |
+
+**Pendientes:** ver en un teléfono real si «Ligero» alcanza (si no, usar «Apagado» o simplificar el dibujo del mapa); probar la PWA instalada en iPhone y Android; nombres de zona en inglés (decidir); comentarios de diseño de algunas tecnologías sin traducir.
+

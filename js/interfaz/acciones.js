@@ -78,7 +78,11 @@ function act(a,d){
     case 'mvst': ui.mv.st=d.v; break;
     case 'mvstep': { const t=d.k.slice(3); const mx=availQ(ui.mv.from,t); ui.form[d.k]=Math.max(0,Math.min(mx,(Number(fv(d.k,0))||0)+Number(d.d))); break; }
     case 'mvquick': { CIV.concat(MIL).forEach(t=>{ const mx=availQ(ui.mv.from,t); const hostile=G.zones[ui.mv.to].owner!==null&&G.zones[ui.mv.to].owner!==ME&&!allied(G,ME,G.zones[ui.mv.to].owner);
+        if(d.v==='one'||d.v==='half'){ const hostile2=G.zones[ui.mv.to].owner!==null&&G.zones[ui.mv.to].owner!==ME&&!allied(G,ME,G.zones[ui.mv.to].owner); const first=CIV.concat(MIL).find(x=>availQ(ui.mv.from,x)>0&&!(CIV.includes(x)&&hostile2)); ui.form['mv_'+t]=d.v==='one'?(t===first?1:0):((CIV.includes(t)&&hostile2)?0:Math.floor(mx/2)+(mx===1?1:0)); return; }
         ui.form['mv_'+t]=d.v==='none'?0:(d.v==='mil'?(MIL.includes(t)&&t!=='ari'&&t!=='lan'?mx:0):(CIV.includes(t)&&hostile?0:mx)); }); break; }
+    case 'ficha': openFichaSheet(Number(d.id)); return;
+    case 'fichaclose': closeFichaSheet(); return;
+    case 'movep': { const u=personById(Number(d.id)), zf=personZone(Number(d.id)); if(u&&zf){ addOrder({t:'move',from:zf.id,to:Number(d.to),u:{[u.t]:1},ids:[u.id],stance:'paz',via:[]}); toast('➜ '+personName(u),'va a '+zname(G.zones[Number(d.to)])+' al presionar ¡Listo!','info'); } closeFichaSheet(); break; }
     case 'mvvia': ui.form.mv_via=d.v; break;
     case 'sdset': ui.form[d.k]=d.k==='sd_q'&&d.v!=='sobrante'?Number(d.v):d.v; if(d.k==='sd_mode'&&d.v==='each'&&ui.form.sd_q!=='sobrante'&&![1,2,5,10].includes(Number(ui.form.sd_q))) ui.form.sd_q=5; break;
     case 'sdq': { const cur=fv('sd_q',5); const base=cur==='sobrante'?5:Number(cur)||0; const mx=fv('sd_mode','once')==='each'?99:Math.floor(z[fv('sd_res','food')==='prod'?'prod':'food']); ui.form.sd_q=Math.max(0,Math.min(mx,base+Number(d.d))); break; }

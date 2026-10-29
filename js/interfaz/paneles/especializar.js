@@ -17,7 +17,7 @@ function dndHTML(z){
     const total=mineU.filter(u=>u.t===t).length, avail=availQ(z.id,t), inc=Math.max(0,delta[t]||0), wnd=mineU.filter(u=>u.t===t&&u.w>0).length;
     const sp=t==='pob'?'bas':t; let toks='';
     const picks=ui.pickIds||[]; const people=availListQ(z.id,t);
-    people.slice(0,40).forEach(u=>{ toks+=`<div class="token tk ${picks.includes(u.id)?'picked':''} ${traitBorder(u)}" draggable="true" data-act="pick" data-t="${t}" data-id="${u.id}" aria-label="${esc(personName(u)+', '+UN[t].toLowerCase()+(u.tr&&u.tr.length?' · '+u.tr.map(traitText).join(' · '):''))}">${uIcon(t,28)}<div class="tkb">${traitChips(u)}</div></div>`; });
+    people.slice(0,40).forEach(u=>{ toks+=`<div class="token tk ${picks.includes(u.id)?'picked':''} ${traitBorder(u)}" draggable="true" data-act="pick" data-t="${t}" data-id="${u.id}" aria-label="${esc(personName(u)+', '+UN[t].toLowerCase()+(u.tr&&u.tr.length?' · '+u.tr.map(traitText).join(' · '):''))}">${uIcon(t,28)}<div class="tkb" ${isMovil()?`data-act="ficha" data-id="${u.id}"`:''}>${traitChips(u)}</div>${isMovil()?`<button class="tinfo" data-act="ficha" data-id="${u.id}" aria-label="Ver ficha de ${esc(personName(u))}">ⓘ</button>`:''}</div>`; });
     if(people.length>40) toks+=`<div class="tokmore">+${people.length-40}</div>`;
     for(let i=0;i<Math.min(inc,10);i++) toks+=`<div class="token ghost" title="Llegará al presionar ¡Listo!">${uIcon(t,28)}</div>`;
     if(wnd) toks+=`<div class="tokmore" title="Heridos">✚ ${wnd}</div>`;
